@@ -47,7 +47,7 @@ enum FrameStylePreset: String, CaseIterable, Sendable {
         return .custom
     }
 
-    private func matches(canvas: CanvasSettings) -> Bool {
+    nonisolated private func matches(canvas: CanvasSettings) -> Bool {
         let candidate = self.canvas
         return Self.isClose(candidate.backgroundGray, canvas.backgroundGray)
             && Self.isClose(candidate.paperWhite, canvas.paperWhite)
@@ -57,6 +57,63 @@ enum FrameStylePreset: String, CaseIterable, Sendable {
 
     private static func isClose(_ lhs: Double, _ rhs: Double) -> Bool {
         abs(lhs - rhs) < 0.000_1
+    }
+}
+
+enum PlateEditorMode: String, CaseIterable, Sendable {
+    case simple
+    case custom
+
+    var displayName: String {
+        switch self {
+        case .simple:
+            return "简易"
+        case .custom:
+            return "自定义"
+        }
+    }
+}
+
+enum PlateContentPreset: String, CaseIterable, Sendable {
+    case exposureTriad
+    case exposureWithFocal
+    case dateAndCamera
+    case custom
+
+    var displayName: String {
+        switch self {
+        case .exposureTriad:
+            return "曝光三要素"
+        case .exposureWithFocal:
+            return "曝光+焦距"
+        case .dateAndCamera:
+            return "日期+机型"
+        case .custom:
+            return "自定义"
+        }
+    }
+
+    var templateText: String {
+        switch self {
+        case .exposureTriad:
+            return "S {shutter}   A {aperture}   ISO {iso}"
+        case .exposureWithFocal:
+            return PlateSettings.defaultTemplateText
+        case .dateAndCamera:
+            return "{date}   {camera}"
+        case .custom:
+            return PlateSettings.defaultTemplateText
+        }
+    }
+
+    static func infer(from template: String) -> PlateContentPreset {
+        let normalized = template.trimmingCharacters(in: .whitespacesAndNewlines)
+        for preset in Self.allCases where preset != .custom {
+            if preset.templateText == normalized {
+                return preset
+            }
+        }
+        return .custom
     }
 }
 
@@ -83,6 +140,9 @@ struct RenderEditorConfig: Sendable {
     var plateBaselineOffset: Double = PlateSettings.default.baselineOffset
     var plateFontSize: Double = PlateSettings.default.fontSize
     var platePlacement: PlatePlacement = PlateSettings.default.placement
+    var plateEditorMode: PlateEditorMode = .simple
+    var plateContentPreset: PlateContentPreset = .exposureWithFocal
+    var plateTemplateText: String = PlateSettings.defaultTemplateText
     var prefetchRadius: Int = 1
     var prefetchMaxConcurrent: Int = 2
     var audioEnabled: Bool = false
@@ -137,6 +197,9 @@ struct RenderEditorConfig: Sendable {
         plateBaselineOffset = settings.plate.baselineOffset
         plateFontSize = settings.plate.fontSize
         platePlacement = settings.plate.placement
+        plateTemplateText = settings.plate.templateText
+        plateContentPreset = PlateContentPreset.infer(from: plateTemplateText)
+        plateEditorMode = plateContentPreset == .custom ? .custom : .simple
         prefetchRadius = settings.prefetchRadius
         prefetchMaxConcurrent = settings.prefetchMaxConcurrent
         audioEnabled = settings.audioTrack != nil
@@ -166,6 +229,8 @@ struct RenderEditorConfig: Sendable {
         plateHeight = min(max(plateHeight, Self.plateHeightRange.lowerBound), Self.plateHeightRange.upperBound)
         plateBaselineOffset = min(max(plateBaselineOffset, Self.plateBaselineOffsetRange.lowerBound), Self.plateBaselineOffsetRange.upperBound)
         plateFontSize = min(max(plateFontSize, Self.plateFontSizeRange.lowerBound), Self.plateFontSizeRange.upperBound)
+        let trimmedTemplate = plateTemplateText.trimmingCharacters(in: .whitespacesAndNewlines)
+        plateTemplateText = trimmedTemplate.isEmpty ? PlateSettings.defaultTemplateText : trimmedTemplate
         prefetchRadius = min(max(prefetchRadius, Self.prefetchRadiusRange.lowerBound), Self.prefetchRadiusRange.upperBound)
         prefetchMaxConcurrent = min(max(prefetchMaxConcurrent, Self.prefetchMaxConcurrentRange.lowerBound), Self.prefetchMaxConcurrentRange.upperBound)
         audioVolume = min(max(audioVolume, Self.audioVolumeRange.lowerBound), Self.audioVolumeRange.upperBound)
@@ -216,7 +281,8 @@ struct RenderEditorConfig: Sendable {
                 height: plateHeight,
                 baselineOffset: plateBaselineOffset,
                 fontSize: plateFontSize,
-                placement: platePlacement
+                placement: platePlacement,
+                templateText: plateTemplateText
             ),
             canvas: resolvedCanvasSettings,
             audioTrack: resolvedAudioTrack
@@ -225,6 +291,33 @@ struct RenderEditorConfig: Sendable {
 
     var template: RenderTemplate {
         renderSettings.template
+    }
+
+    mutating func applyPlatePreset(_ preset: PlateContentPreset) {
+        plateContentPreset = preset
+        if preset != .custom {
+            plateTemplateText = preset.templateText
+        }
+    }
+
+    mutating func insertPlateToken(_ token: String) {
+        if plateTemplateText.isEmpty {
+            plateTemplateText = token
+        } else {
+            plateTemplateText += " \(token)"
+        }
+        plateContentPreset = .custom
+    }
+
+    mutating func appendPlateLiteral(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if plateTemplateText.isEmpty {
+            plateTemplateText = trimmed
+        } else {
+            plateTemplateText += " \(trimmed)"
+        }
+        plateContentPreset = .custom
     }
 
     private var resolvedCanvasSettings: CanvasSettings {

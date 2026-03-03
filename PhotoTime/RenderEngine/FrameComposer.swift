@@ -47,7 +47,7 @@ final class FrameComposer {
                     .transformed(by: aspectFitTransform(imageExtent: orientedImage.extent, into: rects.photoRect))
                     .cropped(to: rects.photoRect),
             textOverlay: makeTextOverlay(
-                text: asset.exif.plateText,
+                text: asset.exif.resolvedPlateText(template: settings.plate.templateText),
                 photoRect: rects.photoRect,
                 plateTextRect: rects.plateTextRect
             ),

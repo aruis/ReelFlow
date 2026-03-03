@@ -32,19 +32,39 @@ struct LayoutSettings: Codable, Sendable {
 }
 
 struct PlateSettings: Codable, Sendable {
+    nonisolated static let defaultTemplateText = "S {shutter}   A {aperture}   ISO {iso}   F {focal}"
+
     let enabled: Bool
     let height: Double
     let baselineOffset: Double
     let fontSize: Double
     let placement: PlatePlacement
+    let templateText: String
 
     nonisolated static let `default` = PlateSettings(
         enabled: true,
         height: 96,
         baselineOffset: 18,
         fontSize: 26,
-        placement: .frame
+        placement: .frame,
+        templateText: Self.defaultTemplateText
     )
+
+    nonisolated init(
+        enabled: Bool,
+        height: Double,
+        baselineOffset: Double,
+        fontSize: Double,
+        placement: PlatePlacement = .frame,
+        templateText: String = PlateSettings.defaultTemplateText
+    ) {
+        self.enabled = enabled
+        self.height = height
+        self.baselineOffset = baselineOffset
+        self.fontSize = fontSize
+        self.placement = placement
+        self.templateText = templateText
+    }
 }
 
 struct CanvasSettings: Codable, Sendable {
@@ -160,7 +180,8 @@ struct RenderSettings {
                 height: template.plate.height,
                 baselineOffset: template.plate.baselineOffset,
                 fontSize: template.plate.fontSize,
-                placement: template.plate.placement
+                placement: template.plate.placement,
+                templateText: template.plate.templateText
             ),
             canvas: .init(
                 backgroundGray: template.canvas.backgroundGray,
@@ -204,7 +225,8 @@ struct RenderSettings {
                 height: plate.height,
                 baselineOffset: plate.baselineOffset,
                 fontSize: plate.fontSize,
-                placement: plate.placement
+                placement: plate.placement,
+                templateText: plate.templateText
             ),
             canvas: .init(
                 backgroundGray: canvas.backgroundGray,
@@ -371,13 +393,15 @@ struct RenderTemplate: Codable, Sendable {
         let baselineOffset: Double
         let fontSize: Double
         let placement: PlatePlacement
+        let templateText: String
 
         nonisolated static let `default` = Plate(
             enabled: true,
             height: 96,
             baselineOffset: 18,
             fontSize: 26,
-            placement: .frame
+            placement: .frame,
+            templateText: PlateSettings.defaultTemplateText
         )
 
         private enum CodingKeys: String, CodingKey {
@@ -386,6 +410,7 @@ struct RenderTemplate: Codable, Sendable {
             case baselineOffset
             case fontSize
             case placement
+            case templateText
         }
 
         nonisolated init(
@@ -393,13 +418,15 @@ struct RenderTemplate: Codable, Sendable {
             height: Double,
             baselineOffset: Double,
             fontSize: Double,
-            placement: PlatePlacement = .frame
+            placement: PlatePlacement = .frame,
+            templateText: String = PlateSettings.defaultTemplateText
         ) {
             self.enabled = enabled
             self.height = height
             self.baselineOffset = baselineOffset
             self.fontSize = fontSize
             self.placement = placement
+            self.templateText = templateText
         }
 
         nonisolated init(from decoder: Decoder) throws {
@@ -409,6 +436,7 @@ struct RenderTemplate: Codable, Sendable {
             baselineOffset = try container.decodeIfPresent(Double.self, forKey: .baselineOffset) ?? 18
             fontSize = try container.decodeIfPresent(Double.self, forKey: .fontSize) ?? 26
             placement = try container.decodeIfPresent(PlatePlacement.self, forKey: .placement) ?? .frame
+            templateText = try container.decodeIfPresent(String.self, forKey: .templateText) ?? PlateSettings.defaultTemplateText
         }
     }
 
@@ -464,13 +492,23 @@ struct ExifInfo: Sendable {
     let aperture: String?
     let iso: String?
     let focalLength: String?
+    let date: String?
+    let camera: String?
 
     nonisolated var plateText: String {
-        let shutterValue = shutter ?? "--"
-        let apertureValue = aperture ?? "--"
-        let isoValue = iso ?? "--"
-        let focalValue = focalLength ?? "--"
-        return "S \(shutterValue)   A \(apertureValue)   ISO \(isoValue)   F \(focalValue)"
+        resolvedPlateText(template: PlateSettings.defaultTemplateText)
+    }
+
+    nonisolated func resolvedPlateText(template: String) -> String {
+        let normalized = template.trimmingCharacters(in: .whitespacesAndNewlines)
+        let source = normalized.isEmpty ? PlateSettings.defaultTemplateText : normalized
+        return source
+            .replacingOccurrences(of: "{shutter}", with: shutter ?? "--")
+            .replacingOccurrences(of: "{aperture}", with: aperture ?? "--")
+            .replacingOccurrences(of: "{iso}", with: iso ?? "--")
+            .replacingOccurrences(of: "{focal}", with: focalLength ?? "--")
+            .replacingOccurrences(of: "{date}", with: date ?? "--")
+            .replacingOccurrences(of: "{camera}", with: camera ?? "--")
     }
 }
 

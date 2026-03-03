@@ -4,6 +4,7 @@ struct AdvancedSettingsPanel: View {
     @ObservedObject var viewModel: ExportViewModel
     @Binding var isAudioDropTarget: Bool
     let onAudioDrop: ([NSItemProvider]) -> Bool
+    @State private var plateLiteralInput = ""
 
     var body: some View {
         Form {
@@ -99,6 +100,9 @@ struct AdvancedSettingsPanel: View {
                     Text("黑底下方").tag(PlatePlacement.canvasBottom)
                 }
                 .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
+
+                plateContentEditor
+                    .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
             }
 
             Section("性能设置") {
@@ -115,5 +119,91 @@ struct AdvancedSettingsPanel: View {
             )
         }
         .formStyle(.grouped)
+    }
+
+    private var plateContentEditor: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("铭牌编辑", selection: plateEditorModeBinding) {
+                ForEach(PlateEditorMode.allCases, id: \.self) { mode in
+                    Text(mode.displayName).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            if viewModel.config.plateEditorMode == .simple {
+                Picker("铭牌内容", selection: platePresetBinding) {
+                    Text(PlateContentPreset.exposureTriad.displayName).tag(PlateContentPreset.exposureTriad)
+                    Text(PlateContentPreset.exposureWithFocal.displayName).tag(PlateContentPreset.exposureWithFocal)
+                    Text(PlateContentPreset.dateAndCamera.displayName).tag(PlateContentPreset.dateAndCamera)
+                }
+                .pickerStyle(.segmented)
+            } else {
+                Text("模板（占位符请用按钮插入）")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(viewModel.config.plateTemplateText)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+
+                HStack(spacing: 6) {
+                    plateTokenButton(title: "快门", token: "{shutter}")
+                    plateTokenButton(title: "光圈", token: "{aperture}")
+                    plateTokenButton(title: "ISO", token: "{iso}")
+                    plateTokenButton(title: "焦距", token: "{focal}")
+                    plateTokenButton(title: "日期", token: "{date}")
+                    plateTokenButton(title: "机型", token: "{camera}")
+                }
+
+                HStack(spacing: 8) {
+                    TextField("追加文字", text: $plateLiteralInput)
+                        .textFieldStyle(.roundedBorder)
+                    Button("追加") {
+                        viewModel.config.appendPlateLiteral(plateLiteralInput)
+                        plateLiteralInput = ""
+                    }
+                    .disabled(plateLiteralInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button("清空") {
+                        viewModel.config.plateTemplateText = ""
+                        viewModel.config.plateContentPreset = .custom
+                    }
+                }
+            }
+        }
+    }
+
+    private var plateEditorModeBinding: Binding<PlateEditorMode> {
+        Binding(
+            get: { viewModel.config.plateEditorMode },
+            set: { mode in
+                viewModel.config.plateEditorMode = mode
+                if mode == .simple, viewModel.config.plateContentPreset == .custom {
+                    viewModel.config.applyPlatePreset(.exposureWithFocal)
+                } else if mode == .custom {
+                    viewModel.config.plateContentPreset = .custom
+                }
+            }
+        )
+    }
+
+    private var platePresetBinding: Binding<PlateContentPreset> {
+        Binding(
+            get: { viewModel.config.plateContentPreset == .custom ? .exposureWithFocal : viewModel.config.plateContentPreset },
+            set: { preset in
+                viewModel.config.applyPlatePreset(preset)
+            }
+        )
+    }
+
+    private func plateTokenButton(title: String, token: String) -> some View {
+        Button(title) {
+            viewModel.config.insertPlateToken(token)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
     }
 }
