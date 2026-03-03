@@ -145,6 +145,8 @@ struct ContentView: View {
                     if viewModel.hasSelectedImages {
                         Button("导出 MP4") { viewModel.export() }
                             .accessibilityIdentifier("primary_export")
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.regular)
                             .disabled(!viewModel.canRunExport)
                     }
                     if viewModel.isExporting {
@@ -425,6 +427,14 @@ struct ContentView: View {
                 )
             } else {
                 HStack(spacing: 10) {
+                    if viewModel.isExporting {
+                        Text("正在导出…")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 0)
+
                     if let primary = firstRunPrimaryAction {
                         WorkflowPrimaryActionButton(
                             title: primary.title,
@@ -434,12 +444,6 @@ struct ContentView: View {
                             action: primary.handler
                         )
                             .disabled(viewModel.isBusy)
-                    }
-
-                    if viewModel.isExporting {
-                        Text("正在导出…")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
 

@@ -20,15 +20,18 @@ struct WorkflowOverviewPanel: View {
                     .accessibilityIdentifier("flow_next_hint")
 
                 if let firstRunPrimaryActionTitle {
-                    WorkflowPrimaryActionButton(
-                        title: firstRunPrimaryActionTitle,
-                        subtitle: firstRunPrimaryActionSubtitle,
-                        isBusy: isBusy,
-                        accessibilityIdentifier: "workflow_overview_primary_action",
-                        action: onFirstRunPrimaryAction
-                    )
+                    HStack {
+                        Spacer(minLength: 0)
+                        WorkflowPrimaryActionButton(
+                            title: firstRunPrimaryActionTitle,
+                            subtitle: firstRunPrimaryActionSubtitle,
+                            isBusy: isBusy,
+                            accessibilityIdentifier: "workflow_overview_primary_action",
+                            action: onFirstRunPrimaryAction
+                        )
                         .disabled(isBusy)
-                        .padding(.top, 2)
+                    }
+                    .padding(.top, 2)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -55,61 +58,29 @@ struct WorkflowPrimaryActionButton: View {
     }
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(.white.opacity(0.18))
-                        .frame(width: 34, height: 34)
-                    Image(systemName: systemImage)
-                        .font(.system(size: 15, weight: .semibold))
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.headline)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.88))
-                            .lineLimit(2)
-                    }
-                }
-
-                Spacer(minLength: 0)
-
+        VStack(alignment: .trailing, spacing: 3) {
+            Button(action: action) {
                 if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                        .tint(.white)
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text(title)
+                    }
                 } else {
-                    Image(systemName: "arrow.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                    Label(title, systemImage: systemImage)
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(.white)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 0.09, green: 0.45, blue: 0.94),
-                    Color(red: 0.03, green: 0.67, blue: 0.74)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(.white.opacity(0.14))
-        )
-        .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+        .fixedSize(horizontal: true, vertical: false)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 }

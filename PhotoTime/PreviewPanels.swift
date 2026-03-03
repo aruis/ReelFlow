@@ -4,7 +4,7 @@ struct SingleFramePreviewPanel: View {
     @ObservedObject var viewModel: ExportViewModel
 
     var body: some View {
-        GroupBox("单帧预览") {
+        GroupBox {
             VStack(alignment: .leading, spacing: 12) {
                 previewSurface(
                     image: viewModel.previewImage,
@@ -12,14 +12,15 @@ struct SingleFramePreviewPanel: View {
                     placeholderText: "尚未生成单帧预览",
                     accessibilityIdentifier: "single_frame_preview_surface"
                 )
-
-                PreviewStatusRow(
-                    statusMessage: viewModel.previewStatusMessage,
-                    errorMessage: viewModel.previewErrorMessage,
-                    isBusy: viewModel.isPreviewGenerating,
-                    accessibilityIdentifier: "single_frame_preview_status"
-                )
             }
+        } label: {
+            previewPanelHeader(
+                title: "单帧预览",
+                statusMessage: viewModel.previewStatusMessage,
+                errorMessage: viewModel.previewErrorMessage,
+                isBusy: viewModel.isPreviewGenerating,
+                accessibilityIdentifier: "single_frame_preview_status"
+            )
         }
     }
 }
@@ -28,8 +29,19 @@ struct VideoTimelinePreviewPanel: View {
     @ObservedObject var viewModel: ExportViewModel
     let audioSegments: [(start: Double, end: Double)]
 
+    private var previewBlockedMessage: String? {
+        guard !viewModel.imageURLs.isEmpty else { return nil }
+        if let validationMessage = viewModel.validationMessage {
+            return "当前参数下无法刷新预览：\(validationMessage)"
+        }
+        if viewModel.isBusy && !viewModel.isPreviewGenerating {
+            return "当前任务进行中，完成后可刷新预览。"
+        }
+        return nil
+    }
+
     var body: some View {
-        GroupBox("时间轴预览") {
+        GroupBox {
             VStack(alignment: .leading, spacing: 12) {
                 if viewModel.config.audioEnabled {
                     VStack(alignment: .leading, spacing: 6) {
@@ -92,13 +104,6 @@ struct VideoTimelinePreviewPanel: View {
                     accessibilityIdentifier: "timeline_preview_surface"
                 )
 
-                PreviewStatusRow(
-                    statusMessage: viewModel.previewStatusMessage,
-                    errorMessage: viewModel.previewErrorMessage,
-                    isBusy: viewModel.isPreviewGenerating,
-                    accessibilityIdentifier: "timeline_preview_status"
-                )
-
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 10) {
                         Text("时间: \(viewModel.previewSecond, specifier: "%.2f")s")
@@ -123,18 +128,51 @@ struct VideoTimelinePreviewPanel: View {
                     .disabled(viewModel.isBusy || viewModel.imageURLs.isEmpty)
                     .accessibilityIdentifier("timeline_preview_slider")
 
-                    if !viewModel.canRunPreview && !viewModel.imageURLs.isEmpty {
-                        Text("当前参数下无法刷新预览，请先修正校验问题或等待当前任务结束。")
+                    if let previewBlockedMessage {
+                        Text(previewBlockedMessage)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
+        } label: {
+            previewPanelHeader(
+                title: "时间轴预览",
+                statusMessage: viewModel.previewStatusMessage,
+                errorMessage: viewModel.previewErrorMessage,
+                isBusy: viewModel.isPreviewGenerating,
+                accessibilityIdentifier: "timeline_preview_status"
+            )
         }
     }
 }
 
 private extension View {
+    @ViewBuilder
+    func previewPanelHeader(
+        title: String,
+        statusMessage: String,
+        errorMessage: String?,
+        isBusy: Bool,
+        accessibilityIdentifier: String
+    ) -> some View {
+        let tooltipText = errorMessage.map { "预览错误: \($0)" } ?? (isBusy ? "正在生成预览…" : statusMessage)
+
+        HStack(spacing: 6) {
+            Text(title)
+            PreviewStatusRow(
+                statusMessage: statusMessage,
+                errorMessage: errorMessage,
+                isBusy: isBusy,
+                accessibilityIdentifier: accessibilityIdentifier
+            )
+            .frame(width: 22, alignment: .leading)
+            Spacer(minLength: 0)
+        }
+        .contentShape(Rectangle())
+        .help(tooltipText)
+    }
+
     func previewSurface(
         image: NSImage?,
         placeholderSystemImage: String,
@@ -173,24 +211,25 @@ private struct PreviewStatusRow: View {
     let accessibilityIdentifier: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                if isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-                Text(statusMessage)
-                    .font(.caption)
-                    .foregroundStyle(isBusy ? .primary : .secondary)
-                    .lineLimit(2)
-            }
-
+        HStack(spacing: 8) {
             if let errorMessage {
-                Text("预览错误: \(errorMessage)")
-                    .font(.caption)
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.caption2)
                     .foregroundStyle(.red)
+                    .accessibilityLabel("预览错误: \(errorMessage)")
+            } else if isBusy {
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityLabel("正在生成预览…")
+            } else {
+                Image(systemName: "checkmark.circle")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel(statusMessage)
             }
         }
+        .contentShape(Rectangle())
+        .frame(height: 16, alignment: .leading)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
