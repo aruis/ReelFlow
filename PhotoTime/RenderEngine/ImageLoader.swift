@@ -34,7 +34,7 @@ enum ImageLoader {
             kCGImageSourceShouldCacheImmediately: true
         ]
 
-        guard var image = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary)
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary)
             .map({ CIImage(cgImage: $0) }) else {
             throw ImageLoaderError.unsupportedImage(url)
         }

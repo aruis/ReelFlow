@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 
 enum AudioMuxerError: LocalizedError {
@@ -66,7 +66,7 @@ enum AudioMuxer {
             of: videoTrack,
             at: .zero
         )
-        compositionVideoTrack.preferredTransform = videoTrack.preferredTransform
+        compositionVideoTrack.preferredTransform = try await videoTrack.load(.preferredTransform)
 
         guard
             let compositionAudioTrack = composition.addMutableTrack(
@@ -121,29 +121,35 @@ enum AudioMuxer {
         exporter.shouldOptimizeForNetworkUse = false
         exporter.timeRange = CMTimeRange(start: .zero, duration: videoDuration)
         exporter.audioMix = audioMix
+        let exporterBox = UncheckedSendableBox(value: exporter)
+        nonisolated(unsafe) let unsafeExporter = exporter
 
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
-                exporter.exportAsynchronously {
-                    switch exporter.status {
+                exporterBox.value.exportAsynchronously {
+                    switch exporterBox.value.status {
                     case .completed:
                         continuation.resume()
                     case .failed:
                         continuation.resume(
-                            throwing: AudioMuxerError.exportFailed(exporter.error?.localizedDescription ?? "unknown")
+                            throwing: AudioMuxerError.exportFailed(exporterBox.value.error?.localizedDescription ?? "unknown")
                         )
                     case .cancelled:
                         continuation.resume(throwing: AudioMuxerError.cancelled)
                     default:
                         continuation.resume(
-                            throwing: AudioMuxerError.exportFailed("unexpected status: \(exporter.status.rawValue)")
+                            throwing: AudioMuxerError.exportFailed("unexpected status: \(exporterBox.value.status.rawValue)")
                         )
                     }
                 }
             }
         } onCancel: {
-            exporter.cancelExport()
+            unsafeExporter.cancelExport()
         }
 
     }
+}
+
+private struct UncheckedSendableBox<T>: @unchecked Sendable {
+    let value: T
 }

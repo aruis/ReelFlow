@@ -39,9 +39,9 @@ struct PreflightReport: Codable, Sendable {
 }
 
 enum ExportPreflightScanner {
-    private static let reviewFilenameLengthThreshold = 96
-    private static let reviewExtremeAspectRatioThreshold = 3.0
-    private static let suspiciousColorModels: Set<String> = ["CMYK", "Lab", "Indexed", "Monochrome", "Unknown"]
+    nonisolated private static let reviewFilenameLengthThreshold = 96
+    nonisolated private static let reviewExtremeAspectRatioThreshold = 3.0
+    nonisolated private static let suspiciousColorModels: Set<String> = ["CMYK", "Lab", "Indexed", "Monochrome", "Unknown"]
 
     nonisolated static func scan(imageURLs: [URL]) -> PreflightReport {
         var issues: [PreflightIssue] = []

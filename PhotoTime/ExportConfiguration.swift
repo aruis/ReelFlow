@@ -23,7 +23,7 @@ enum FrameStylePreset: String, CaseIterable, Sendable {
         }
     }
 
-    var canvas: CanvasSettings {
+    nonisolated var canvas: CanvasSettings {
         switch self {
         case .classic:
             return .init(backgroundGray: 0.09, paperWhite: 0.98, strokeGray: 0.82, textGray: 0.15)
@@ -55,7 +55,7 @@ enum FrameStylePreset: String, CaseIterable, Sendable {
             && Self.isClose(candidate.textGray, canvas.textGray)
     }
 
-    private static func isClose(_ lhs: Double, _ rhs: Double) -> Bool {
+    nonisolated private static func isClose(_ lhs: Double, _ rhs: Double) -> Bool {
         abs(lhs - rhs) < 0.000_1
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum AudioTrackValidation {
-    static func validate(url: URL) -> String? {
+    nonisolated static func validate(url: URL) -> String? {
         let path = url.path
         guard FileManager.default.fileExists(atPath: path) else {
             return "音频文件不存在或已被移动"
