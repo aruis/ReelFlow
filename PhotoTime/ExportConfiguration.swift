@@ -179,6 +179,8 @@ struct PlateSimpleElement: Codable, Sendable, Identifiable, Equatable {
 }
 
 struct RenderEditorConfig: Sendable {
+    private static let minimumTransitionGap = 0.05
+
     var outputWidth: Int = 1920
     var outputHeight: Int = 1080
     var fps: Int = 30
@@ -277,7 +279,7 @@ struct RenderEditorConfig: Sendable {
         imageDuration = min(max(imageDuration, Self.imageDurationRange.lowerBound), Self.imageDurationRange.upperBound)
         transitionDuration = min(max(transitionDuration, Self.transitionDurationRange.lowerBound), Self.transitionDurationRange.upperBound)
         if transitionDuration >= imageDuration {
-            transitionDuration = max(0, imageDuration - 0.05)
+            transitionDuration = max(0, imageDuration - Self.minimumTransitionGap)
         }
         canvasBackgroundGray = min(max(canvasBackgroundGray, Self.grayRange.lowerBound), Self.grayRange.upperBound)
         canvasPaperWhite = min(max(canvasPaperWhite, Self.grayRange.lowerBound), Self.grayRange.upperBound)
@@ -299,6 +301,20 @@ struct RenderEditorConfig: Sendable {
         if !audioEnabled {
             audioFilePath = ""
             audioLoopEnabled = false
+        }
+    }
+
+    mutating func setImageDurationSafely(_ newValue: Double) {
+        imageDuration = min(max(newValue, Self.imageDurationRange.lowerBound), Self.imageDurationRange.upperBound)
+        if transitionDuration >= imageDuration {
+            transitionDuration = max(0, imageDuration - Self.minimumTransitionGap)
+        }
+    }
+
+    mutating func setTransitionDurationSafely(_ newValue: Double) {
+        transitionDuration = min(max(newValue, Self.transitionDurationRange.lowerBound), Self.transitionDurationRange.upperBound)
+        if transitionDuration >= imageDuration {
+            transitionDuration = max(0, imageDuration - Self.minimumTransitionGap)
         }
     }
 

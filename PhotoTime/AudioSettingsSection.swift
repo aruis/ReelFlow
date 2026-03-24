@@ -12,6 +12,12 @@ struct AudioSettingsSection: View {
                 .disabled(viewModel.isBusy)
 
             if viewModel.config.audioEnabled {
+                if viewModel.selectedAudioFilename == nil {
+                    Text("已启用背景音频，但还没有选择音频文件。")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
                 HStack(spacing: 10) {
                     Button("选择音频") {
                         viewModel.chooseAudioTrack()

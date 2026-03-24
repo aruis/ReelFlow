@@ -337,7 +337,14 @@ struct ContentView: View {
                     compactIssues: preflightDisplayIssues(report: report),
                     allDisplayIssues: preflightIssuesForDisplay(report: report),
                     filteredIgnoredIssues: filteredIgnoredIssues,
-                    onSelectAsset: { selectedAssetURL = $0 },
+                    selectedAssetURL: selectedAssetURL,
+                    onSelectAsset: { url in
+                        if viewModel.fileListFilter != .all {
+                            viewModel.fileListFilter = .all
+                        }
+                        selectedAssetURL = url
+                        selectedAssetURLs = [url]
+                    },
                     expansionBindingForKey: { key in preflightIssueExpandedBinding(for: key) },
                     preflightSecondaryActionsExpanded: $preflightSecondaryActionsExpanded,
                     preflightOnlyPending: $preflightOnlyPending,

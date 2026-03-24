@@ -102,6 +102,12 @@ struct SimpleSettingsPanel: View {
     var body: some View {
         Form {
             Section("常用参数") {
+                if let settingsValidationMessage {
+                    settingsValidationView(settingsValidationMessage)
+                }
+
+                exportSummaryPanel
+
                 Picker("分辨率", selection: resolutionBinding) {
                     ForEach(ResolutionChoice.allCases) { choice in
                         Text(choice.title).tag(choice)
@@ -193,6 +199,31 @@ struct SimpleSettingsPanel: View {
             )
         }
         .formStyle(.grouped)
+    }
+
+    private var settingsValidationMessage: String? {
+        viewModel.validationMessage
+    }
+
+    private var estimatedVideoDuration: Double {
+        viewModel.previewMaxSecond
+    }
+
+    private var audioSummaryMessage: String? {
+        guard viewModel.config.audioEnabled else { return nil }
+        guard let audioDuration = viewModel.selectedAudioDuration else {
+            return "音频时长尚未读取，导出前会再次校验。"
+        }
+        let videoDuration = estimatedVideoDuration
+        let audioText = String(format: "%.2f", audioDuration)
+        let videoText = String(format: "%.2f", videoDuration)
+        if viewModel.config.audioLoopEnabled {
+            return "音频 \(audioText)s，将循环覆盖约 \(videoText)s 视频。"
+        }
+        if audioDuration >= videoDuration {
+            return "音频 \(audioText)s，导出时会截断到视频时长 \(videoText)s。"
+        }
+        return "音频 \(audioText)s，结束后视频仍会继续到 \(videoText)s。"
     }
 
     private var plateContentEditor: some View {
@@ -393,6 +424,29 @@ struct SimpleSettingsPanel: View {
             get: { plateSimplePrefixDrafts[element.wrappedValue.key] ?? element.wrappedValue.prefix },
             set: { plateSimplePrefixDrafts[element.wrappedValue.key] = $0 }
         )
+    }
+
+    private func settingsValidationView(_ message: String) -> some View {
+        Label(message, systemImage: "exclamationmark.triangle.fill")
+            .font(.caption)
+            .foregroundStyle(.red)
+    }
+
+    private var exportSummaryPanel: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("预计成片时长 \(estimatedVideoDuration, specifier: "%.2f")s")
+                .font(.caption.weight(.semibold))
+            Text("\(viewModel.imageURLs.count) 张图片 · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            if let audioSummaryMessage {
+                Text(audioSummaryMessage)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(10)
+        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func commitPrefixDraft(for key: PlateSimpleElementKey) {

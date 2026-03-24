@@ -8,13 +8,53 @@ struct AdvancedSettingsPanel: View {
     @State private var plateSimplePrefixDrafts: [PlateSimpleElementKey: String] = [:]
     @FocusState private var focusedPlatePrefixKey: PlateSimpleElementKey?
 
+    private enum ResolutionPreset: Int, CaseIterable, Identifiable {
+        case hd720
+        case fullHD1080
+        case qhd1440
+        case uhd4K
+
+        var id: Int { rawValue }
+
+        var title: String {
+            switch self {
+            case .hd720: return "720p"
+            case .fullHD1080: return "1080p"
+            case .qhd1440: return "1440p"
+            case .uhd4K: return "4K"
+            }
+        }
+
+        var size: (width: Int, height: Int) {
+            switch self {
+            case .hd720: return (1280, 720)
+            case .fullHD1080: return (1920, 1080)
+            case .qhd1440: return (2560, 1440)
+            case .uhd4K: return (3840, 2160)
+            }
+        }
+    }
+
     var body: some View {
         Form {
             Section("导出设置") {
+                if let settingsValidationMessage {
+                    settingsValidationView(settingsValidationMessage)
+                }
+
+                exportSummaryPanel
+
                 Stepper("宽: \(viewModel.config.outputWidth)", value: $viewModel.config.outputWidth, in: RenderEditorConfig.outputWidthRange, step: 2)
                     .disabled(viewModel.isBusy)
                 Stepper("高: \(viewModel.config.outputHeight)", value: $viewModel.config.outputHeight, in: RenderEditorConfig.outputHeightRange, step: 2)
                     .disabled(viewModel.isBusy)
+
+                HStack(spacing: 6) {
+                    ForEach(ResolutionPreset.allCases) { preset in
+                        resolutionPresetButton(preset)
+                    }
+                }
+                .disabled(viewModel.isBusy)
 
                 Picker("FPS", selection: $viewModel.config.fps) {
                     ForEach([24, 30, 60], id: \.self) { fps in
@@ -26,7 +66,7 @@ struct AdvancedSettingsPanel: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("单图时长: \(viewModel.config.imageDuration, specifier: "%.2f")s")
-                    Slider(value: $viewModel.config.imageDuration, in: RenderEditorConfig.imageDurationRange, step: 0.1)
+                    Slider(value: imageDurationBinding, in: RenderEditorConfig.imageDurationRange, step: 0.1)
                         .disabled(viewModel.isBusy)
                 }
                 Picker("横竖图策略", selection: $viewModel.config.orientationStrategy) {
@@ -67,8 +107,13 @@ struct AdvancedSettingsPanel: View {
                     .disabled(viewModel.isBusy)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("转场时长: \(viewModel.config.transitionDuration, specifier: "%.2f")s")
-                    Slider(value: $viewModel.config.transitionDuration, in: RenderEditorConfig.transitionDurationRange, step: 0.05)
+                    Slider(value: transitionDurationBinding, in: RenderEditorConfig.transitionDurationRange, step: 0.05)
                         .disabled(viewModel.isBusy || !viewModel.config.enableCrossfade)
+                    if let transitionValidationMessage {
+                        Text(transitionValidationMessage)
+                            .font(.caption2)
+                            .foregroundStyle(.red)
+                    }
                 }
                 Toggle("启用 Ken Burns", isOn: $viewModel.config.enableKenBurns)
                     .disabled(viewModel.isBusy)
@@ -121,6 +166,82 @@ struct AdvancedSettingsPanel: View {
             )
         }
         .formStyle(.grouped)
+    }
+
+    private var settingsValidationMessage: String? {
+        viewModel.validationMessage
+    }
+
+    private var estimatedVideoDuration: Double {
+        viewModel.previewMaxSecond
+    }
+
+    private var audioSummaryMessage: String? {
+        guard viewModel.config.audioEnabled else { return nil }
+        guard let audioDuration = viewModel.selectedAudioDuration else {
+            return "音频时长尚未读取，导出前会再次校验。"
+        }
+        let videoDuration = estimatedVideoDuration
+        let audioText = String(format: "%.2f", audioDuration)
+        let videoText = String(format: "%.2f", videoDuration)
+        if viewModel.config.audioLoopEnabled {
+            return "音频 \(audioText)s，将循环覆盖约 \(videoText)s 视频。"
+        }
+        if audioDuration >= videoDuration {
+            return "音频 \(audioText)s，导出时会截断到视频时长 \(videoText)s。"
+        }
+        return "音频 \(audioText)s，结束后视频仍会继续到 \(videoText)s。"
+    }
+
+    private var transitionValidationMessage: String? {
+        guard viewModel.config.enableCrossfade else { return nil }
+        guard viewModel.config.transitionDuration >= viewModel.config.imageDuration else { return nil }
+        return "转场时长必须小于单图时长，请缩短转场或延长单图时长。"
+    }
+
+    private var exportSummaryPanel: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("预计成片时长 \(estimatedVideoDuration, specifier: "%.2f")s")
+                .font(.caption.weight(.semibold))
+            Text("\(viewModel.imageURLs.count) 张图片 · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            if let audioSummaryMessage {
+                Text(audioSummaryMessage)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(10)
+        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func resolutionPresetButton(_ preset: ResolutionPreset) -> some View {
+        let isSelected = viewModel.config.outputWidth == preset.size.width && viewModel.config.outputHeight == preset.size.height
+        return Button {
+            viewModel.config.outputWidth = preset.size.width
+            viewModel.config.outputHeight = preset.size.height
+        } label: {
+            Text(preset.title)
+                .font(.caption)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.bordered)
+        .tint(isSelected ? .accentColor : .gray.opacity(0.35))
+    }
+
+    private var imageDurationBinding: Binding<Double> {
+        Binding(
+            get: { viewModel.config.imageDuration },
+            set: { viewModel.config.setImageDurationSafely($0) }
+        )
+    }
+
+    private var transitionDurationBinding: Binding<Double> {
+        Binding(
+            get: { viewModel.config.transitionDuration },
+            set: { viewModel.config.setTransitionDurationSafely($0) }
+        )
     }
 
     private var plateContentEditor: some View {
@@ -348,6 +469,12 @@ struct AdvancedSettingsPanel: View {
             get: { plateSimplePrefixDrafts[element.wrappedValue.key] ?? element.wrappedValue.prefix },
             set: { plateSimplePrefixDrafts[element.wrappedValue.key] = $0 }
         )
+    }
+
+    private func settingsValidationView(_ message: String) -> some View {
+        Label(message, systemImage: "exclamationmark.triangle.fill")
+            .font(.caption)
+            .foregroundStyle(.red)
     }
 
     private func commitPrefixDraft(for key: PlateSimpleElementKey) {

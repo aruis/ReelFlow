@@ -5,6 +5,7 @@ struct PreflightPanel: View {
     let compactIssues: [PreflightIssue]
     let allDisplayIssues: [PreflightIssue]
     let filteredIgnoredIssues: [PreflightIssue]
+    let selectedAssetURL: URL?
     let onSelectAsset: (URL) -> Void
     let expansionBindingForKey: (String) -> Binding<Bool>
 
@@ -219,7 +220,8 @@ struct PreflightPanel: View {
     }
 
     private func issueRow(_ issue: PreflightIssue) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        let isSelectedAssetIssue = selectedAssetURL?.lastPathComponent == issue.fileName
+        return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(issue.severity == .mustFix ? "必须修复" : "建议关注")
                     .font(.caption2.weight(.semibold))
@@ -259,7 +261,11 @@ struct PreflightPanel: View {
         }
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.primary.opacity(0.04))
+        .background(isSelectedAssetIssue ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(isSelectedAssetIssue ? Color.accentColor.opacity(0.55) : .clear, lineWidth: 1.2)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 

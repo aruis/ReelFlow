@@ -161,4 +161,28 @@ struct RenderEditorConfigTests {
 
         #expect(config.invalidMessage?.contains("音频") == true)
     }
+
+    @Test
+    func settingImageDurationSafelyAlsoKeepsTransitionValid() {
+        var config = RenderEditorConfig()
+        config.imageDuration = 3
+        config.transitionDuration = 1.8
+
+        config.setImageDurationSafely(1.2)
+
+        #expect(config.imageDuration == 1.2)
+        #expect(config.transitionDuration < config.imageDuration)
+        #expect(abs(config.transitionDuration - 1.15) < 0.0001)
+    }
+
+    @Test
+    func settingTransitionDurationSafelyClampsToImageDuration() {
+        var config = RenderEditorConfig()
+        config.imageDuration = 1.4
+
+        config.setTransitionDurationSafely(2)
+
+        #expect(config.transitionDuration < config.imageDuration)
+        #expect(abs(config.transitionDuration - 1.35) < 0.0001)
+    }
 }

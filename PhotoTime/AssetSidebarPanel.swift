@@ -9,25 +9,36 @@ struct AssetSidebarPanel: View {
     @Binding var isAssetDropTarget: Bool
     @Binding var draggingAssetURL: URL?
     @State private var localKeyMonitor: Any?
+    @State private var focusedAssetURL: URL?
     private let thumbnailHeight: CGFloat = 72
     private let cardHeight: CGFloat = 104
 
     var body: some View {
-        ZStack {
-            if viewModel.imageURLs.isEmpty {
-                emptyAssetDropView
-            } else {
-                ScrollView {
-                    LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: 88, maximum: 128), spacing: 10)],
-                        spacing: 10
-                    ) {
-                        ForEach(sidebarFilteredAssets, id: \.self) { url in
-                            assetThumbnailItem(url: url)
+        ScrollViewReader { proxy in
+            ZStack {
+                if viewModel.imageURLs.isEmpty {
+                    emptyAssetDropView
+                } else {
+                    ScrollView {
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 88, maximum: 128), spacing: 10)],
+                            spacing: 10
+                        ) {
+                            ForEach(sidebarFilteredAssets, id: \.self) { url in
+                                assetThumbnailItem(url: url)
+                                    .id(url)
+                            }
                         }
+                        .padding(12)
                     }
-                    .padding(12)
                 }
+            }
+            .onChange(of: selectedAssetURL) { _, newValue in
+                guard let newValue, sidebarFilteredAssets.contains(newValue) else { return }
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
+                focusAsset(newValue)
             }
         }
         .background(isAssetDropTarget ? Color.accentColor.opacity(0.12) : Color.clear)
@@ -107,6 +118,7 @@ struct AssetSidebarPanel: View {
         let fileName = url.lastPathComponent
         let tags = viewModel.preflightIssueTags(for: fileName)
         let isSelected = selectedAssetURLs.contains(url)
+        let isFocused = focusedAssetURL == url
 
         return VStack(alignment: .leading, spacing: 4) {
             ZStack(alignment: .topTrailing) {
@@ -131,11 +143,18 @@ struct AssetSidebarPanel: View {
         .padding(6)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
+                .fill(
+                    isFocused
+                    ? Color.accentColor.opacity(0.22)
+                    : (isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
+                )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.18), lineWidth: isSelected ? 1.5 : 1)
+                .stroke(
+                    isFocused ? Color.accentColor : (isSelected ? Color.accentColor : Color.secondary.opacity(0.18)),
+                    lineWidth: isFocused ? 2.2 : (isSelected ? 1.5 : 1)
+                )
         )
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .frame(height: cardHeight, alignment: .top)
@@ -288,6 +307,19 @@ struct AssetSidebarPanel: View {
         }
         selectedAssetURLs = [url]
         selectedAssetURL = url
+        focusAsset(url)
+    }
+
+    private func focusAsset(_ url: URL) {
+        focusedAssetURL = url
+        Task {
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            await MainActor.run {
+                if focusedAssetURL == url {
+                    focusedAssetURL = nil
+                }
+            }
+        }
     }
 
     private func selectAllVisibleAssets() {
