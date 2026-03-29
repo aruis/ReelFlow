@@ -26,7 +26,7 @@ struct ContentView: View {
         var title: String {
             switch self {
             case .singleFrame: return "单帧预览"
-            case .videoTimeline: return "视频预览"
+            case .videoTimeline: return "时间轴预览"
             }
         }
     }
@@ -164,12 +164,12 @@ struct ContentView: View {
             .navigationTitle("PhotoTime")
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    if viewModel.hasSelectedImages {
-                        Button("导出 MP4") { viewModel.export() }
-                            .accessibilityIdentifier("primary_export")
+                    if let primary = firstRunPrimaryAction {
+                        Button(primary.title) { primary.handler() }
+                            .accessibilityIdentifier("toolbar_primary_action")
                             .buttonStyle(.borderedProminent)
                             .controlSize(.regular)
-                            .disabled(!viewModel.canRunExport)
+                            .disabled(isToolbarPrimaryActionDisabled(for: primary.title))
                     }
                     if viewModel.isExporting {
                         Button("取消导出") { viewModel.cancelExport() }
@@ -180,19 +180,13 @@ struct ContentView: View {
 
                 ToolbarItem(placement: .automatic) {
                     Menu("更多") {
-                        Button("选择导出路径") { viewModel.chooseOutput() }
-                            .accessibilityIdentifier("primary_select_output")
-                            .disabled(!viewModel.actionAvailability.canSelectOutput)
                         if viewModel.hasSelectedImages {
-                            Button("生成预览") {
-                                if centerPreviewTab == .singleFrame, let selected = selectedAssetForPreview {
-                                    viewModel.generatePreviewForSelectedAsset(selected)
-                                } else {
-                                    viewModel.generatePreview()
-                                }
-                            }
-                                .accessibilityIdentifier("secondary_preview")
-                                .disabled(!viewModel.canRunPreview)
+                            Button("设置位置") { viewModel.chooseOutput() }
+                                .accessibilityIdentifier("toolbar_select_output")
+                                .disabled(!viewModel.actionAvailability.canSelectOutput)
+                            Divider()
+                        }
+                        if viewModel.hasSelectedImages {
                             Button("运行预检") { viewModel.rerunPreflight() }
                                 .accessibilityIdentifier("secondary_rerun_preflight")
                                 .disabled(viewModel.isBusy || viewModel.imageURLs.isEmpty)
@@ -281,7 +275,8 @@ struct ContentView: View {
                         }
 
                         if viewModel.hasSelectedImages {
-                            HStack {
+                            HStack(alignment: .center, spacing: 12) {
+                                contentSummaryHeader
                                 Spacer(minLength: 0)
                                 Picker("", selection: $centerPreviewTab) {
                                     ForEach(CenterPreviewTab.allCases) { tab in
@@ -291,7 +286,6 @@ struct ContentView: View {
                                 .labelsHidden()
                                 .pickerStyle(.segmented)
                                 .frame(maxWidth: 220)
-                                Spacer(minLength: 0)
                             }
 
                             if centerPreviewTab == .singleFrame {
@@ -316,24 +310,23 @@ struct ContentView: View {
 
     private var rightSettingsColumn: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Label("参数设置", systemImage: "slider.horizontal.3")
-                        .font(.headline)
-                    Spacer(minLength: 8)
-                }
-
-                settingsSummaryHeader
-
-                Picker("模式", selection: $settingsTab) {
-                    ForEach(SettingsTab.allCases) { tab in
-                        Text(tab.title).tag(tab)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Spacer(minLength: 0)
+                    Picker("模式", selection: $settingsTab) {
+                        ForEach(SettingsTab.allCases) { tab in
+                            Text(tab.title).tag(tab)
+                        }
                     }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 140)
+                    .disabled(viewModel.isBusy)
+                    Spacer(minLength: 0)
                 }
-                .pickerStyle(.segmented)
-                .disabled(viewModel.isBusy)
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Divider()
@@ -351,50 +344,44 @@ struct ContentView: View {
         )
     }
 
-    private var settingsSummaryHeader: some View {
-        let durationText = String(format: "%.2f", viewModel.previewMaxSecond)
-        return VStack(alignment: .leading, spacing: 6) {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 6) {
-                    summaryChip("预计 \(durationText)s", emphasized: true)
-                    summaryChip("\(viewModel.imageURLs.count) 张图片")
-                    summaryChip("\(viewModel.config.outputWidth)×\(viewModel.config.outputHeight)")
-                    summaryChip("\(viewModel.config.fps) FPS")
-                }
+    @ViewBuilder
+    private var contentSummaryHeader: some View {
+        HStack(spacing: 6) {
+            Text(settingsSummaryText)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 6) {
-                        summaryChip("预计 \(durationText)s", emphasized: true)
-                        summaryChip("\(viewModel.imageURLs.count) 张图片")
-                    }
-                    HStack(spacing: 6) {
-                        summaryChip("\(viewModel.config.outputWidth)×\(viewModel.config.outputHeight)")
-                        summaryChip("\(viewModel.config.fps) FPS")
-                    }
-                }
-            }
-
-            if let settingsAudioSummaryMessage {
-                Text(settingsAudioSummaryMessage)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
+            previewSummaryStatus
         }
-        .padding(.bottom, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func summaryChip(_ title: String, emphasized: Bool = false) -> some View {
-        Text(title)
-            .font(emphasized ? .caption.weight(.semibold) : .caption)
-            .foregroundStyle(emphasized ? .primary : .secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(emphasized ? Color.accentColor.opacity(0.12) : Color.secondary.opacity(0.08))
-            )
+    @ViewBuilder
+    private var previewSummaryStatus: some View {
+        if let errorMessage = viewModel.previewErrorMessage {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.caption2)
+                .foregroundStyle(.red)
+                .help("预览错误: \(errorMessage)")
+        } else if viewModel.isPreviewGenerating {
+            ProgressView()
+                .controlSize(.small)
+                .help("正在生成预览…")
+        } else {
+            Image(systemName: "checkmark.circle")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .help(viewModel.previewStatusMessage)
+        }
     }
+
+    private var settingsSummaryText: String {
+        let durationText = String(format: "%.2f", viewModel.previewMaxSecond)
+        return "\(viewModel.imageURLs.count) 张图片 · 预计 \(durationText)s · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS"
+    }
+
 
     private var settingsAudioSummaryMessage: String? {
         guard viewModel.config.audioEnabled else { return nil }
@@ -562,11 +549,8 @@ struct ContentView: View {
         if viewModel.hasSuccessCard {
             return ("再次导出", { viewModel.export() })
         }
-        if !viewModel.hasSuccessCard {
-            return ("导出 MP4", { viewModel.export() })
-        }
         if !viewModel.hasPreviewFrame {
-            return ("可选：生成预览", {
+            return ("生成预览", {
                 if centerPreviewTab == .singleFrame, let selected = selectedAssetForPreview {
                     viewModel.generatePreviewForSelectedAsset(selected)
                 } else {
@@ -574,7 +558,7 @@ struct ContentView: View {
                 }
             })
         }
-        return nil
+        return ("导出 MP4", { viewModel.export() })
     }
 
     private var firstRunPrimaryActionSubtitle: String? {
@@ -586,28 +570,41 @@ struct ContentView: View {
             return viewModel.outputURL == nil ? "请先选择导出路径" : nil
         case "导入图片":
             return "从本地选择素材，开始生成视频"
-        case "可选：生成预览":
+        case "生成预览":
             return "先确认画面效果，再决定是否导出"
         default:
             return nil
         }
     }
 
+    private func isToolbarPrimaryActionDisabled(for title: String) -> Bool {
+        switch title {
+        case "导出 MP4", "再次导出":
+            return !viewModel.canRunExport
+        case "生成预览":
+            return !viewModel.canRunPreview
+        case "导入图片":
+            return viewModel.isBusy
+        default:
+            return viewModel.isBusy
+        }
+    }
+
     @ViewBuilder
     private var previewOutputBar: some View {
-        if viewModel.hasSelectedImages {
+        if viewModel.hasSelectedImages, previewOutputDirectoryURL != nil {
             HStack(alignment: .center, spacing: 12) {
-                Image(systemName: previewOutputDirectoryURL == nil ? "folder.badge.questionmark" : "folder.fill")
+                Image(systemName: "folder.fill")
                     .font(.subheadline)
-                    .foregroundStyle(previewOutputDirectoryURL == nil ? Color.secondary : Color.accentColor)
+                    .foregroundStyle(Color.accentColor)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(previewOutputDirectoryURL == nil ? "导出位置" : "导出目录")
+                    Text("导出目录")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(previewOutputDirectoryText)
-                        .font(.callout.weight(previewOutputDirectoryURL == nil ? .regular : .semibold))
-                        .foregroundStyle(previewOutputDirectoryURL == nil ? .secondary : .primary)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                         .textSelection(.enabled)
@@ -621,7 +618,7 @@ struct ContentView: View {
 
                 Button("打开文件夹") { viewModel.openLatestOutputDirectory() }
                     .controlSize(.small)
-                    .disabled(previewOutputDirectoryURL == nil)
+                    .disabled(false)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -634,9 +631,7 @@ struct ContentView: View {
     }
 
     private var previewOutputDirectoryText: String {
-        guard let directoryURL = previewOutputDirectoryURL else {
-            return "未设置导出位置"
-        }
+        guard let directoryURL = previewOutputDirectoryURL else { return "" }
         return (directoryURL.path as NSString).abbreviatingWithTildeInPath
     }
 

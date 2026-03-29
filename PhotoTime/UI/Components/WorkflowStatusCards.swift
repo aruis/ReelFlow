@@ -125,7 +125,7 @@ struct WorkflowOverviewPanel: View {
                         .foregroundStyle(Color.accentColor)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("当前流程进度")
+                        Text("下一步")
                             .font(.headline)
                         Text(nextActionHint)
                             .font(.caption)
@@ -141,7 +141,7 @@ struct WorkflowOverviewPanel: View {
 
                 workflowInfoRow(
                     systemImage: "text.alignleft",
-                    title: "当前状态",
+                    title: "当前情况",
                     value: statusMessage,
                     emphasized: true
                 )
@@ -260,7 +260,7 @@ struct FailureStatusCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("导出没有完成")
                             .font(.headline)
-                        Text("建议先执行：\(copy.actionTitle)")
+                        Text("建议先做：\(copy.actionTitle)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -280,7 +280,7 @@ struct FailureStatusCard: View {
                     )
                     failureInfoRow(
                         systemImage: "arrow.trianglehead.turn.up.right.circle.fill",
-                        title: "下一步做什么",
+                        title: "建议操作",
                         value: copy.nextStep
                     )
                 }

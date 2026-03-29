@@ -13,14 +13,6 @@ struct SingleFramePreviewPanel: View {
                     accessibilityIdentifier: "single_frame_preview_surface"
                 )
             }
-        } label: {
-            previewPanelHeader(
-                title: "单帧预览",
-                statusMessage: viewModel.previewStatusMessage,
-                errorMessage: viewModel.previewErrorMessage,
-                isBusy: viewModel.isPreviewGenerating,
-                accessibilityIdentifier: "single_frame_preview_status"
-            )
         }
     }
 }
@@ -135,44 +127,11 @@ struct VideoTimelinePreviewPanel: View {
                     }
                 }
             }
-        } label: {
-            previewPanelHeader(
-                title: "时间轴预览",
-                statusMessage: viewModel.previewStatusMessage,
-                errorMessage: viewModel.previewErrorMessage,
-                isBusy: viewModel.isPreviewGenerating,
-                accessibilityIdentifier: "timeline_preview_status"
-            )
         }
     }
 }
 
 private extension View {
-    @ViewBuilder
-    func previewPanelHeader(
-        title: String,
-        statusMessage: String,
-        errorMessage: String?,
-        isBusy: Bool,
-        accessibilityIdentifier: String
-    ) -> some View {
-        let tooltipText = errorMessage.map { "预览错误: \($0)" } ?? (isBusy ? "正在生成预览…" : statusMessage)
-
-        HStack(spacing: 6) {
-            Text(title)
-            PreviewStatusRow(
-                statusMessage: statusMessage,
-                errorMessage: errorMessage,
-                isBusy: isBusy,
-                accessibilityIdentifier: accessibilityIdentifier
-            )
-            .frame(width: 22, alignment: .leading)
-            Spacer(minLength: 0)
-        }
-        .contentShape(Rectangle())
-        .help(tooltipText)
-    }
-
     func previewSurface(
         image: NSImage?,
         placeholderSystemImage: String,
@@ -200,36 +159,6 @@ private extension View {
                     }
             }
         }
-        .accessibilityIdentifier(accessibilityIdentifier)
-    }
-}
-
-private struct PreviewStatusRow: View {
-    let statusMessage: String
-    let errorMessage: String?
-    let isBusy: Bool
-    let accessibilityIdentifier: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            if let errorMessage {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.red)
-                    .accessibilityLabel("预览错误: \(errorMessage)")
-            } else if isBusy {
-                ProgressView()
-                    .controlSize(.small)
-                    .accessibilityLabel("正在生成预览…")
-            } else {
-                Image(systemName: "checkmark.circle")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel(statusMessage)
-            }
-        }
-        .contentShape(Rectangle())
-        .frame(height: 16, alignment: .leading)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 }

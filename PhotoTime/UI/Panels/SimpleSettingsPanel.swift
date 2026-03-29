@@ -4,9 +4,6 @@ struct SimpleSettingsPanel: View {
     @ObservedObject var viewModel: ExportViewModel
     @Binding var isAudioDropTarget: Bool
     let onAudioDrop: ([NSItemProvider]) -> Bool
-    @State private var isPlateReordering = false
-    @State private var plateSimplePrefixDrafts: [PlateSimpleElementKey: String] = [:]
-    @FocusState private var focusedPlatePrefixKey: PlateSimpleElementKey?
 
     private enum ResolutionChoice: Int, CaseIterable, Identifiable {
         case hd720
@@ -50,6 +47,14 @@ struct SimpleSettingsPanel: View {
             }
         }
 
+        var subtitle: String? {
+            switch self {
+            case .quick: return "约 1.5 秒/张"
+            case .standard: return "约 2.5 秒/张"
+            case .relaxed: return "约 4 秒/张"
+            }
+        }
+
         var seconds: Double {
             switch self {
             case .quick: return 1.5
@@ -71,6 +76,14 @@ struct SimpleSettingsPanel: View {
             case .off: return "关闭"
             case .soft: return "柔和"
             case .standard: return "标准"
+            }
+        }
+
+        var subtitle: String? {
+            switch self {
+            case .off: return "不使用转场"
+            case .soft: return "0.4 秒"
+            case .standard: return "0.8 秒"
             }
         }
 
@@ -101,7 +114,7 @@ struct SimpleSettingsPanel: View {
 
     var body: some View {
         Form {
-            Section("常用参数") {
+            Section("快速设置") {
                 if let settingsValidationMessage {
                     settingsValidationView(settingsValidationMessage)
                 }
@@ -121,40 +134,35 @@ struct SimpleSettingsPanel: View {
                 .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)
 
-                Picker("展示节奏", selection: imageDurationBinding) {
-                    ForEach(DurationChoice.allCases) { choice in
-                        Text(choice.title).tag(choice)
-                    }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("展示节奏")
+                        .font(.subheadline.weight(.medium))
+                    choiceGrid(
+                        DurationChoice.allCases,
+                        selection: imageDurationBinding,
+                        title: \DurationChoice.title,
+                        subtitle: \DurationChoice.subtitle
+                    )
                 }
-                .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)
 
-                Picker("转场", selection: transitionBinding) {
-                    ForEach(TransitionChoice.allCases) { choice in
-                        Text(choice.title).tag(choice)
-                    }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("转场")
+                        .font(.subheadline.weight(.medium))
+                    choiceGrid(
+                        TransitionChoice.allCases,
+                        selection: transitionBinding,
+                        title: \TransitionChoice.title,
+                        subtitle: \TransitionChoice.subtitle
+                    )
                 }
-                .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)
 
                 Toggle("启用 Ken Burns", isOn: $viewModel.config.enableKenBurns)
                     .disabled(viewModel.isBusy)
-
-                Toggle("显示底部铭牌文字", isOn: $viewModel.config.plateEnabled)
-                    .disabled(viewModel.isBusy)
-
-                Picker("信息位置", selection: $viewModel.config.platePlacement) {
-                    Text("相框").tag(PlatePlacement.frame)
-                    Text("黑底下方").tag(PlatePlacement.canvasBottom)
-                }
-                .pickerStyle(.segmented)
-                .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
-
-                plateContentEditor
-                    .disabled(viewModel.isBusy)
             }
 
-            Section("风格") {
+            Section("画面风格") {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("横竖图策略")
                         .font(.subheadline.weight(.medium))
@@ -190,6 +198,30 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
             }
 
+            Section("文字信息") {
+                Toggle("显示底部铭牌文字", isOn: $viewModel.config.plateEnabled)
+                    .disabled(viewModel.isBusy)
+
+                Picker("信息位置", selection: $viewModel.config.platePlacement) {
+                    Text("相框").tag(PlatePlacement.frame)
+                    Text("黑底下方").tag(PlatePlacement.canvasBottom)
+                }
+                .pickerStyle(.segmented)
+                .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
+
+                Picker("字号", selection: plateFontSizeChoiceBinding) {
+                    ForEach(PlateFontSizeChoice.allCases) { choice in
+                        Text(choice.title).tag(choice)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
+
+                Text("前缀、字段排序和模板编辑请切到“高级”模式。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             AudioSettingsSection(
                 viewModel: viewModel,
                 isAudioDropTarget: $isAudioDropTarget,
@@ -203,301 +235,47 @@ struct SimpleSettingsPanel: View {
         viewModel.validationMessage
     }
 
-    private var plateContentEditor: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Picker("铭牌编辑", selection: plateEditorModeBinding) {
-                ForEach(PlateEditorMode.allCases, id: \.self) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-
-            if effectivePlateEditorMode == .simple {
-                Picker("字号", selection: plateFontSizeChoiceBinding) {
-                    ForEach(PlateFontSizeChoice.allCases) { choice in
-                        Text(choice.title).tag(choice)
-                    }
-                }
-                .pickerStyle(.segmented)
-            } else if effectivePlateEditorMode == .custom {
-                customPlateFontSizeControl
-            }
-
-            if effectivePlateEditorMode == .simple {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("显示项目")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Button("恢复默认") {
-                            commitAllPlateSimpleDrafts()
-                            viewModel.config.resetSimplePlateElementsToDefault()
-                            isPlateReordering = false
-                        }
-                        .buttonStyle(.plain)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        Button {
-                            commitAllPlateSimpleDrafts()
-                            isPlateReordering.toggle()
-                        } label: {
-                            Label(isPlateReordering ? "完成" : "排序", systemImage: isPlateReordering ? "checkmark" : "arrow.up.arrow.down")
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule(style: .continuous)
-                                        .fill(Color.white.opacity(isPlateReordering ? 0.08 : 0.04))
-                                )
-                                .overlay(
-                                    Capsule(style: .continuous)
-                                        .strokeBorder(Color.white.opacity(isPlateReordering ? 0.12 : 0.06), lineWidth: 1)
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(isPlateReordering ? .primary : .secondary)
-                    }
-
-                    List {
-                        ForEach(viewModel.config.plateSimpleElements.indices, id: \.self) { index in
-                            let key = viewModel.config.plateSimpleElements[index].key
-                            let isEnabled = viewModel.config.plateSimpleElements[index].enabled
-                            GeometryReader { geometry in
-                                let inputWidth = max(96, geometry.size.width * 0.3)
-
-                                HStack(spacing: 10) {
-                                    Toggle("", isOn: $viewModel.config.plateSimpleElements[index].enabled)
-                                        .labelsHidden()
-                                        .focusable(false)
-
-                                    Text(key.displayName)
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(isEnabled ? .primary : .secondary)
-                                        .frame(width: 44, alignment: .leading)
-
-                                    Spacer(minLength: 0)
-
-                                    TextField(
-                                        "前缀",
-                                        text: prefixDraftBinding(for: $viewModel.config.plateSimpleElements[index]),
-                                        onEditingChanged: { editing in
-                                            if !editing {
-                                                commitPrefixDraft(for: key)
-                                            }
-                                        },
-                                        onCommit: {
-                                            commitPrefixDraft(for: key)
-                                        }
-                                    )
-                                    .textFieldStyle(.plain)
-                                    .font(.system(.caption, design: .monospaced))
-                                    .focused($focusedPlatePrefixKey, equals: key)
-                                    .frame(width: inputWidth, alignment: .leading)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                            .fill(focusedPlatePrefixKey == key ? Color.white.opacity(0.06) : .clear)
-                                    )
-                                    .overlay(
-                                        Rectangle()
-                                            .fill(Color.white.opacity(focusedPlatePrefixKey == key ? 0.34 : (isEnabled ? 0.16 : 0.08)))
-                                            .frame(height: 1),
-                                        alignment: .bottom
-                                    )
-                                    .disabled(isPlateReordering)
-
-                                    if isPlateReordering {
-                                        Image(systemName: "line.3.horizontal")
-                                            .font(.caption)
-                                            .foregroundStyle(.tertiary)
-                                    }
-                                }
-                            }
-                            .frame(height: 22)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(Color.white.opacity(isEnabled ? 0.035 : 0.015))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .strokeBorder(Color.white.opacity(isEnabled ? 0.06 : 0.03), lineWidth: 1)
-                            )
-                            .opacity(isEnabled ? 1 : 0.58)
-                            .animation(.easeInOut(duration: 0.12), value: isEnabled)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                            .listRowBackground(Color.clear)
-                            .moveDisabled(!isPlateReordering)
-                        }
-                        .onMove(perform: moveSimpleElements)
-                    }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .scrollIndicators(.hidden)
-                    .frame(height: plateSimpleListHeight)
-                }
-            } else if effectivePlateEditorMode == .custom {
-                Text("模板（可直接编辑，占位符可用按钮插入）")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                customPlateTemplateEditor
-
-                Text("可用占位符：{camera} {lens} {shutter} {aperture} {iso} {focal} {date}")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-
-                plateTemplatePreview
-
-                HStack(spacing: 6) {
-                    plateTokenButton(title: "快门", token: "{shutter}")
-                    plateTokenButton(title: "光圈", token: "{aperture}")
-                    plateTokenButton(title: "ISO", token: "{iso}")
-                    plateTokenButton(title: "焦距", token: "{focal}")
-                    plateTokenButton(title: "日期", token: "{date}")
-                    plateTokenButton(title: "机型", token: "{camera}")
-                    plateTokenButton(title: "镜头", token: "{lens}")
-                }
-
-                HStack {
-                    Spacer(minLength: 0)
-                    Button("恢复默认") {
-                        viewModel.config.resetPlateTemplateToDefault()
-                    }
-                    Button("清空") {
-                        viewModel.config.plateTemplateText = ""
-                    }
-                }
-            } else {
-                Text("已关闭铭牌文字")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var plateEditorModeBinding: Binding<PlateEditorMode> {
-        Binding(
-            get: {
-                effectivePlateEditorMode
-            },
-            set: { mode in
-                viewModel.config.plateEditorMode = mode
-                viewModel.config.plateEnabled = mode != .none
-                if mode != .simple {
-                    isPlateReordering = false
-                }
-                if mode == .simple, viewModel.config.plateSimpleElements.isEmpty {
-                    viewModel.config.plateSimpleElements = PlateSimpleElement.default
-                }
-            }
-        )
-    }
-
-    private var effectivePlateEditorMode: PlateEditorMode {
-        viewModel.config.plateEnabled ? viewModel.config.plateEditorMode : .none
-    }
-
-    private func plateTokenButton(title: String, token: String) -> some View {
-        Button(title) {
-            viewModel.config.insertPlateToken(token)
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
-    }
-
-    private func prefixDraftBinding(for element: Binding<PlateSimpleElement>) -> Binding<String> {
-        Binding(
-            get: { plateSimplePrefixDrafts[element.wrappedValue.key] ?? element.wrappedValue.prefix },
-            set: { plateSimplePrefixDrafts[element.wrappedValue.key] = $0 }
-        )
-    }
-
     private func settingsValidationView(_ message: String) -> some View {
         Label(message, systemImage: "exclamationmark.triangle.fill")
             .font(.caption)
             .foregroundStyle(.red)
     }
 
-    private var customPlateTemplateEditor: some View {
-        ZStack(alignment: .topLeading) {
-            TextEditor(text: $viewModel.config.plateTemplateText)
-                .font(.system(.caption, design: .monospaced))
-                .frame(minHeight: 88)
-                .padding(8)
-                .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
-
-            if viewModel.config.plateTemplateText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text(PlateSettings.defaultTemplateText)
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(.tertiary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 14)
-                    .allowsHitTesting(false)
+    private func choiceGrid<T: Hashable & Identifiable & CaseIterable>(
+        _ choices: T.AllCases,
+        selection: Binding<T>,
+        title: KeyPath<T, String>,
+        subtitle: KeyPath<T, String?>
+    ) -> some View where T.AllCases: RandomAccessCollection, T.AllCases.Element == T {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+            ForEach(Array(choices)) { choice in
+                let isSelected = selection.wrappedValue == choice
+                Button {
+                    selection.wrappedValue = choice
+                } label: {
+                    VStack(spacing: 4) {
+                        Text(choice[keyPath: title])
+                            .font(.caption.weight(.semibold))
+                        if let subtitle = choice[keyPath: subtitle] {
+                            Text(subtitle)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 48)
+                    .padding(.horizontal, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.secondary.opacity(0.08))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: isSelected ? 1.4 : 1)
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
-    }
-
-    private var plateTemplatePreview: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("示例预览")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(samplePlatePreviewText)
-                .font(.system(.caption, design: .monospaced))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        }
-    }
-
-    private var samplePlatePreviewText: String {
-        sampleExif.resolvedPlateText(template: viewModel.config.plateTemplateText)
-    }
-
-    private var sampleExif: ExifInfo {
-        ExifInfo(
-            shutter: "1/125",
-            aperture: "2.8",
-            iso: "400",
-            focalLength: "35",
-            date: "2026-02-06",
-            camera: "Leica Q3",
-            lens: "Summilux 28"
-        )
-    }
-
-    private func commitPrefixDraft(for key: PlateSimpleElementKey) {
-        guard let draft = plateSimplePrefixDrafts[key] else { return }
-        guard let index = viewModel.config.plateSimpleElements.firstIndex(where: { $0.key == key }) else {
-            plateSimplePrefixDrafts.removeValue(forKey: key)
-            return
-        }
-        viewModel.config.plateSimpleElements[index].prefix = draft
-        plateSimplePrefixDrafts.removeValue(forKey: key)
-    }
-
-    private func commitAllPlateSimpleDrafts() {
-        for key in Array(plateSimplePrefixDrafts.keys) {
-            commitPrefixDraft(for: key)
-        }
-    }
-
-    private func moveSimpleElements(from source: IndexSet, to destination: Int) {
-        commitAllPlateSimpleDrafts()
-        viewModel.config.moveSimplePlateElements(from: source, to: destination)
-    }
-
-    private var plateSimpleListHeight: CGFloat {
-        let rowHeight: CGFloat = 44
-        let verticalSpacing: CGFloat = 4
-        let contentPadding: CGFloat = 4
-        let count = CGFloat(viewModel.config.plateSimpleElements.count)
-        return count * rowHeight + max(0, count - 1) * verticalSpacing + contentPadding
     }
 
     private var plateFontSizeChoiceBinding: Binding<PlateFontSizeChoice> {
@@ -512,43 +290,6 @@ struct SimpleSettingsPanel: View {
                 viewModel.config.plateFontSize = Double(choice.rawValue)
             }
         )
-    }
-
-    private var customPlateFontSizeControl: some View {
-        LabeledContent("字号") {
-            HStack(spacing: 4) {
-                HStack(spacing: 4) {
-                    TextField(
-                        "",
-                        value: $viewModel.config.plateFontSize,
-                        format: .number.precision(.fractionLength(0...1))
-                    )
-                    .textFieldStyle(.plain)
-                    .multilineTextAlignment(.trailing)
-                    .frame(width: 44)
-
-                    Text("点")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 10, alignment: .leading)
-                }
-                .frame(width: 78, height: 28)
-                .padding(.horizontal, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.secondary.opacity(0.08))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
-                )
-
-                Stepper("", value: $viewModel.config.plateFontSize, in: RenderEditorConfig.plateFontSizeRange, step: 0.5)
-                    .labelsHidden()
-                    .controlSize(.small)
-            }
-            .frame(minHeight: 28)
-        }
     }
 
     private var resolutionBinding: Binding<ResolutionChoice> {
@@ -577,7 +318,7 @@ struct SimpleSettingsPanel: View {
                 return DurationChoice.allCases.min(by: { abs($0.seconds - value) < abs($1.seconds - value) }) ?? .standard
             },
             set: { choice in
-                viewModel.config.imageDuration = choice.seconds
+                viewModel.config.setImageDurationSafely(choice.seconds)
             }
         )
     }
@@ -595,11 +336,11 @@ struct SimpleSettingsPanel: View {
             set: { choice in
                 if choice == .off {
                     viewModel.config.enableCrossfade = false
-                    viewModel.config.transitionDuration = 0
+                    viewModel.config.setTransitionDurationSafely(0)
                     return
                 }
                 viewModel.config.enableCrossfade = true
-                viewModel.config.transitionDuration = choice.transitionDuration
+                viewModel.config.setTransitionDurationSafely(choice.transitionDuration)
             }
         )
     }

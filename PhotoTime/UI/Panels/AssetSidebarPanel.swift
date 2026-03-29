@@ -3,6 +3,13 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AssetSidebarPanel: View {
+    private struct SidebarGridLayout {
+        let columns: [GridItem]
+        let cardHeight: CGFloat
+        let thumbnailHeight: CGFloat
+        let fileNameLineLimit: Int
+    }
+
     @ObservedObject var viewModel: ExportViewModel
     @Binding var selectedAssetURL: URL?
     @Binding var selectedAssetURLs: Set<URL>
@@ -10,8 +17,10 @@ struct AssetSidebarPanel: View {
     @Binding var draggingAssetURL: URL?
     @State private var localKeyMonitor: Any?
     @State private var focusedAssetURL: URL?
-    private let thumbnailHeight: CGFloat = 72
-    private let cardHeight: CGFloat = 104
+    private let sidebarGridSpacing: CGFloat = 10
+    private let sidebarGridPadding: CGFloat = 12
+    private let singleColumnMinimumWidth: CGFloat = 210
+    private let twoColumnMinimumWidth: CGFloat = 150
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -19,17 +28,26 @@ struct AssetSidebarPanel: View {
                 if viewModel.imageURLs.isEmpty {
                     emptyAssetDropView
                 } else {
-                    ScrollView {
-                        LazyVGrid(
-                            columns: [GridItem(.adaptive(minimum: 88, maximum: 128), spacing: 10)],
-                            spacing: 10
-                        ) {
-                            ForEach(sidebarFilteredAssets, id: \.self) { url in
-                                assetThumbnailItem(url: url)
-                                    .id(url)
+                    GeometryReader { geometry in
+                        let layout = sidebarGridLayout(for: geometry.size.width)
+
+                        ScrollView {
+                            LazyVGrid(
+                                columns: layout.columns,
+                                spacing: sidebarGridSpacing
+                            ) {
+                                ForEach(sidebarFilteredAssets, id: \.self) { url in
+                                    assetThumbnailItem(
+                                        url: url,
+                                        cardHeight: layout.cardHeight,
+                                        thumbnailHeight: layout.thumbnailHeight,
+                                        fileNameLineLimit: layout.fileNameLineLimit
+                                    )
+                                        .id(url)
+                                }
                             }
+                            .padding(sidebarGridPadding)
                         }
-                        .padding(12)
                     }
                 }
             }
@@ -74,29 +92,45 @@ struct AssetSidebarPanel: View {
     }
 
     private var assetBottomBar: some View {
+        ViewThatFits(in: .horizontal) {
+            assetBottomBarRegular
+            assetBottomBarCompact
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.bar)
+    }
+
+    private var assetBottomBarRegular: some View {
         HStack(spacing: 8) {
             if !viewModel.imageURLs.isEmpty {
-                filterToggleButtons
+                filterToggleButtons(compact: false)
             }
 
             Spacer(minLength: 0)
 
-            Text("\(viewModel.imageURLs.count) 张")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            assetSummaryLabels(showProblemCount: true)
 
-            if !selectedAssetURLs.isEmpty {
-                Text("· 已选 \(selectedAssetURLs.count)")
-                    .font(.caption2)
-                    .foregroundStyle(Color.accentColor)
+            addImagesButton
+        }
+    }
+
+    private var assetBottomBarCompact: some View {
+        HStack(spacing: 6) {
+            if !viewModel.imageURLs.isEmpty {
+                filterToggleButtons(compact: true)
             }
 
-            if viewModel.problematicAssetNameSet.count > 0 {
-                Text("· \(viewModel.problematicAssetNameSet.count) 个问题")
-                    .font(.caption2)
-                    .foregroundStyle(.orange)
-            }
+            Spacer(minLength: 0)
 
+            assetSummaryLabels(showProblemCount: false)
+
+            addImagesButton
+        }
+    }
+
+    private var addImagesButton: some View {
+        Group {
             if !viewModel.imageURLs.isEmpty {
                 Button {
                     viewModel.addImages()
@@ -109,12 +143,38 @@ struct AssetSidebarPanel: View {
                 .controlSize(.small)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.bar)
     }
 
-    private func assetThumbnailItem(url: URL) -> some View {
+    private func assetSummaryLabels(showProblemCount: Bool) -> some View {
+        HStack(spacing: 4) {
+            Text(assetSelectionSummaryText)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            if showProblemCount, viewModel.problematicAssetNameSet.count > 0 {
+                Text("\(viewModel.problematicAssetNameSet.count) 问题")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            }
+        }
+        .lineLimit(1)
+    }
+
+    private var assetSelectionSummaryText: String {
+        let totalCount = viewModel.imageURLs.count
+        let selectedCount = selectedAssetURLs.count
+        guard selectedCount > 0 else {
+            return "\(totalCount)"
+        }
+        return "\(selectedCount)/\(totalCount)"
+    }
+
+    private func assetThumbnailItem(
+        url: URL,
+        cardHeight: CGFloat,
+        thumbnailHeight: CGFloat,
+        fileNameLineLimit: Int
+    ) -> some View {
         let fileName = url.lastPathComponent
         let tags = viewModel.preflightIssueTags(for: fileName)
         let isSelected = selectedAssetURLs.contains(url)
@@ -137,7 +197,7 @@ struct AssetSidebarPanel: View {
 
             Text(fileName)
                 .font(.caption2)
-                .lineLimit(1)
+                .lineLimit(fileNameLineLimit)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(6)
@@ -239,6 +299,28 @@ struct AssetSidebarPanel: View {
         viewModel.fileListFilter == .all && selectedAssetURLs.count <= 1
     }
 
+    private func sidebarGridLayout(for availableWidth: CGFloat) -> SidebarGridLayout {
+        let contentWidth = max(availableWidth - sidebarGridPadding * 2, 0)
+        let twoColumnThreshold = twoColumnMinimumWidth * 2 + sidebarGridSpacing
+        let usesTwoColumns = contentWidth >= twoColumnThreshold
+        let columnCount = usesTwoColumns ? 2 : 1
+        let totalSpacing = sidebarGridSpacing * CGFloat(max(0, columnCount - 1))
+        let itemWidth = max(
+            usesTwoColumns ? twoColumnMinimumWidth : singleColumnMinimumWidth,
+            (contentWidth - totalSpacing) / CGFloat(columnCount)
+        )
+
+        return SidebarGridLayout(
+            columns: Array(
+                repeating: GridItem(.fixed(itemWidth), spacing: sidebarGridSpacing),
+                count: columnCount
+            ),
+            cardHeight: usesTwoColumns ? 104 : 132,
+            thumbnailHeight: usesTwoColumns ? 72 : 94,
+            fileNameLineLimit: usesTwoColumns ? 1 : 2
+        )
+    }
+
     private func assetTagLine(fileName: String, issueTags: [String]) -> String {
         var tags = issueTags
         if viewModel.failedAssetNames.contains(fileName) {
@@ -250,43 +332,63 @@ struct AssetSidebarPanel: View {
         return tags.joined(separator: " · ")
     }
 
-    private var filterToggleButtons: some View {
+    private func filterToggleButtons(compact: Bool) -> some View {
         HStack(spacing: 4) {
             filterButton(
+                title: "全部",
                 icon: "line.3.horizontal.decrease.circle",
                 help: "显示全部素材",
-                filter: .all
+                filter: .all,
+                compact: compact
             )
             filterButton(
+                title: "问题",
                 icon: "exclamationmark.triangle",
                 help: "仅显示问题素材",
-                filter: .problematic
+                filter: .problematic,
+                compact: compact
             )
             filterButton(
+                title: "必修",
                 icon: "xmark.octagon",
                 help: "仅显示必须修复",
-                filter: .mustFix
+                filter: .mustFix,
+                compact: compact
             )
             filterButton(
+                title: "正常",
                 icon: "checkmark.circle",
                 help: "仅显示正常素材",
-                filter: .normal
+                filter: .normal,
+                compact: compact
             )
         }
     }
 
     private func filterButton(
+        title: String,
         icon: String,
         help: String,
-        filter: ExportViewModel.FileListFilter
+        filter: ExportViewModel.FileListFilter,
+        compact: Bool
     ) -> some View {
         let isActive = viewModel.fileListFilter == filter
         return Button {
             viewModel.fileListFilter = filter
         } label: {
-            Image(systemName: icon)
-                .font(.caption)
-                .frame(width: 20, height: 20)
+            Group {
+                if compact {
+                    Image(systemName: icon)
+                        .font(.caption)
+                        .frame(width: 18, height: 18)
+                } else {
+                    Label(title, systemImage: icon)
+                        .font(.caption)
+                        .lineLimit(1)
+                        .padding(.horizontal, 6)
+                        .frame(minHeight: 20)
+                }
+            }
         }
         .buttonStyle(.bordered)
         .controlSize(.small)

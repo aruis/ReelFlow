@@ -23,7 +23,7 @@ struct PreflightPanel: View {
                 compactActionsRow
                 compactIssuePreview
 
-                DisclosureGroup("查看全部问题与筛选", isExpanded: $preflightSecondaryActionsExpanded) {
+                DisclosureGroup("更多筛选与处理", isExpanded: $preflightSecondaryActionsExpanded) {
                     VStack(alignment: .leading, spacing: 10) {
                         preflightFilterRow
                         issueListSection
@@ -93,15 +93,6 @@ struct PreflightPanel: View {
             }
             .controlSize(.small)
             .disabled(viewModel.isBusy)
-
-            if viewModel.hasBlockingPreflightIssues {
-                Button("跳过问题素材并导出") {
-                    viewModel.exportSkippingPreflightIssues()
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .disabled(viewModel.isBusy)
-            }
 
             Spacer(minLength: 0)
 
@@ -191,6 +182,14 @@ struct PreflightPanel: View {
                     expandedPreflightIssueKeys.subtract(allDisplayIssues.map(\.ignoreKey))
                 }
                 .disabled(allDisplayIssues.isEmpty)
+
+                if viewModel.hasBlockingPreflightIssues {
+                    Button("跳过问题素材并导出") {
+                        viewModel.exportSkippingPreflightIssues()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(viewModel.isBusy)
+                }
             }
             .controlSize(.small)
 
@@ -326,22 +325,22 @@ struct PreflightPanel: View {
 
     private var preflightHeaderTitle: String {
         if viewModel.hasBlockingPreflightIssues {
-            return "发现需要先处理的问题"
+            return "先处理这些问题再导出"
         }
         if allDisplayIssues.isEmpty {
-            return "当前没有待处理问题"
+            return "目前没有需要处理的问题"
         }
-        return "预检已发现可继续关注的项目"
+        return "有一些建议先看一下"
     }
 
     private var preflightHeaderSubtitle: String {
         if viewModel.hasBlockingPreflightIssues {
-            return "建议先定位并处理必须修复项，再继续导出。"
+            return "先定位必须修复项，处理后再继续。"
         }
         if allDisplayIssues.isEmpty {
-            return "当前筛选下没有导出风险，可以继续后续操作。"
+            return "当前筛选下没有明显风险，可以继续下一步。"
         }
-        return "当前可以继续导出，但建议先查看这些提示项。"
+        return "可以继续，但先看一下这些提示会更稳妥。"
     }
 
     private func accessibilityToken(for value: String) -> String {
