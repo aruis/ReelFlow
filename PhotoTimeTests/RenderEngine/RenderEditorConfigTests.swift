@@ -59,6 +59,7 @@ struct RenderEditorConfigTests {
         config.imageDuration = 2.5
         config.transitionDuration = 0.5
         config.enableCrossfade = false
+        config.transitionDipDuration = 0.23
         config.orientationStrategy = .forcePortrait
         config.frameStylePreset = .custom
         config.canvasBackgroundGray = 0.2
@@ -74,6 +75,7 @@ struct RenderEditorConfigTests {
         config.plateBaselineOffset = 12
         config.plateFontSize = 22
         config.enableKenBurns = false
+        config.kenBurnsIntensity = .large
         config.prefetchRadius = 3
         config.prefetchMaxConcurrent = 4
         config.audioEnabled = true
@@ -89,6 +91,7 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.imageDuration == config.imageDuration)
         #expect(rebuilt.transitionDuration == config.transitionDuration)
         #expect(rebuilt.enableCrossfade == config.enableCrossfade)
+        #expect(rebuilt.transitionDipDuration == config.transitionDipDuration)
         #expect(rebuilt.orientationStrategy == config.orientationStrategy)
         #expect(rebuilt.frameStylePreset == config.frameStylePreset)
         #expect(rebuilt.canvasBackgroundGray == config.canvasBackgroundGray)
@@ -104,6 +107,7 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.plateBaselineOffset == config.plateBaselineOffset)
         #expect(rebuilt.plateFontSize == config.plateFontSize)
         #expect(rebuilt.enableKenBurns == config.enableKenBurns)
+        #expect(rebuilt.kenBurnsIntensity == config.kenBurnsIntensity)
         #expect(rebuilt.prefetchRadius == config.prefetchRadius)
         #expect(rebuilt.prefetchMaxConcurrent == config.prefetchMaxConcurrent)
         #expect(rebuilt.audioEnabled == config.audioEnabled)

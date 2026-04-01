@@ -8,6 +8,22 @@ struct AdvancedSettingsPanel: View {
     @State private var plateSimplePrefixDrafts: [PlateSimpleElementKey: String] = [:]
     @FocusState private var focusedPlatePrefixKey: PlateSimpleElementKey?
 
+    private enum KenBurnsChoice: String, CaseIterable, Identifiable {
+        case off
+        case subtle
+        case standard
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .off: return "关闭"
+            case .subtle: return "轻微"
+            case .standard: return "标准"
+            }
+        }
+    }
+
     private enum ResolutionPreset: Int, CaseIterable, Identifiable {
         case hd720
         case fullHD1080
@@ -113,8 +129,20 @@ struct AdvancedSettingsPanel: View {
                             .foregroundStyle(.red)
                     }
                 }
-                Toggle("启用 Ken Burns", isOn: $viewModel.config.enableKenBurns)
-                    .disabled(viewModel.isBusy)
+                if viewModel.config.enableCrossfade && viewModel.config.transitionDuration > 0.001 {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("背景空窗时长: \(viewModel.config.transitionDipDuration, specifier: "%.2f")s")
+                        Slider(value: transitionDipDurationBinding, in: RenderEditorConfig.transitionDipDurationRange, step: 0.01)
+                            .disabled(viewModel.isBusy)
+                    }
+                }
+                Picker("Ken Burns", selection: kenBurnsChoiceBinding) {
+                    ForEach(KenBurnsChoice.allCases) { choice in
+                        Text(choice.title).tag(choice)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .disabled(viewModel.isBusy)
             }
 
             Section("高级布局") {
@@ -201,6 +229,37 @@ struct AdvancedSettingsPanel: View {
         Binding(
             get: { viewModel.config.transitionDuration },
             set: { viewModel.config.setTransitionDurationSafely($0) }
+        )
+    }
+
+    private var transitionDipDurationBinding: Binding<Double> {
+        Binding(
+            get: { viewModel.config.transitionDipDuration },
+            set: { viewModel.config.transitionDipDuration = min(max($0, RenderEditorConfig.transitionDipDurationRange.lowerBound), RenderEditorConfig.transitionDipDurationRange.upperBound) }
+        )
+    }
+
+    private var kenBurnsChoiceBinding: Binding<KenBurnsChoice> {
+        Binding(
+            get: {
+                guard viewModel.config.enableKenBurns else { return .off }
+                switch viewModel.config.kenBurnsIntensity {
+                case .small: return .subtle
+                case .medium, .large: return .standard
+                }
+            },
+            set: { choice in
+                switch choice {
+                case .off:
+                    viewModel.config.enableKenBurns = false
+                case .subtle:
+                    viewModel.config.enableKenBurns = true
+                    viewModel.config.kenBurnsIntensity = .small
+                case .standard:
+                    viewModel.config.enableKenBurns = true
+                    viewModel.config.kenBurnsIntensity = .medium
+                }
+            }
         )
     }
 

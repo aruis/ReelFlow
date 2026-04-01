@@ -55,14 +55,16 @@ extension ExportViewModel {
             "image_count=\(imageURLs.count)",
             "output_path=\(outputURL?.path ?? "(none)")",
             String(
-                format: "render output=%dx%d fps=%d imageDuration=%.2f transition=%.2f(%@) kenBurns=%@",
+                format: "render output=%dx%d fps=%d imageDuration=%.2f transition=%.2f(%@ gap=%.2fs) kenBurns=%@(%@)",
                 Int(settings.outputSize.width),
                 Int(settings.outputSize.height),
                 Int(settings.fps),
                 settings.imageDuration,
                 settings.transitionDuration,
                 settings.transitionEnabled ? settings.transitionStyle.rawValue : "off",
-                settings.enableKenBurns ? "on" : "off"
+                settings.transitionDipDuration,
+                settings.enableKenBurns ? "on" : "off",
+                settings.kenBurnsIntensity.rawValue
             ),
             String(
                 format: "layout h=%.1f top=%.1f bottom=%.1f inner=%.1f",

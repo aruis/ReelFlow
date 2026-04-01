@@ -86,14 +86,16 @@ final class RenderEngine {
         }
         await logger.log(
             String(
-                format: "settings output=%dx%d fps=%d imageDuration=%.2fs transition=%.2fs(%@) kenBurns=%@ prefetchRadius=%d prefetchMaxConcurrent=%d",
+                format: "settings output=%dx%d fps=%d imageDuration=%.2fs transition=%.2fs(%@ gap=%.2fs) kenBurns=%@(%@) prefetchRadius=%d prefetchMaxConcurrent=%d",
                 Int(settings.outputSize.width),
                 Int(settings.outputSize.height),
                 Int(settings.fps),
                 settings.imageDuration,
                 settings.transitionDuration,
                 settings.transitionEnabled ? settings.transitionStyle.rawValue : "off",
+                settings.transitionDipDuration,
                 settings.enableKenBurns ? "on" : "off",
+                settings.kenBurnsIntensity.rawValue,
                 settings.prefetchRadius,
                 settings.prefetchMaxConcurrent
             )
@@ -122,7 +124,8 @@ final class RenderEngine {
         let timeline = TimelineEngine(
             itemCount: imageURLs.count,
             imageDuration: settings.imageDuration,
-            transitionDuration: settings.effectiveTransitionDuration
+            transitionDuration: settings.effectiveTransitionDuration,
+            transitionDipDuration: settings.transitionDipDuration
         )
         await logger.log("timeline total duration: \(timeline.totalDuration)s")
 
@@ -205,7 +208,8 @@ final class RenderEngine {
         let timeline = TimelineEngine(
             itemCount: imageURLs.count,
             imageDuration: settings.imageDuration,
-            transitionDuration: settings.effectiveTransitionDuration
+            transitionDuration: settings.effectiveTransitionDuration,
+            transitionDipDuration: settings.transitionDipDuration
         )
         let composer = FrameComposer(settings: settings)
 

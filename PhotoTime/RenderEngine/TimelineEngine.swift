@@ -20,16 +20,23 @@ struct TimelineClip {
 struct TimelineEngine {
     let clips: [TimelineClip]
     let transitionDuration: TimeInterval
+    let transitionDipDuration: TimeInterval
     let totalDuration: TimeInterval
 
-    nonisolated init(itemCount: Int, imageDuration: TimeInterval, transitionDuration: TimeInterval) {
+    nonisolated init(
+        itemCount: Int,
+        imageDuration: TimeInterval,
+        transitionDuration: TimeInterval,
+        transitionDipDuration: TimeInterval = 0.18
+    ) {
         precondition(itemCount > 0, "Timeline requires at least one item")
         precondition(imageDuration > 0)
         precondition(transitionDuration >= 0 && transitionDuration < imageDuration)
 
         self.transitionDuration = transitionDuration
+        self.transitionDipDuration = max(0, transitionDipDuration)
 
-        let stride = imageDuration - transitionDuration
+        let stride = imageDuration + self.transitionDipDuration
         var built: [TimelineClip] = []
         built.reserveCapacity(itemCount)
 
@@ -44,16 +51,19 @@ struct TimelineEngine {
 
     nonisolated func snapshot(at time: TimeInterval) -> TimelineSnapshot {
         let lastClip = clips.count - 1
+        let halfFadeDuration = transitionDuration / 2
         let active = clips.compactMap { clip -> TimelineLayer? in
             guard time >= clip.start, time < clip.end else { return nil }
 
             var opacity = 1.0
-            if transitionDuration > 0 {
-                if clip.index > 0, time < clip.start + transitionDuration {
-                    opacity = min(opacity, (time - clip.start) / transitionDuration)
+            if halfFadeDuration > 0 {
+                if clip.index > 0, time < clip.start + halfFadeDuration {
+                    let phase = (time - clip.start) / halfFadeDuration
+                    opacity = min(opacity, min(max(phase, 0), 1))
                 }
-                if clip.index < lastClip, time > clip.end - transitionDuration {
-                    opacity = min(opacity, (clip.end - time) / transitionDuration)
+                if clip.index < lastClip, time > clip.end - halfFadeDuration {
+                    let phase = (time - (clip.end - halfFadeDuration)) / halfFadeDuration
+                    opacity = min(opacity, min(max(1 - phase, 0), 1))
                 }
             }
 

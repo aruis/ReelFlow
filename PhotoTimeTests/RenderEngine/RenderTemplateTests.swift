@@ -14,8 +14,10 @@ struct RenderTemplateTests {
             transitionDuration: 0.5,
             transitionEnabled: false,
             transitionStyle: .crossfade,
+            transitionDipDuration: 0.24,
             orientationStrategy: .forceLandscape,
             enableKenBurns: true,
+            kenBurnsIntensity: .large,
             prefetchRadius: 2,
             prefetchMaxConcurrent: 3,
             layout: LayoutSettings(horizontalMargin: 160, topMargin: 60, bottomMargin: 84, innerPadding: 20),
@@ -42,8 +44,10 @@ struct RenderTemplateTests {
         #expect(rebuilt.transitionEnabled == false)
         #expect(rebuilt.effectiveTransitionDuration == 0)
         #expect(rebuilt.transitionStyle == .crossfade)
+        #expect(rebuilt.transitionDipDuration == 0.24)
         #expect(rebuilt.orientationStrategy == .forceLandscape)
         #expect(rebuilt.enableKenBurns)
+        #expect(rebuilt.kenBurnsIntensity == .large)
         #expect(rebuilt.prefetchRadius == 2)
         #expect(rebuilt.prefetchMaxConcurrent == 3)
         #expect(rebuilt.layout.horizontalMargin == 160)
@@ -96,7 +100,9 @@ struct RenderTemplateTests {
         #expect(settings.prefetchMaxConcurrent == 1)
         #expect(settings.transitionStyle == .crossfade)
         #expect(settings.transitionEnabled == true)
+        #expect(settings.transitionDipDuration == 0.18)
         #expect(settings.orientationStrategy == .followAsset)
+        #expect(settings.kenBurnsIntensity == .medium)
         #expect(settings.layout.horizontalMargin == LayoutSettings.default.horizontalMargin)
         #expect(settings.layout.topMargin == LayoutSettings.default.topMargin)
         #expect(settings.layout.bottomMargin == LayoutSettings.default.bottomMargin)
@@ -146,6 +152,8 @@ struct RenderTemplateTests {
         #expect(settings.transitionEnabled == true)
         #expect(settings.effectiveTransitionDuration == settings.transitionDuration)
         #expect(settings.orientationStrategy == .followAsset)
+        #expect(settings.transitionDipDuration == 0.18)
+        #expect(settings.kenBurnsIntensity == .medium)
         #expect(settings.audioTrack == nil)
     }
 
@@ -158,7 +166,9 @@ struct RenderTemplateTests {
             transitionDuration: 0.6,
             transitionEnabled: true,
             transitionStyle: .crossfade,
+            transitionDipDuration: 0.12,
             enableKenBurns: true,
+            kenBurnsIntensity: .small,
             prefetchRadius: 1,
             prefetchMaxConcurrent: 2,
             layout: .default,

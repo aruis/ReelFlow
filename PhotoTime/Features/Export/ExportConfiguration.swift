@@ -187,8 +187,10 @@ struct RenderEditorConfig: Sendable {
     var imageDuration: Double = 3.0
     var transitionDuration: Double = 0.6
     var enableCrossfade: Bool = true
+    var transitionDipDuration: Double = 0.18
     var orientationStrategy: PhotoOrientationStrategy = .followAsset
     var enableKenBurns: Bool = false
+    var kenBurnsIntensity: KenBurnsIntensity = .medium
     var frameStylePreset: FrameStylePreset = .classic
     var canvasBackgroundGray: Double = CanvasSettings.default.backgroundGray
     var canvasPaperWhite: Double = CanvasSettings.default.paperWhite
@@ -218,6 +220,7 @@ struct RenderEditorConfig: Sendable {
     static let fpsRange = 1...60
     static let imageDurationRange = 0.2...10.0
     static let transitionDurationRange = 0.0...2.0
+    static let transitionDipDurationRange = 0.0...1.0
     static let grayRange = 0.0...1.0
     static let horizontalMarginRange = 0.0...360.0
     static let topMarginRange = 0.0...220.0
@@ -244,8 +247,10 @@ struct RenderEditorConfig: Sendable {
         imageDuration = settings.imageDuration
         transitionDuration = settings.transitionDuration
         enableCrossfade = settings.transitionEnabled
+        transitionDipDuration = settings.transitionDipDuration
         orientationStrategy = settings.orientationStrategy
         enableKenBurns = settings.enableKenBurns
+        kenBurnsIntensity = settings.kenBurnsIntensity
         frameStylePreset = FrameStylePreset.infer(from: settings.canvas)
         canvasBackgroundGray = settings.canvas.backgroundGray
         canvasPaperWhite = settings.canvas.paperWhite
@@ -281,6 +286,7 @@ struct RenderEditorConfig: Sendable {
         if transitionDuration >= imageDuration {
             transitionDuration = max(0, imageDuration - Self.minimumTransitionGap)
         }
+        transitionDipDuration = min(max(transitionDipDuration, Self.transitionDipDurationRange.lowerBound), Self.transitionDipDurationRange.upperBound)
         canvasBackgroundGray = min(max(canvasBackgroundGray, Self.grayRange.lowerBound), Self.grayRange.upperBound)
         canvasPaperWhite = min(max(canvasPaperWhite, Self.grayRange.lowerBound), Self.grayRange.upperBound)
         canvasStrokeGray = min(max(canvasStrokeGray, Self.grayRange.lowerBound), Self.grayRange.upperBound)
@@ -309,6 +315,7 @@ struct RenderEditorConfig: Sendable {
         if transitionDuration >= imageDuration {
             transitionDuration = max(0, imageDuration - Self.minimumTransitionGap)
         }
+        transitionDipDuration = min(max(transitionDipDuration, Self.transitionDipDurationRange.lowerBound), Self.transitionDipDurationRange.upperBound)
     }
 
     mutating func setTransitionDurationSafely(_ newValue: Double) {
@@ -316,6 +323,7 @@ struct RenderEditorConfig: Sendable {
         if transitionDuration >= imageDuration {
             transitionDuration = max(0, imageDuration - Self.minimumTransitionGap)
         }
+        transitionDipDuration = min(max(transitionDipDuration, Self.transitionDipDurationRange.lowerBound), Self.transitionDipDurationRange.upperBound)
     }
 
     var invalidMessage: String? {
@@ -344,8 +352,10 @@ struct RenderEditorConfig: Sendable {
             imageDuration: imageDuration,
             transitionDuration: transitionDuration,
             transitionEnabled: enableCrossfade,
+            transitionDipDuration: transitionDipDuration,
             orientationStrategy: orientationStrategy,
             enableKenBurns: enableKenBurns,
+            kenBurnsIntensity: kenBurnsIntensity,
             prefetchRadius: prefetchRadius,
             prefetchMaxConcurrent: prefetchMaxConcurrent,
             layout: LayoutSettings(

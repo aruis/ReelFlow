@@ -96,6 +96,62 @@ struct SimpleSettingsPanel: View {
         }
     }
 
+    private enum TransitionGapChoice: String, CaseIterable, Identifiable {
+        case none
+        case short
+        case medium
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .none: return "无"
+            case .short: return "短"
+            case .medium: return "中"
+            }
+        }
+
+        var subtitle: String? {
+            switch self {
+            case .none: return "无空窗"
+            case .short: return "0.18 秒"
+            case .medium: return "0.36 秒"
+            }
+        }
+
+        var duration: Double {
+            switch self {
+            case .none: return 0
+            case .short: return 0.18
+            case .medium: return 0.36
+            }
+        }
+    }
+
+    private enum KenBurnsChoice: String, CaseIterable, Identifiable {
+        case off
+        case subtle
+        case standard
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .off: return "关闭"
+            case .subtle: return "轻微"
+            case .standard: return "标准"
+            }
+        }
+
+        var subtitle: String? {
+            switch self {
+            case .off: return "无动效"
+            case .subtle: return "更克制"
+            case .standard: return "标准幅度"
+            }
+        }
+    }
+
     private enum PlateFontSizeChoice: Int, CaseIterable, Identifiable {
         case small = 22
         case medium = 26
@@ -158,8 +214,31 @@ struct SimpleSettingsPanel: View {
                 }
                 .disabled(viewModel.isBusy)
 
-                Toggle("启用 Ken Burns", isOn: $viewModel.config.enableKenBurns)
-                    .disabled(viewModel.isBusy)
+                if viewModel.config.enableCrossfade {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("背景空窗")
+                            .font(.subheadline.weight(.medium))
+                        choiceGrid(
+                            TransitionGapChoice.allCases,
+                            selection: transitionGapBinding,
+                            title: \TransitionGapChoice.title,
+                            subtitle: \TransitionGapChoice.subtitle
+                        )
+                        .disabled(viewModel.isBusy)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Ken Burns")
+                        .font(.subheadline.weight(.medium))
+                    choiceGrid(
+                        KenBurnsChoice.allCases,
+                        selection: kenBurnsBinding,
+                        title: \KenBurnsChoice.title,
+                        subtitle: \KenBurnsChoice.subtitle
+                    )
+                }
+                .disabled(viewModel.isBusy)
             }
 
             Section("画面风格") {
@@ -341,6 +420,44 @@ struct SimpleSettingsPanel: View {
                 }
                 viewModel.config.enableCrossfade = true
                 viewModel.config.setTransitionDurationSafely(choice.transitionDuration)
+            }
+        )
+    }
+
+    private var transitionGapBinding: Binding<TransitionGapChoice> {
+        Binding(
+            get: {
+                let value = viewModel.config.transitionDipDuration
+                return TransitionGapChoice.allCases.min(by: {
+                    abs($0.duration - value) < abs($1.duration - value)
+                }) ?? .short
+            },
+            set: { choice in
+                viewModel.config.transitionDipDuration = choice.duration
+            }
+        )
+    }
+
+    private var kenBurnsBinding: Binding<KenBurnsChoice> {
+        Binding(
+            get: {
+                guard viewModel.config.enableKenBurns else { return .off }
+                switch viewModel.config.kenBurnsIntensity {
+                case .small: return .subtle
+                case .medium, .large: return .standard
+                }
+            },
+            set: { choice in
+                switch choice {
+                case .off:
+                    viewModel.config.enableKenBurns = false
+                case .subtle:
+                    viewModel.config.enableKenBurns = true
+                    viewModel.config.kenBurnsIntensity = .small
+                case .standard:
+                    viewModel.config.enableKenBurns = true
+                    viewModel.config.kenBurnsIntensity = .medium
+                }
             }
         )
     }

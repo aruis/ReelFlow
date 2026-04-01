@@ -17,6 +17,34 @@ enum PlatePlacement: String, Codable, Sendable {
     case canvasBottom
 }
 
+enum KenBurnsIntensity: String, Codable, CaseIterable, Sendable {
+    case small
+    case medium
+    case large
+
+    var displayName: String {
+        switch self {
+        case .small:
+            return "小"
+        case .medium:
+            return "中"
+        case .large:
+            return "大"
+        }
+    }
+
+    nonisolated var motionScale: CGFloat {
+        switch self {
+        case .small:
+            return 0.7
+        case .medium:
+            return 1.0
+        case .large:
+            return 1.3
+        }
+    }
+}
+
 struct LayoutSettings: Codable, Sendable {
     let horizontalMargin: Double
     let topMargin: Double
@@ -100,8 +128,10 @@ struct RenderSettings {
     let transitionDuration: TimeInterval
     let transitionEnabled: Bool
     let transitionStyle: TransitionStyle
+    let transitionDipDuration: TimeInterval
     let orientationStrategy: PhotoOrientationStrategy
     let enableKenBurns: Bool
+    let kenBurnsIntensity: KenBurnsIntensity
     let prefetchRadius: Int
     let prefetchMaxConcurrent: Int
     let layout: LayoutSettings
@@ -116,8 +146,10 @@ struct RenderSettings {
         transitionDuration: TimeInterval,
         transitionEnabled: Bool = true,
         transitionStyle: TransitionStyle = .crossfade,
+        transitionDipDuration: TimeInterval = 0.18,
         orientationStrategy: PhotoOrientationStrategy = .followAsset,
         enableKenBurns: Bool,
+        kenBurnsIntensity: KenBurnsIntensity = .medium,
         prefetchRadius: Int = 1,
         prefetchMaxConcurrent: Int = 2,
         layout: LayoutSettings = .default,
@@ -131,8 +163,10 @@ struct RenderSettings {
         self.transitionDuration = transitionDuration
         self.transitionEnabled = transitionEnabled
         self.transitionStyle = transitionStyle
+        self.transitionDipDuration = max(0, transitionDipDuration)
         self.orientationStrategy = orientationStrategy
         self.enableKenBurns = enableKenBurns
+        self.kenBurnsIntensity = kenBurnsIntensity
         self.prefetchRadius = max(0, prefetchRadius)
         self.prefetchMaxConcurrent = max(1, prefetchMaxConcurrent)
         self.layout = layout
@@ -148,8 +182,10 @@ struct RenderSettings {
         transitionDuration: 0.6,
         transitionEnabled: true,
         transitionStyle: .crossfade,
+        transitionDipDuration: 0.18,
         orientationStrategy: .followAsset,
         enableKenBurns: true,
+        kenBurnsIntensity: .medium,
         prefetchRadius: 1,
         prefetchMaxConcurrent: 2,
         layout: .default,
@@ -165,8 +201,10 @@ struct RenderSettings {
             transitionDuration: template.timeline.transitionDuration,
             transitionEnabled: template.transition.enabled,
             transitionStyle: template.transition.style,
+            transitionDipDuration: template.transition.dipDuration,
             orientationStrategy: template.motion.orientationStrategy,
             enableKenBurns: template.motion.enableKenBurns,
+            kenBurnsIntensity: template.motion.intensity,
             prefetchRadius: template.performance.prefetchRadius,
             prefetchMaxConcurrent: template.performance.prefetchMaxConcurrent,
             layout: .init(
@@ -208,8 +246,16 @@ struct RenderSettings {
                 imageDuration: imageDuration,
                 transitionDuration: transitionDuration
             ),
-            transition: .init(style: transitionStyle, enabled: transitionEnabled),
-            motion: .init(enableKenBurns: enableKenBurns, orientationStrategy: orientationStrategy),
+            transition: .init(
+                style: transitionStyle,
+                enabled: transitionEnabled,
+                dipDuration: transitionDipDuration
+            ),
+            motion: .init(
+                enableKenBurns: enableKenBurns,
+                intensity: kenBurnsIntensity,
+                orientationStrategy: orientationStrategy
+            ),
             performance: .init(
                 prefetchRadius: prefetchRadius,
                 prefetchMaxConcurrent: prefetchMaxConcurrent
@@ -249,7 +295,7 @@ struct RenderSettings {
 }
 
 struct RenderTemplate: Codable, Sendable {
-    nonisolated static let currentSchemaVersion = 3
+    nonisolated static let currentSchemaVersion = 4
 
     let schemaVersion: Int
     let output: Output
@@ -327,43 +373,59 @@ struct RenderTemplate: Codable, Sendable {
     struct Transition: Codable, Sendable {
         let style: TransitionStyle
         let enabled: Bool
+        let dipDuration: TimeInterval
 
-        nonisolated static let `default` = Transition(style: .crossfade, enabled: true)
+        nonisolated static let `default` = Transition(style: .crossfade, enabled: true, dipDuration: 0.18)
 
         private enum CodingKeys: String, CodingKey {
             case style
             case enabled
+            case dipDuration
         }
 
-        nonisolated init(style: TransitionStyle, enabled: Bool = true) {
+        nonisolated init(
+            style: TransitionStyle,
+            enabled: Bool = true,
+            dipDuration: TimeInterval = 0.18
+        ) {
             self.style = style
             self.enabled = enabled
+            self.dipDuration = max(0, dipDuration)
         }
 
         nonisolated init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             style = try container.decodeIfPresent(TransitionStyle.self, forKey: .style) ?? .crossfade
             enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+            dipDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .dipDuration) ?? 0.18
         }
     }
 
     struct Motion: Codable, Sendable {
         let enableKenBurns: Bool
+        let intensity: KenBurnsIntensity
         let orientationStrategy: PhotoOrientationStrategy
 
         private enum CodingKeys: String, CodingKey {
             case enableKenBurns
+            case intensity
             case orientationStrategy
         }
 
-        nonisolated init(enableKenBurns: Bool, orientationStrategy: PhotoOrientationStrategy = .followAsset) {
+        nonisolated init(
+            enableKenBurns: Bool,
+            intensity: KenBurnsIntensity = .medium,
+            orientationStrategy: PhotoOrientationStrategy = .followAsset
+        ) {
             self.enableKenBurns = enableKenBurns
+            self.intensity = intensity
             self.orientationStrategy = orientationStrategy
         }
 
         nonisolated init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             enableKenBurns = try container.decode(Bool.self, forKey: .enableKenBurns)
+            intensity = try container.decodeIfPresent(KenBurnsIntensity.self, forKey: .intensity) ?? .medium
             orientationStrategy = try container.decodeIfPresent(PhotoOrientationStrategy.self, forKey: .orientationStrategy) ?? .followAsset
         }
     }
