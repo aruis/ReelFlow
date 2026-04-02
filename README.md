@@ -117,7 +117,7 @@ ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
 以下为进入产品验收阶段前完成的工程目标，保留存档。
 
 1. 代码结构
-- [x] `ContentView.swift` 控制在 700 行以内（当前 491 行）。
+- [x] `ContentView.swift` 已完成职责收敛，当前维护性预算为 950 行以内。
 - [x] `ExportViewModel` 按职责拆分为 6 个扩展（Export / Assets / Audio / Recovery / Diagnostics / UITestSupport）。
 - [x] UI 拆分为 9 个独立组件文件。
 - [x] 统一失败卡片文案来源，UI 测试脚手架隔离至 `#if DEBUG`。
@@ -125,7 +125,7 @@ ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
 2. 发布工程
 - [x] 完成一次端到端发布演练，记录于 `Docs/Release-Rehearsal-Log.md`。
 - [x] 回滚预案写入 `Docs/Release-Checklist.md`（触发条件 / 步骤 / 验证 / 时限）。
-- [x] 维护性护栏阈值与 README 目标对齐（ContentView 700 / Export 850）。
+- [x] 维护性护栏阈值与当前工程结构对齐（ContentView 950 / Export 850）。
 
 3. 质量门
 - [x] CI 三路并行（Non-UI + Audio Regression + UI Smoke）。

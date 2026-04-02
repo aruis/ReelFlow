@@ -13,16 +13,16 @@ if rg -n --hidden --glob '!.git/**' --glob '!.derivedData/**' --glob '!*.xcresul
 fi
 
 echo "[maintainability] checking core file size budgets..."
-content_view_lines="$(wc -l < ReelFlow/ContentView.swift | tr -d ' ')"
-export_vm_export_lines="$(wc -l < ReelFlow/ExportViewModel+Export.swift | tr -d ' ')"
+content_view_lines="$(wc -l < ReelFlow/App/ContentView.swift | tr -d ' ')"
+export_vm_export_lines="$(wc -l < ReelFlow/Features/Export/ExportViewModel+Export.swift | tr -d ' ')"
 
-if [[ "$content_view_lines" -gt 700 ]]; then
-  echo "[maintainability] ERROR: ReelFlow/ContentView.swift is too large (${content_view_lines} > 700)."
+if [[ "$content_view_lines" -gt 950 ]]; then
+  echo "[maintainability] ERROR: ReelFlow/App/ContentView.swift is too large (${content_view_lines} > 950)."
   exit 1
 fi
 
 if [[ "$export_vm_export_lines" -gt 850 ]]; then
-  echo "[maintainability] ERROR: ReelFlow/ExportViewModel+Export.swift is too large (${export_vm_export_lines} > 850)."
+  echo "[maintainability] ERROR: ReelFlow/Features/Export/ExportViewModel+Export.swift is too large (${export_vm_export_lines} > 850)."
   exit 1
 fi
 

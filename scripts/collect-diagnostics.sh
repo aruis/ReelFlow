@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TS="$(date +"%Y%m%d-%H%M%S")"
 OUT_BASE="${1:-$ROOT_DIR/.diagnostics}"
-BUNDLE_DIR="$OUT_BASE/phototime-diagnostics-$TS"
-ARCHIVE_PATH="$OUT_BASE/phototime-diagnostics-$TS.tar.gz"
+BUNDLE_DIR="$OUT_BASE/reelflow-diagnostics-$TS"
+ARCHIVE_PATH="$OUT_BASE/reelflow-diagnostics-$TS.tar.gz"
 
 APP_SUPPORT="${HOME}/Library/Application Support/ReelFlow"
 LOG_DIR="$APP_SUPPORT/Logs"

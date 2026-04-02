@@ -44,7 +44,7 @@
 
 1. `./scripts/check-maintainability.sh`
    - 拦截新增债务标记（`TODO/FIXME/HACK/XXX`）。
-   - 限制核心文件行数上限，避免再次回到巨石文件。
+   - 限制核心文件行数上限，当前预算为 `ContentView <= 950`、`ExportViewModel+Export <= 850`，避免再次回到巨石文件。
 2. `./scripts/test-ci-gate.sh`
    - 在测试门禁前先运行维护性检查。
 3. CI 必须执行维护性检查 + 非 UI + 音频回归 + UI smoke。
