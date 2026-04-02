@@ -84,6 +84,17 @@ final class RenderEngine {
         } else {
             await logger.log("audio track: disabled")
         }
+        if let shutterTrack = settings.shutterSoundTrack {
+            await logger.log(
+                String(
+                    format: "shutter sound: enabled path=%@ volume=%.2f",
+                    shutterTrack.sourceURL.path,
+                    shutterTrack.volume
+                )
+            )
+        } else {
+            await logger.log("shutter sound: disabled")
+        }
         await logger.log(
             String(
                 format: "settings output=%dx%d fps=%d imageDuration=%.2fs transition=%.2fs(%@ gap=%.2fs) kenBurns=%@(%@) prefetchRadius=%d prefetchMaxConcurrent=%d",
@@ -135,9 +146,15 @@ final class RenderEngine {
                 throw RenderEngineError.exportFailed("音频不可用: \(message)")
             }
         }
+        if let shutterTrack = settings.shutterSoundTrack {
+            if let message = AudioTrackValidation.validate(url: shutterTrack.sourceURL) {
+                await logger.log("shutter validation failed: \(message)")
+                throw RenderEngineError.exportFailed("快门声不可用: \(message)")
+            }
+        }
 
         let composer = FrameComposer(settings: settings)
-        let requiresAudioMux = settings.audioTrack != nil
+        let requiresAudioMux = settings.audioTrack != nil || settings.shutterSoundTrack != nil
         let intermediateVideoOutputURL: URL
         if requiresAudioMux {
             intermediateVideoOutputURL = FileManager.default.temporaryDirectory
@@ -161,14 +178,14 @@ final class RenderEngine {
                 progress: progress
             )
 
-            if let audioTrack = settings.audioTrack {
+            if requiresAudioMux {
                 await logger.log("audio mux start")
-                try await AudioMuxer.muxSingleTrack(
+                try await AudioMuxer.muxTracks(
                     videoURL: intermediateVideoOutputURL,
-                    audioURL: audioTrack.sourceURL,
                     outputURL: outputURL,
-                    volume: Float(audioTrack.volume),
-                    loopEnabled: audioTrack.loopEnabled
+                    backgroundTrack: settings.audioTrack,
+                    shutterTrack: settings.shutterSoundTrack,
+                    shutterTimes: timeline.clips.map(\.start)
                 )
                 await logger.log("audio mux completed")
                 try? FileManager.default.removeItem(at: intermediateVideoOutputURL)

@@ -111,6 +111,13 @@ extension ExportViewModel {
                 return
             }
         }
+        if let shutterTrack = config.resolvedShutterSoundTrack {
+            if let message = AudioTrackValidation.validate(url: shutterTrack.sourceURL) {
+                shutterSoundStatusMessage = message
+                workflow.setIdleMessage("快门声校验失败: \(message)")
+                return
+            }
+        }
 
         let request = ExportRequest(
             imageURLs: imageURLs,
@@ -374,9 +381,14 @@ extension ExportViewModel {
         previewSecond = min(previewSecond, previewMaxSecond)
         previewAudioPlayer?.volume = Float(config.audioVolume)
         previewAudioPlayer?.numberOfLoops = config.audioLoopEnabled ? -1 : 0
+        shutterSoundPreviewPlayer?.volume = Float(config.shutterSoundVolume)
         if !config.audioEnabled {
             audioStatusMessage = nil
             stopAudioPreview()
+        }
+        if !config.shutterSoundEnabled {
+            shutterSoundStatusMessage = nil
+            stopShutterSoundPreview()
         }
 
         refreshSelectedAudioDuration()
@@ -394,6 +406,7 @@ extension ExportViewModel {
         timelinePreviewEnabled = enabled
         if !enabled {
             stopAudioPreview()
+            stopShutterSoundPreview()
         }
     }
 

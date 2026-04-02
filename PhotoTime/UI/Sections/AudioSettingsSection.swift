@@ -7,7 +7,7 @@ struct AudioSettingsSection: View {
     let onAudioDrop: ([NSItemProvider]) -> Bool
 
     var body: some View {
-        Section("背景音乐") {
+        Section("音频") {
             Toggle("启用背景音频", isOn: $viewModel.config.audioEnabled)
                 .disabled(viewModel.isBusy)
 
@@ -81,6 +81,91 @@ struct AudioSettingsSection: View {
                         )
                 )
                 .onDrop(of: [UTType.fileURL], isTargeted: $isAudioDropTarget, perform: onAudioDrop)
+            }
+
+            Divider()
+
+            Toggle("切换新照片时播放快门声", isOn: $viewModel.config.shutterSoundEnabled)
+                .disabled(viewModel.isBusy)
+
+            if viewModel.config.shutterSoundEnabled {
+                Picker("声音来源", selection: $viewModel.config.shutterSoundSource) {
+                    Text("内置型号").tag(ShutterSoundSource.preset)
+                    Text("自定义文件").tag(ShutterSoundSource.custom)
+                }
+                .pickerStyle(.segmented)
+                .disabled(viewModel.isBusy)
+
+                switch viewModel.config.shutterSoundSource {
+                case .preset:
+                    Picker("相机型号", selection: $viewModel.config.shutterSoundPreset) {
+                        ForEach(ShutterSoundPreset.allCases, id: \.self) { preset in
+                            Text(preset.displayName).tag(preset)
+                        }
+                    }
+                    .disabled(viewModel.isBusy)
+
+                    if ShutterSoundCatalog.bundledURL(for: viewModel.config.shutterSoundPreset) != nil {
+                        Text("导出时会在每张新照片开始时插入 \(viewModel.config.shutterSoundPreset.displayName) 风格快门声。")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("当前构建未包含该型号快门声资源，请改用“自定义文件”或补充资源。")
+                            .font(.caption2)
+                            .foregroundStyle(.red)
+                    }
+
+                case .custom:
+                    HStack(spacing: 10) {
+                        Button("选择快门声") {
+                            viewModel.chooseShutterSoundTrack()
+                        }
+                        .disabled(viewModel.isBusy)
+
+                        Button("清除快门声") {
+                            viewModel.clearShutterSoundTrack()
+                        }
+                        .disabled(viewModel.isBusy || viewModel.selectedShutterSoundFilename == nil)
+                    }
+
+                    if let name = viewModel.selectedShutterSoundFilename {
+                        Text("已选: \(name)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("尚未选择快门声音效")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let message = viewModel.shutterSoundStatusMessage {
+                        Text(message)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("支持选择一条短音效，导出时会在每张新照片开始时触发。")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                HStack(spacing: 10) {
+                    Button(viewModel.isShutterSoundPreviewPlaying ? "试听中…" : "试听快门声") {
+                        _ = viewModel.startShutterSoundPreview()
+                    }
+                    .disabled(viewModel.isBusy || viewModel.isShutterSoundPreviewPlaying)
+
+                    Button("停止试听") {
+                        viewModel.stopShutterSoundPreview()
+                    }
+                    .disabled(viewModel.isBusy || !viewModel.isShutterSoundPreviewPlaying)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("快门声音量: \(Int((viewModel.config.shutterSoundVolume * 100).rounded()))%")
+                    Slider(value: $viewModel.config.shutterSoundVolume, in: RenderEditorConfig.audioVolumeRange, step: 0.01)
+                        .disabled(viewModel.isBusy)
+                }
             }
         }
     }

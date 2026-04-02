@@ -214,6 +214,11 @@ struct RenderEditorConfig: Sendable {
     var audioFilePath: String = ""
     var audioVolume: Double = 1
     var audioLoopEnabled: Bool = false
+    var shutterSoundEnabled: Bool = false
+    var shutterSoundSource: ShutterSoundSource = .preset
+    var shutterSoundPreset: ShutterSoundPreset = .canonEOS
+    var shutterSoundCustomFilePath: String = ""
+    var shutterSoundVolume: Double = 0.72
 
     static let outputWidthRange = 640...3840
     static let outputHeightRange = 360...2160
@@ -238,6 +243,12 @@ struct RenderEditorConfig: Sendable {
     init(template: RenderTemplate) {
         let settings = RenderSettings(template: template)
         self.init(settings: settings)
+        shutterSoundEnabled = template.shutterSound.enabled
+        shutterSoundSource = template.shutterSound.source
+        shutterSoundPreset = template.shutterSound.preset
+        shutterSoundCustomFilePath = template.shutterSound.customFilePath
+        shutterSoundVolume = template.shutterSound.volume
+        clampToSafeRange()
     }
 
     init(settings: RenderSettings) {
@@ -274,6 +285,10 @@ struct RenderEditorConfig: Sendable {
         audioFilePath = settings.audioTrack?.sourceURL.path ?? ""
         audioVolume = settings.audioTrack?.volume ?? 1
         audioLoopEnabled = settings.audioTrack?.loopEnabled ?? false
+        shutterSoundEnabled = settings.shutterSoundTrack != nil
+        shutterSoundSource = .custom
+        shutterSoundCustomFilePath = settings.shutterSoundTrack?.sourceURL.path ?? ""
+        shutterSoundVolume = settings.shutterSoundTrack?.volume ?? 0.72
         clampToSafeRange()
     }
 
@@ -304,6 +319,7 @@ struct RenderEditorConfig: Sendable {
         prefetchRadius = min(max(prefetchRadius, Self.prefetchRadiusRange.lowerBound), Self.prefetchRadiusRange.upperBound)
         prefetchMaxConcurrent = min(max(prefetchMaxConcurrent, Self.prefetchMaxConcurrentRange.lowerBound), Self.prefetchMaxConcurrentRange.upperBound)
         audioVolume = min(max(audioVolume, Self.audioVolumeRange.lowerBound), Self.audioVolumeRange.upperBound)
+        shutterSoundVolume = min(max(shutterSoundVolume, Self.audioVolumeRange.lowerBound), Self.audioVolumeRange.upperBound)
         if !audioEnabled {
             audioFilePath = ""
             audioLoopEnabled = false
@@ -342,6 +358,11 @@ struct RenderEditorConfig: Sendable {
         if audioEnabled && audioFilePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return "已启用音频，请先选择音频文件"
         }
+        if shutterSoundEnabled && resolvedShutterSoundTrack == nil {
+            return shutterSoundSource == .preset
+                ? "已启用快门声，但当前型号声音资源不可用"
+                : "已启用快门声，请先选择音效文件"
+        }
         return nil
     }
 
@@ -373,12 +394,32 @@ struct RenderEditorConfig: Sendable {
                 templateText: plateEditorMode == .simple ? resolvedSimpleTemplateText : plateTemplateText
             ),
             canvas: resolvedCanvasSettings,
-            audioTrack: resolvedAudioTrack
+            audioTrack: resolvedAudioTrack,
+            shutterSoundTrack: resolvedShutterSoundTrack
         )
     }
 
     var template: RenderTemplate {
-        renderSettings.template
+        let base = renderSettings.template
+        return RenderTemplate(
+            schemaVersion: RenderTemplate.currentSchemaVersion,
+            output: base.output,
+            timeline: base.timeline,
+            transition: base.transition,
+            motion: base.motion,
+            performance: base.performance,
+            layout: base.layout,
+            plate: base.plate,
+            canvas: base.canvas,
+            audio: base.audio,
+            shutterSound: .init(
+                enabled: shutterSoundEnabled,
+                source: shutterSoundSource,
+                preset: shutterSoundPreset,
+                customFilePath: shutterSoundCustomFilePath,
+                volume: shutterSoundVolume
+            )
+        )
     }
 
     mutating func insertPlateToken(_ token: String) {
@@ -473,6 +514,25 @@ struct RenderEditorConfig: Sendable {
             sourceURL: URL(fileURLWithPath: path),
             volume: audioVolume,
             loopEnabled: audioLoopEnabled
+        )
+    }
+
+    var resolvedShutterSoundTrack: ShutterSoundTrackSettings? {
+        guard shutterSoundEnabled else { return nil }
+
+        let url: URL?
+        switch shutterSoundSource {
+        case .preset:
+            url = ShutterSoundCatalog.bundledURL(for: shutterSoundPreset)
+        case .custom:
+            let path = shutterSoundCustomFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
+            url = path.isEmpty ? nil : URL(fileURLWithPath: path)
+        }
+
+        guard let url else { return nil }
+        return ShutterSoundTrackSettings(
+            sourceURL: url,
+            volume: shutterSoundVolume
         )
     }
 }

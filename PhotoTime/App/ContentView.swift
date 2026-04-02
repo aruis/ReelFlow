@@ -146,6 +146,7 @@ struct ContentView: View {
             }
             .onDisappear {
                 viewModel.stopAudioPreview()
+                viewModel.stopShutterSoundPreview()
             }
     }
 

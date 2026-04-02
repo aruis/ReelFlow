@@ -4,6 +4,18 @@ import Foundation
 
 @MainActor
 extension ExportViewModel {
+    func chooseShutterSoundTrack() {
+        guard !isBusy else { return }
+
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.audio]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        applyShutterSoundTrack(url: url, sourceDescription: "已选择快门声")
+    }
+
     func chooseAudioTrack() {
         guard !isBusy else { return }
 
@@ -52,6 +64,21 @@ extension ExportViewModel {
         }
     }
 
+    func clearShutterSoundTrack() {
+        guard !isBusy else { return }
+        stopShutterSoundPreview()
+        let previous = selectedShutterSoundFilename
+        config.shutterSoundEnabled = false
+        config.shutterSoundCustomFilePath = ""
+        config.shutterSoundVolume = 0.72
+        shutterSoundStatusMessage = nil
+        if let previous {
+            workflow.setIdleMessage("已清除快门声: \(previous)")
+        } else {
+            workflow.setIdleMessage("已清除快门声")
+        }
+    }
+
     func applyAudioTrack(url: URL, sourceDescription: String) {
         stopAudioPreview()
         if let message = AudioTrackValidation.validate(url: url) {
@@ -70,6 +97,76 @@ extension ExportViewModel {
         audioStatusMessage = "音频已就绪：\(url.lastPathComponent)。导出时将附加单轨背景音频。"
         refreshSelectedAudioDuration(force: true)
         workflow.setIdleMessage("\(sourceDescription): \(url.lastPathComponent)")
+    }
+
+    func applyShutterSoundTrack(url: URL, sourceDescription: String) {
+        stopShutterSoundPreview()
+        if let message = AudioTrackValidation.validate(url: url) {
+            shutterSoundStatusMessage = message
+            config.shutterSoundEnabled = false
+            config.shutterSoundCustomFilePath = ""
+            workflow.setIdleMessage("快门声音导入失败: \(message)")
+            return
+        }
+
+        config.shutterSoundEnabled = true
+        config.shutterSoundSource = .custom
+        config.shutterSoundCustomFilePath = url.path
+        if config.shutterSoundVolume <= 0 {
+            config.shutterSoundVolume = 0.72
+        }
+        shutterSoundStatusMessage = "快门声音已就绪：\(url.lastPathComponent)。导出时会在每张新照片开始时触发。"
+        workflow.setIdleMessage("\(sourceDescription): \(url.lastPathComponent)")
+    }
+
+    @discardableResult
+    func startShutterSoundPreview() -> Bool {
+        guard config.shutterSoundEnabled else {
+            shutterSoundStatusMessage = "请先启用快门声。"
+            return false
+        }
+
+        guard let shutterTrack = config.resolvedShutterSoundTrack else {
+            shutterSoundStatusMessage = config.shutterSoundSource == .preset
+                ? "当前型号快门声资源不可用。"
+                : "请先选择快门声音效文件。"
+            return false
+        }
+
+        if let message = AudioTrackValidation.validate(url: shutterTrack.sourceURL) {
+            shutterSoundStatusMessage = message
+            return false
+        }
+
+        do {
+            stopShutterSoundPreview()
+            let player = try AVAudioPlayer(contentsOf: shutterTrack.sourceURL)
+            player.delegate = self
+            player.volume = Float(config.shutterSoundVolume)
+            player.numberOfLoops = 0
+            player.prepareToPlay()
+            guard player.play() else {
+                shutterSoundStatusMessage = "快门声试听播放失败。"
+                return false
+            }
+            shutterSoundPreviewPlayer = player
+            isShutterSoundPreviewPlaying = true
+            workflow.setIdleMessage("快门声试听中")
+            return true
+        } catch {
+            shutterSoundStatusMessage = "快门声试听失败：\(error.localizedDescription)"
+            return false
+        }
+    }
+
+    func stopShutterSoundPreview() {
+        guard let player = shutterSoundPreviewPlayer else {
+            isShutterSoundPreviewPlaying = false
+            return
+        }
+        player.stop()
+        shutterSoundPreviewPlayer = nil
+        isShutterSoundPreviewPlaying = false
     }
 
     @discardableResult
@@ -147,9 +244,15 @@ extension ExportViewModel {
     }
 
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        guard player === previewAudioPlayer else { return }
-        previewAudioPlayer = nil
-        isAudioPreviewPlaying = false
+        if player === previewAudioPlayer {
+            previewAudioPlayer = nil
+            isAudioPreviewPlaying = false
+            return
+        }
+        if player === shutterSoundPreviewPlayer {
+            shutterSoundPreviewPlayer = nil
+            isShutterSoundPreviewPlaying = false
+        }
     }
 
     var audioDurationLookupKey: String {

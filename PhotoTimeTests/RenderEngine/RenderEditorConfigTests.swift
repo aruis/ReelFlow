@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import PhotoTime
 
@@ -26,6 +27,10 @@ struct RenderEditorConfigTests {
         config.audioEnabled = true
         config.audioFilePath = "/tmp/test.m4a"
         config.audioVolume = 2
+        config.shutterSoundEnabled = true
+        config.shutterSoundSource = .custom
+        config.shutterSoundCustomFilePath = "/tmp/shutter.m4a"
+        config.shutterSoundVolume = 2
 
         config.clampToSafeRange()
 
@@ -48,6 +53,7 @@ struct RenderEditorConfigTests {
         #expect(config.prefetchRadius == RenderEditorConfig.prefetchRadiusRange.lowerBound)
         #expect(config.prefetchMaxConcurrent == RenderEditorConfig.prefetchMaxConcurrentRange.lowerBound)
         #expect(config.audioVolume == RenderEditorConfig.audioVolumeRange.upperBound)
+        #expect(config.shutterSoundVolume == RenderEditorConfig.audioVolumeRange.upperBound)
     }
 
     @Test
@@ -82,6 +88,11 @@ struct RenderEditorConfigTests {
         config.audioFilePath = "/tmp/bgm.m4a"
         config.audioVolume = 0.72
         config.audioLoopEnabled = true
+        config.shutterSoundEnabled = true
+        config.shutterSoundSource = .custom
+        config.shutterSoundPreset = .sonyAlpha
+        config.shutterSoundCustomFilePath = "/tmp/shutter.m4a"
+        config.shutterSoundVolume = 0.64
 
         let rebuilt = RenderEditorConfig(template: config.template)
 
@@ -114,6 +125,11 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.audioFilePath == config.audioFilePath)
         #expect(rebuilt.audioVolume == config.audioVolume)
         #expect(rebuilt.audioLoopEnabled == config.audioLoopEnabled)
+        #expect(rebuilt.shutterSoundEnabled == config.shutterSoundEnabled)
+        #expect(rebuilt.shutterSoundSource == config.shutterSoundSource)
+        #expect(rebuilt.shutterSoundPreset == config.shutterSoundPreset)
+        #expect(rebuilt.shutterSoundCustomFilePath == config.shutterSoundCustomFilePath)
+        #expect(rebuilt.shutterSoundVolume == config.shutterSoundVolume)
     }
 
     @Test
@@ -164,6 +180,30 @@ struct RenderEditorConfigTests {
         config.audioFilePath = " "
 
         #expect(config.invalidMessage?.contains("音频") == true)
+    }
+
+    @Test
+    func shutterSoundEnabledWithoutResolvedTrackIsInvalid() {
+        var config = RenderEditorConfig()
+        config.shutterSoundEnabled = true
+        config.shutterSoundSource = .custom
+        config.shutterSoundCustomFilePath = " "
+
+        #expect(config.invalidMessage?.contains("快门声") == true)
+    }
+
+    @Test
+    func customShutterSoundIsAppliedToRenderSettings() {
+        var config = RenderEditorConfig()
+        config.shutterSoundEnabled = true
+        config.shutterSoundSource = .custom
+        config.shutterSoundCustomFilePath = "/tmp/shutter.m4a"
+        config.shutterSoundVolume = 0.58
+
+        let settings = config.renderSettings
+
+        #expect(settings.shutterSoundTrack?.sourceURL.path == "/tmp/shutter.m4a")
+        #expect(settings.shutterSoundTrack?.volume == 0.58)
     }
 
     @Test

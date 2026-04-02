@@ -120,6 +120,49 @@ struct ExportViewModelPreflightFlowTests {
     }
 
     @Test
+    func customShutterSoundCanBeApplied() async throws {
+        let viewModel = ExportViewModel()
+        let tempDir = try Self.makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let audioURL = tempDir.appendingPathComponent("shutter.caf")
+        try Self.writeToneAudio(to: audioURL, duration: 0.12)
+
+        viewModel.applyShutterSoundTrack(url: audioURL, sourceDescription: "test")
+
+        #expect(viewModel.config.shutterSoundEnabled == true)
+        #expect(viewModel.config.shutterSoundSource == .custom)
+        #expect(viewModel.config.shutterSoundCustomFilePath == audioURL.path)
+        #expect(viewModel.shutterSoundStatusMessage?.contains("快门声音已就绪") == true)
+    }
+
+    @Test
+    func startShutterSoundPreviewFailsWhenDisabled() async throws {
+        let viewModel = ExportViewModel()
+        viewModel.config.shutterSoundEnabled = false
+
+        let started = viewModel.startShutterSoundPreview()
+
+        #expect(started == false)
+        #expect(viewModel.isShutterSoundPreviewPlaying == false)
+        #expect(viewModel.shutterSoundStatusMessage?.contains("启用快门声") == true)
+    }
+
+    @Test
+    func startShutterSoundPreviewFailsWhenCustomFileMissing() async throws {
+        let viewModel = ExportViewModel()
+        viewModel.config.shutterSoundEnabled = true
+        viewModel.config.shutterSoundSource = .custom
+        viewModel.config.shutterSoundCustomFilePath = "/tmp/not-exists-\(UUID().uuidString).m4a"
+
+        let started = viewModel.startShutterSoundPreview()
+
+        #expect(started == false)
+        #expect(viewModel.isShutterSoundPreviewPlaying == false)
+        #expect(viewModel.shutterSoundStatusMessage?.contains("不存在") == true)
+    }
+
+    @Test
     func importDroppedAudioTrackRejectsInvalidFile() async throws {
         let viewModel = ExportViewModel()
         let tempDir = try Self.makeTempDirectory()

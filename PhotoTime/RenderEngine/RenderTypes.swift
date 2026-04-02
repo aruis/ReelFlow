@@ -17,6 +17,59 @@ enum PlatePlacement: String, Codable, Sendable {
     case canvasBottom
 }
 
+enum ShutterSoundSource: String, Codable, CaseIterable, Sendable {
+    case preset
+    case custom
+}
+
+enum ShutterSoundPreset: String, Codable, CaseIterable, Sendable {
+    case canonEOS
+    case nikonDSLR
+    case sonyAlpha
+    case panasonicLumix
+    case fujifilmX
+    case hasselblad500CM
+    case leicaM
+
+    nonisolated var displayName: String {
+        switch self {
+        case .canonEOS:
+            return "Canon EOS"
+        case .nikonDSLR:
+            return "Nikon D850"
+        case .sonyAlpha:
+            return "Sony Alpha"
+        case .panasonicLumix:
+            return "Panasonic Lumix"
+        case .fujifilmX:
+            return "Fujifilm X"
+        case .hasselblad500CM:
+            return "Hasselblad 500C/M"
+        case .leicaM:
+            return "Leica M"
+        }
+    }
+
+    nonisolated var resourceName: String {
+        switch self {
+        case .canonEOS:
+            return "canon-eos-style"
+        case .nikonDSLR:
+            return "nikon-dslr-style"
+        case .sonyAlpha:
+            return "sony-alpha-style"
+        case .panasonicLumix:
+            return "panasonic-lumix-style"
+        case .fujifilmX:
+            return "fujifilm-x-style"
+        case .hasselblad500CM:
+            return "hasselblad-500cm-style"
+        case .leicaM:
+            return "leica-m-style"
+        }
+    }
+}
+
 enum KenBurnsIntensity: String, Codable, CaseIterable, Sendable {
     case small
     case medium
@@ -121,6 +174,16 @@ struct AudioTrackSettings: Sendable {
     }
 }
 
+struct ShutterSoundTrackSettings: Sendable {
+    let sourceURL: URL
+    let volume: Double
+
+    nonisolated init(sourceURL: URL, volume: Double = 1) {
+        self.sourceURL = sourceURL
+        self.volume = max(0, min(volume, 1))
+    }
+}
+
 struct RenderSettings {
     let outputSize: CGSize
     let fps: Int32
@@ -138,6 +201,7 @@ struct RenderSettings {
     let plate: PlateSettings
     let canvas: CanvasSettings
     let audioTrack: AudioTrackSettings?
+    let shutterSoundTrack: ShutterSoundTrackSettings?
 
     nonisolated init(
         outputSize: CGSize,
@@ -155,7 +219,8 @@ struct RenderSettings {
         layout: LayoutSettings = .default,
         plate: PlateSettings = .default,
         canvas: CanvasSettings = .default,
-        audioTrack: AudioTrackSettings? = nil
+        audioTrack: AudioTrackSettings? = nil,
+        shutterSoundTrack: ShutterSoundTrackSettings? = nil
     ) {
         self.outputSize = outputSize
         self.fps = fps
@@ -173,6 +238,7 @@ struct RenderSettings {
         self.plate = plate
         self.canvas = canvas
         self.audioTrack = audioTrack
+        self.shutterSoundTrack = shutterSoundTrack
     }
 
     nonisolated static let mvp = RenderSettings(
@@ -231,7 +297,24 @@ struct RenderSettings {
                 sourceURL: URL(fileURLWithPath: template.audio.filePath),
                 volume: template.audio.volume,
                 loopEnabled: template.audio.loopEnabled
-            ) : nil
+            ) : nil,
+            shutterSoundTrack: {
+                guard template.shutterSound.enabled else { return nil }
+                let resolvedURL: URL?
+                switch template.shutterSound.source {
+                case .preset:
+                    resolvedURL = ShutterSoundCatalog.bundledURL(for: template.shutterSound.preset)
+                case .custom:
+                    let path = template.shutterSound.customFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
+                    resolvedURL = path.isEmpty ? nil : URL(fileURLWithPath: path)
+                }
+
+                guard let resolvedURL else { return nil }
+                return .init(
+                    sourceURL: resolvedURL,
+                    volume: template.shutterSound.volume
+                )
+            }()
         )
     }
 
@@ -285,6 +368,13 @@ struct RenderSettings {
                 filePath: audioTrack?.sourceURL.path ?? "",
                 volume: audioTrack?.volume ?? 1,
                 loopEnabled: audioTrack?.loopEnabled ?? false
+            ),
+            shutterSound: .init(
+                enabled: shutterSoundTrack != nil,
+                source: .custom,
+                preset: .canonEOS,
+                customFilePath: shutterSoundTrack?.sourceURL.path ?? "",
+                volume: shutterSoundTrack?.volume ?? 1
             )
         )
     }
@@ -295,7 +385,7 @@ struct RenderSettings {
 }
 
 struct RenderTemplate: Codable, Sendable {
-    nonisolated static let currentSchemaVersion = 4
+    nonisolated static let currentSchemaVersion = 5
 
     let schemaVersion: Int
     let output: Output
@@ -307,6 +397,7 @@ struct RenderTemplate: Codable, Sendable {
     let plate: Plate
     let canvas: Canvas
     let audio: Audio
+    let shutterSound: ShutterSound
 
     nonisolated init(
         schemaVersion: Int = RenderTemplate.currentSchemaVersion,
@@ -318,7 +409,8 @@ struct RenderTemplate: Codable, Sendable {
         layout: Layout,
         plate: Plate,
         canvas: Canvas,
-        audio: Audio = .default
+        audio: Audio = .default,
+        shutterSound: ShutterSound = .default
     ) {
         self.schemaVersion = schemaVersion
         self.output = output
@@ -330,6 +422,7 @@ struct RenderTemplate: Codable, Sendable {
         self.plate = plate
         self.canvas = canvas
         self.audio = audio
+        self.shutterSound = shutterSound
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -343,6 +436,7 @@ struct RenderTemplate: Codable, Sendable {
         case plate
         case canvas
         case audio
+        case shutterSound
     }
 
     init(from decoder: Decoder) throws {
@@ -357,6 +451,7 @@ struct RenderTemplate: Codable, Sendable {
         plate = try container.decodeIfPresent(Plate.self, forKey: .plate) ?? .default
         canvas = try container.decodeIfPresent(Canvas.self, forKey: .canvas) ?? .default
         audio = try container.decodeIfPresent(Audio.self, forKey: .audio) ?? .default
+        shutterSound = try container.decodeIfPresent(ShutterSound.self, forKey: .shutterSound) ?? .default
     }
 
     struct Output: Codable, Sendable {
@@ -545,6 +640,60 @@ struct RenderTemplate: Codable, Sendable {
             let volume = try container.decodeIfPresent(Double.self, forKey: .volume) ?? 1
             let loopEnabled = try container.decodeIfPresent(Bool.self, forKey: .loopEnabled) ?? false
             self.init(enabled: enabled, filePath: filePath, volume: volume, loopEnabled: loopEnabled)
+        }
+    }
+
+    struct ShutterSound: Codable, Sendable {
+        let enabled: Bool
+        let source: ShutterSoundSource
+        let preset: ShutterSoundPreset
+        let customFilePath: String
+        let volume: Double
+
+        nonisolated static let `default` = ShutterSound(
+            enabled: false,
+            source: .preset,
+            preset: .canonEOS,
+            customFilePath: "",
+            volume: 0.72
+        )
+
+        private enum CodingKeys: String, CodingKey {
+            case enabled
+            case source
+            case preset
+            case customFilePath
+            case volume
+        }
+
+        nonisolated init(
+            enabled: Bool,
+            source: ShutterSoundSource,
+            preset: ShutterSoundPreset,
+            customFilePath: String = "",
+            volume: Double = 0.72
+        ) {
+            self.enabled = enabled
+            self.source = source
+            self.preset = preset
+            self.customFilePath = customFilePath
+            self.volume = max(0, min(volume, 1))
+        }
+
+        nonisolated init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+            let source = try container.decodeIfPresent(ShutterSoundSource.self, forKey: .source) ?? .preset
+            let preset = try container.decodeIfPresent(ShutterSoundPreset.self, forKey: .preset) ?? .canonEOS
+            let customFilePath = try container.decodeIfPresent(String.self, forKey: .customFilePath) ?? ""
+            let volume = try container.decodeIfPresent(Double.self, forKey: .volume) ?? 0.72
+            self.init(
+                enabled: enabled,
+                source: source,
+                preset: preset,
+                customFilePath: customFilePath,
+                volume: volume
+            )
         }
     }
 }

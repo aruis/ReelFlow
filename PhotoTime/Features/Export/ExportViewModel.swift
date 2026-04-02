@@ -86,8 +86,10 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var preflightIssueFilter: PreflightIssueFilter = .all
     @Published var config = RenderEditorConfig()
     @Published var audioStatusMessage: String?
+    @Published var shutterSoundStatusMessage: String?
     @Published var selectedAudioDuration: TimeInterval?
     @Published var isAudioPreviewPlaying = false
+    @Published var isShutterSoundPreviewPlaying = false
     @Published var recoveryAdvice: RecoveryAdvice?
     @Published var failureCardCopy: FailureCardCopy?
     @Published var workflow = ExportWorkflowModel()
@@ -103,6 +105,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     var autoPreviewRefreshEnabled = true
     var timelinePreviewEnabled = true
     var previewAudioPlayer: AVAudioPlayer?
+    var shutterSoundPreviewPlayer: AVAudioPlayer?
     var audioDurationTask: Task<Void, Never>?
     var lastAudioDurationLookupKey = ""
     var hasUserSelectedOutputURL = false
@@ -234,6 +237,17 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         let path = config.audioFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !path.isEmpty else { return nil }
         return URL(fileURLWithPath: path).lastPathComponent
+    }
+
+    var selectedShutterSoundFilename: String? {
+        switch config.shutterSoundSource {
+        case .preset:
+            return config.shutterSoundPreset.displayName
+        case .custom:
+            let path = config.shutterSoundCustomFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !path.isEmpty else { return nil }
+            return URL(fileURLWithPath: path).lastPathComponent
+        }
     }
 
     var canPreviewAudio: Bool {
