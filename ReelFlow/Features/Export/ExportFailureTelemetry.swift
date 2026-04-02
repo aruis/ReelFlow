@@ -1,8 +1,13 @@
 import Foundation
 
 struct ExportFailureStatsSnapshot: Sendable {
-    var updatedAt: Date
-    var counts: [String: Int]
+    let updatedAt: Date
+    let counts: [String: Int]
+
+    nonisolated func count(for stage: ExportFailureStage, code: String?) -> Int {
+        let normalizedCode = code ?? "E_UNKNOWN"
+        return counts["\(stage.rawValue)|\(normalizedCode)", default: 0]
+    }
 }
 
 actor ExportFailureTelemetry {

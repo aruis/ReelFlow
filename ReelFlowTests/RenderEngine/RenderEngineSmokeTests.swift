@@ -363,7 +363,7 @@ struct RenderEngineSmokeTests {
         let audioTracks = try await asset.loadTracks(withMediaType: .audio)
         #expect(!audioTracks.isEmpty)
 
-        let audioDuration = audioTracks.first?.timeRange.duration.seconds ?? 0
+        let audioDuration = try await audioTracks.first?.load(.timeRange).duration.seconds ?? 0
         #expect(audioDuration > 0.2)
         #expect(audioDuration + 0.2 < videoDuration)
 
@@ -401,7 +401,7 @@ struct RenderEngineSmokeTests {
         let audioTracks = try await asset.loadTracks(withMediaType: .audio)
         #expect(!audioTracks.isEmpty)
 
-        let audioDuration = audioTracks.first?.timeRange.duration.seconds ?? 0
+        let audioDuration = try await audioTracks.first?.load(.timeRange).duration.seconds ?? 0
         #expect(audioDuration > 0.9)
         #expect(abs(audioDuration - videoDuration) < 0.2)
 

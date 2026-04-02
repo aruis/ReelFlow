@@ -50,9 +50,9 @@ struct ExportFailureTelemetryTests {
         )
 
         let snapshot = await telemetry.snapshot()
-        #expect(snapshot.counts["export|E_IMAGE_LOAD"] == 2)
-        #expect(snapshot.counts["export|E_UNKNOWN"] == 1)
-        #expect(snapshot.counts["preview|E_PREVIEW_PIPELINE"] == 1)
+        #expect(snapshot.count(for: .export, code: "E_IMAGE_LOAD") == 2)
+        #expect(snapshot.count(for: .export, code: nil) == 1)
+        #expect(snapshot.count(for: .preview, code: "E_PREVIEW_PIPELINE") == 1)
     }
 
     @Test
@@ -72,12 +72,12 @@ struct ExportFailureTelemetryTests {
 
         let reader = ExportFailureTelemetry(storeURL: storeURL)
         let snapshot = await reader.snapshot()
-        #expect(snapshot.counts["export|E_EXPORT_PIPELINE"] == 1)
+        #expect(snapshot.count(for: .export, code: "E_EXPORT_PIPELINE") == 1)
     }
 
     private func tempStoreURL() throws -> URL {
         let dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("phototime-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("reelflow-tests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("export-failure-stats.json")
     }
