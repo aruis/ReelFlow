@@ -14,7 +14,7 @@ if ! rg -q 'MACOSX_DEPLOYMENT_TARGET = 14\.6;' "$PBXPROJ"; then
 fi
 
 echo "[release-gate] checking CI workflow jobs..."
-for job in "Non-UI Tests" "Audio Regression" "UI Smoke"; do
+for job in "Core Tests" "UI Smoke"; do
   if ! rg -q "name: ${job}" "$WORKFLOW"; then
     echo "[release-gate] ERROR: missing CI job '${job}'"
     exit 1
@@ -26,8 +26,12 @@ if ! rg -q 'maxim-lobanov/setup-xcode@v1' "$WORKFLOW"; then
   echo "[release-gate] ERROR: CI is missing setup-xcode action"
   exit 1
 fi
-if ! rg -q 'xcode-version: latest-stable' "$WORKFLOW"; then
-  echo "[release-gate] ERROR: CI is not pinned to xcode-version: latest-stable"
+if ! rg -q 'XCODE_VERSION: latest-stable' "$WORKFLOW"; then
+  echo "[release-gate] ERROR: CI is missing XCODE_VERSION: latest-stable env"
+  exit 1
+fi
+if ! grep -Fq 'xcode-version: ${{ env.XCODE_VERSION }}' "$WORKFLOW"; then
+  echo "[release-gate] ERROR: CI is not wired to env.XCODE_VERSION"
   exit 1
 fi
 

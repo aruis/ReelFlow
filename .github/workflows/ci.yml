@@ -19,8 +19,8 @@ env:
   XCODE_VERSION: latest-stable
 
 jobs:
-  non-ui-tests:
-    name: Non-UI Tests
+  core-tests:
+    name: Core Tests
     runs-on: macos-latest
     timeout-minutes: 35
 
@@ -44,63 +44,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deriveddata-non-ui-
 
-      - name: Run CI consistency checks
-        run: ./scripts/check-ci-consistency.sh
-
       - name: Run maintainability checks
         run: ./scripts/check-maintainability.sh
 
-      - name: Run non-ui tests
+      - name: Run core tests
         run: ./scripts/test-non-ui.sh
 
       - name: Upload xcresult on failure
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: non-ui-xcresult
-          path: ${{ env.DERIVED_DATA_PATH }}/Logs/Test/*.xcresult
-          if-no-files-found: ignore
-          retention-days: 7
-
-  audio-regression:
-    name: Audio Regression
-    runs-on: macos-latest
-    timeout-minutes: 25
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ env.XCODE_VERSION }}
-
-      - name: Show Xcode version
-        run: xcodebuild -version
-
-      - name: Cache DerivedData
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.DERIVED_DATA_PATH }}
-          key: ${{ runner.os }}-deriveddata-audio-${{ hashFiles('ReelFlow.xcodeproj/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-audio-
-
-      - name: Run audio regression
-        run: ./scripts/test-audio-regression.sh
-
-      - name: Upload xcresult on failure
-        if: failure()
-        uses: actions/upload-artifact@v6
-        with:
-          name: audio-regression-xcresult
+          name: core-tests-xcresult
           path: ${{ env.DERIVED_DATA_PATH }}/Logs/Test/*.xcresult
           if-no-files-found: ignore
           retention-days: 7
 
   ui-smoke:
     name: UI Smoke
+    needs: core-tests
     runs-on: macos-latest
     timeout-minutes: 35
 

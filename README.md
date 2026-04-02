@@ -128,7 +128,7 @@ ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
 - [x] 维护性护栏阈值与当前工程结构对齐（ContentView 950 / Export 850）。
 
 3. 质量门
-- [x] CI 三路并行（Non-UI + Audio Regression + UI Smoke）。
+- [x] CI 收敛为两道核心门（Core Tests + UI Smoke）。
 - [x] UI smoke 覆盖失败→重试→成功完整链路。
 - [x] `test-ci-gate.sh` 基线已记录（127s），远低于 30 分钟目标。
 - [x] 任务准入与止损规则写入 `Docs/Engineering-Guardrails.md`。
@@ -178,8 +178,10 @@ ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
   - `./scripts/test-audio-regression.sh`
 - 关键 UI smoke（首用状态 + 成功/失败/校验场景）：
   - `./scripts/test-ui-smoke.sh`
-- 本地 CI 门禁串联（non-ui + audio + ui smoke）：
+- 本地 CI 门禁串联（maintainability + non-ui + ui smoke）：
   - `./scripts/test-ci-gate.sh`
+- 音频专项回归（本地按需跑，不再作为独立 CI 作业重复执行）：
+  - `./scripts/test-audio-regression.sh`
 - 可维护性护栏检查（技术债标记 + 核心文件体量预算）：
   - `./scripts/check-maintainability.sh`
 - 发布前门禁（含兼容性/CI配置检查 + 本地质量门）：
@@ -193,9 +195,8 @@ ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
 - 工程可维护性守则：
   - `Docs/Engineering-Guardrails.md`
 - GitHub Actions CI：
-  - `.github/workflows/ci.yml` 在 `push/pull_request` 上并行执行：
-    - Non-UI Tests
-    - Audio Regression
+  - `.github/workflows/ci.yml` 在 `push/pull_request` 上执行：
+    - Core Tests
     - UI Smoke
   - 失败时自动上传 `xcresult` 产物，便于定位问题。
 - 等价 `xcodebuild` 命令（带 ad-hoc 签名，避免本机调试库签名导致的测试启动失败）：

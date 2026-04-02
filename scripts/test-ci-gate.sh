@@ -8,5 +8,4 @@ cd "$ROOT_DIR"
 ./scripts/check-ci-consistency.sh
 ./scripts/check-maintainability.sh
 ./scripts/test-non-ui.sh
-./scripts/test-audio-regression.sh
 ./scripts/test-ui-smoke.sh

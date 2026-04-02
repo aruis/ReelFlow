@@ -14,7 +14,7 @@
 通过标准：
 
 - `MACOSX_DEPLOYMENT_TARGET` 与基线一致（14.6）。
-- CI 工作流仍包含三类质量门：`Non-UI Tests`、`Audio Regression`、`UI Smoke`。
+- CI 工作流仍包含两类质量门：`Core Tests`、`UI Smoke`。
 - CI 使用 `setup-xcode` 且 `xcode-version: latest-stable`。
 - 本地质量门 `./scripts/test-ci-gate.sh` 全绿。
 
