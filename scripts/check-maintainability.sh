@@ -4,10 +4,25 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+search_debt_markers() {
+  local pattern='\b(TODO|FIXME|HACK|XXX)\b'
+  if command -v rg >/dev/null 2>&1; then
+    rg -n --hidden --glob '!.git/**' --glob '!.derivedData/**' --glob '!*.xcresult/**' \
+      "$pattern" \
+      ReelFlow ReelFlowTests ReelFlowUITests
+    return
+  fi
+
+  grep -RInE \
+    --exclude-dir=.git \
+    --exclude-dir=.derivedData \
+    --exclude-dir='*.xcresult' \
+    "$pattern" \
+    ReelFlow ReelFlowTests ReelFlowUITests
+}
+
 echo "[maintainability] checking debt markers..."
-if rg -n --hidden --glob '!.git/**' --glob '!.derivedData/**' --glob '!*.xcresult/**' \
-  '\b(TODO|FIXME|HACK|XXX)\b' \
-  ReelFlow ReelFlowTests ReelFlowUITests; then
+if search_debt_markers; then
   echo "[maintainability] ERROR: debt markers detected. Please resolve or track via explicit issue process."
   exit 1
 fi

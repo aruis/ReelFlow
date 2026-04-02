@@ -49,20 +49,16 @@ final class ReelFlowUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        let selectImages = elementByIdentifier(app, id: "primary_select_images")
+        let primaryAction = elementByIdentifier(app, id: "toolbar_primary_action")
         let export = elementByIdentifier(app, id: "primary_export")
         let cancel = elementByIdentifier(app, id: "primary_cancel")
         let moreMenu = elementByIdentifier(app, id: "toolbar_more_menu")
 
-        XCTAssertFalse(selectImages.exists)
+        XCTAssertTrue(primaryAction.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(waitEnabled(primaryAction))
         XCTAssertFalse(export.exists)
         XCTAssertFalse(cancel.exists)
         XCTAssertTrue(moreMenu.waitForExistence(timeout: uiTimeout))
-
-        moreMenu.tap()
-        let selectOutput = elementByIdentifier(app, id: "primary_select_output")
-        XCTAssertTrue(selectOutput.waitForExistence(timeout: uiTimeout))
-        XCTAssertFalse(app.staticTexts["flow_next_hint"].exists)
     }
 
     @MainActor

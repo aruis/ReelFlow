@@ -7,6 +7,33 @@ cd "$ROOT_DIR"
 WORKFLOW_FILE=".github/workflows/ci.yml"
 PROJECT_FILE="ReelFlow.xcodeproj/project.pbxproj"
 
+search() {
+  local mode="$1"
+  local pattern="$2"
+  shift 2
+
+  if command -v rg >/dev/null 2>&1; then
+    case "$mode" in
+      quiet) rg -q "$pattern" "$@" ;;
+      lines) rg -n "$pattern" "$@" ;;
+      *)
+        echo "[ci-consistency] ERROR: unsupported search mode: $mode"
+        exit 1
+        ;;
+    esac
+    return
+  fi
+
+  case "$mode" in
+    quiet) grep -Eq "$pattern" "$@" ;;
+    lines) grep -En "$pattern" "$@" ;;
+    *)
+      echo "[ci-consistency] ERROR: unsupported search mode: $mode"
+      exit 1
+      ;;
+  esac
+}
+
 echo "[ci-consistency] checking required files..."
 for path in \
   "$WORKFLOW_FILE" \
@@ -23,7 +50,7 @@ for path in \
 done
 
 echo "[ci-consistency] checking for stale project names in CI files..."
-if rg -n 'PhotoTime|phototime' \
+if search lines 'PhotoTime|phototime' \
   .github/workflows/ci.yml \
   scripts/check-maintainability.sh \
   scripts/run-xcode-tests.sh \
@@ -38,19 +65,19 @@ if rg -n 'PhotoTime|phototime' \
 fi
 
 echo "[ci-consistency] checking workflow references..."
-if ! rg -q 'PROJECT_FILE: ReelFlow\.xcodeproj' "$WORKFLOW_FILE"; then
+if ! search quiet 'PROJECT_FILE: ReelFlow\.xcodeproj' "$WORKFLOW_FILE"; then
   echo "[ci-consistency] ERROR: workflow PROJECT_FILE env is missing or incorrect."
   exit 1
 fi
-if ! rg -q 'SCHEME_NAME: ReelFlow' "$WORKFLOW_FILE"; then
+if ! search quiet 'SCHEME_NAME: ReelFlow' "$WORKFLOW_FILE"; then
   echo "[ci-consistency] ERROR: workflow SCHEME_NAME env is missing or incorrect."
   exit 1
 fi
-if ! rg -q 'DERIVED_DATA_PATH: \.derivedData' "$WORKFLOW_FILE"; then
+if ! search quiet 'DERIVED_DATA_PATH: \.derivedData' "$WORKFLOW_FILE"; then
   echo "[ci-consistency] ERROR: workflow DERIVED_DATA_PATH env is missing or incorrect."
   exit 1
 fi
-if ! rg -q "hashFiles\\('ReelFlow\\.xcodeproj/project\\.pbxproj'\\)" "$WORKFLOW_FILE"; then
+if ! search quiet "hashFiles\\('ReelFlow\\.xcodeproj/project\\.pbxproj'\\)" "$WORKFLOW_FILE"; then
   echo "[ci-consistency] ERROR: workflow cache key is not tied to ReelFlow.xcodeproj/project.pbxproj."
   exit 1
 fi
@@ -60,7 +87,7 @@ for path in \
   "scripts/test-non-ui.sh" \
   "scripts/test-audio-regression.sh" \
   "scripts/test-ui-smoke.sh"; do
-  if ! rg -q '\./scripts/run-xcode-tests\.sh' "$path"; then
+  if ! search quiet '\./scripts/run-xcode-tests\.sh' "$path"; then
     echo "[ci-consistency] ERROR: expected shared test runner usage in $path"
     exit 1
   fi
