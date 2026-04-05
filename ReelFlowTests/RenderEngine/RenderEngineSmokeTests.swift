@@ -117,6 +117,46 @@ struct RenderEngineSmokeTests {
         #expect(FileManager.default.fileExists(atPath: outputURL.path))
     }
 
+    @Test
+    func plateTextChangesPreviewPixels() async throws {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ReelFlowPlateText-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let imageURLs = try makeTestImages(in: tempDir, count: 1)
+        let baseLayout = LayoutSettings(horizontalMargin: 180, topMargin: 72, bottomMargin: 96, innerPadding: 24)
+        let baseCanvas = CanvasSettings(backgroundGray: 0.09, paperWhite: 0.98, strokeGray: 0.82, textGray: 0.15)
+
+        let plateOn = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false,
+            layout: baseLayout,
+            plate: PlateSettings(enabled: true, height: 96, baselineOffset: 18, fontSize: 26, placement: .frame),
+            canvas: baseCanvas
+        )
+        let plateOff = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false,
+            layout: baseLayout,
+            plate: PlateSettings(enabled: false, height: 96, baselineOffset: 18, fontSize: 26, placement: .frame),
+            canvas: baseCanvas
+        )
+
+        let enabledPreview = try await RenderEngine(settings: plateOn).previewFrame(imageURLs: imageURLs, at: 0)
+        let disabledPreview = try await RenderEngine(settings: plateOff).previewFrame(imageURLs: imageURLs, at: 0)
+        let diff = try Self.diffStats(lhs: enabledPreview, rhs: disabledPreview)
+
+        #expect(diff.mean > 0.001)
+        #expect(diff.max > 0.05)
+    }
+
     @Test(arguments: [false, true])
     func previewFramesMatchExportedFramesAtKeyTimes(enableKenBurns: Bool) async throws {
         let settings = RenderSettings(

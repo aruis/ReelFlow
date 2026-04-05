@@ -1,11 +1,6 @@
 import CoreImage
+import CoreText
 import Foundation
-
-#if canImport(AppKit)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
 
 struct ComposedClip {
     let paperImage: CIImage
@@ -30,7 +25,7 @@ final class FrameComposer {
     private let layout: FrameLayout
     private let backgroundImage: CIImage
     private let strokeColor: CGColor
-    private let textColor: PlatformColor
+    private let textColor: CGColor
 
     nonisolated init(settings: RenderSettings) {
         self.settings = settings
@@ -41,7 +36,7 @@ final class FrameComposer {
             blue: CGFloat(settings.canvas.strokeGray),
             alpha: 1
         )
-        self.textColor = PlatformColor(white: CGFloat(settings.canvas.textGray), alpha: 1)
+        self.textColor = PlatformDrawing.textColor(gray: CGFloat(settings.canvas.textGray))
 
         let bg = CGFloat(settings.canvas.backgroundGray)
         backgroundImage = CIImage(color: CIColor(red: bg, green: bg, blue: bg, alpha: 1))
@@ -257,28 +252,8 @@ final class FrameComposer {
         context.setLineWidth(1)
         context.stroke(photoRect)
 
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .left
-
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: PlatformDrawing.monospacedFont(ofSize: CGFloat(settings.plate.fontSize)),
-            .foregroundColor: textColor,
-            .paragraphStyle: paragraph
-        ]
-
         if settings.plate.enabled {
-            #if canImport(AppKit)
-            NSGraphicsContext.saveGraphicsState()
-            NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
-            #else
-            UIGraphicsPushContext(context)
-            #endif
-            (text as NSString).draw(in: plateTextRect, withAttributes: attributes)
-            #if canImport(AppKit)
-            NSGraphicsContext.restoreGraphicsState()
-            #else
-            UIGraphicsPopContext()
-            #endif
+            drawPlateText(text, in: plateTextRect, context: context)
         }
 
         guard let cgImage = context.makeImage() else {
@@ -286,6 +261,36 @@ final class FrameComposer {
         }
 
         return CIImage(cgImage: cgImage)
+    }
+
+    nonisolated private func drawPlateText(_ text: String, in rect: CGRect, context: CGContext) {
+        guard !text.isEmpty, rect.width > 0, rect.height > 0 else { return }
+
+        var alignment = CTTextAlignment.left
+        let paragraphStyle = withUnsafePointer(to: &alignment) { alignmentPointer in
+            var setting = CTParagraphStyleSetting(
+                spec: .alignment,
+                valueSize: MemoryLayout<CTTextAlignment>.size,
+                value: alignmentPointer
+            )
+            return CTParagraphStyleCreate(&setting, 1)
+        }
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key(kCTFontAttributeName as String): PlatformDrawing.monospacedFont(ofSize: CGFloat(settings.plate.fontSize)),
+            NSAttributedString.Key(kCTForegroundColorAttributeName as String): textColor,
+            NSAttributedString.Key(kCTParagraphStyleAttributeName as String): paragraphStyle
+        ]
+
+        let attributedText = NSAttributedString(string: text, attributes: attributes)
+        let framesetter = CTFramesetterCreateWithAttributedString(attributedText)
+        let path = CGPath(rect: rect, transform: nil)
+        let frame = CTFramesetterCreateFrame(framesetter, CFRange(location: 0, length: attributedText.length), path, nil)
+
+        context.saveGState()
+        context.textMatrix = .identity
+        CTFrameDraw(frame, context)
+        context.restoreGState()
     }
 
     nonisolated private func resolvedFrameRects(for orientedImage: CIImage) -> (paperRect: CGRect, photoRect: CGRect, plateTextRect: CGRect) {
