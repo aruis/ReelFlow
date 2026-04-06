@@ -232,26 +232,24 @@ struct ContentView: View {
 
                 ToolbarItem(placement: .automatic) {
                     Menu("更多") {
-                        if viewModel.hasSelectedImages {
-                            Button("导入模板") { viewModel.importTemplate() }
-                                .accessibilityIdentifier("secondary_import_template")
-                                .disabled(!viewModel.actionAvailability.canImportTemplate)
-                            Button("保存模板") { viewModel.exportTemplate() }
-                                .accessibilityIdentifier("secondary_export_template")
-                                .disabled(!viewModel.actionAvailability.canSaveTemplate)
-                            Divider()
-                            Button("重试上次导出") { viewModel.retryLastExport() }
-                                .accessibilityIdentifier("secondary_retry_export")
-                                .disabled(!viewModel.actionAvailability.canRetryExport)
-                            Button("导出排障包") { viewModel.exportDiagnosticsBundle() }
-                                .accessibilityIdentifier("secondary_export_diagnostics")
-                                .disabled(viewModel.isBusy)
-                            #if DEBUG
-                            Divider()
-                            Button("模拟导出失败") { viewModel.simulateExportFailure() }
-                                .disabled(viewModel.isBusy)
-                            #endif
-                        }
+                        Button("导入模板") { viewModel.importTemplate() }
+                            .accessibilityIdentifier("secondary_import_template")
+                            .disabled(!viewModel.actionAvailability.canImportTemplate)
+                        Button("保存模板") { viewModel.exportTemplate() }
+                            .accessibilityIdentifier("secondary_export_template")
+                            .disabled(!viewModel.hasSelectedImages || !viewModel.actionAvailability.canSaveTemplate)
+                        Divider()
+                        Button("重试上次导出") { viewModel.retryLastExport() }
+                            .accessibilityIdentifier("secondary_retry_export")
+                            .disabled(!viewModel.hasSelectedImages || !viewModel.actionAvailability.canRetryExport)
+                        Button("导出排障包") { viewModel.exportDiagnosticsBundle() }
+                            .accessibilityIdentifier("secondary_export_diagnostics")
+                            .disabled(!viewModel.hasSelectedImages || viewModel.isBusy)
+                        #if DEBUG
+                        Divider()
+                        Button("模拟导出失败") { viewModel.simulateExportFailure() }
+                            .disabled(viewModel.isBusy)
+                        #endif
                     }
                     .accessibilityIdentifier("toolbar_more_menu")
                 }
@@ -317,7 +315,7 @@ struct ContentView: View {
                         }
 
                         if viewModel.hasSelectedImages {
-                            HStack(alignment: .center, spacing: 12) {
+                            HStack(alignment: .top, spacing: 16) {
                                 contentSummaryHeader
                                 Spacer(minLength: 0)
                                 Picker("", selection: $centerPreviewTab) {
@@ -497,14 +495,21 @@ struct ContentView: View {
 
     @ViewBuilder
     private var contentSummaryHeader: some View {
-        HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 8) {
+                Text(previewSummaryTitle)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                previewSummaryStatus
+            }
+
             Text(settingsSummaryText)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)
-
-            previewSummaryStatus
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -530,7 +535,11 @@ struct ContentView: View {
 
     private var settingsSummaryText: String {
         let durationText = String(format: "%.2f", viewModel.previewMaxSecond)
-        return "\(viewModel.imageURLs.count) 张图片 · 预计 \(durationText)s · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS"
+        return "预计 \(durationText)s · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS"
+    }
+
+    private var previewSummaryTitle: String {
+        "\(viewModel.imageURLs.count) 张图片已就绪"
     }
 
 
@@ -727,15 +736,9 @@ struct ContentView: View {
                 )
             } else {
                 HStack(spacing: 10) {
-                    if viewModel.isExporting {
-                        Text("正在导出…")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
                     Spacer(minLength: 0)
 
-                    if let primary = firstRunPrimaryAction {
+                    if let primary = firstRunPrimaryAction, !showsIntegratedPreviewPrimaryAction {
                         WorkflowPrimaryActionButton(
                             title: primary.title,
                             subtitle: firstRunPrimaryActionSubtitle,
@@ -745,11 +748,6 @@ struct ContentView: View {
                         )
                             .disabled(viewModel.isBusy)
                     }
-                }
-
-                if viewModel.isExporting {
-                    ProgressView(value: viewModel.progress)
-                        .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -806,35 +804,126 @@ struct ContentView: View {
         }
     }
 
+    private var showsIntegratedPreviewPrimaryAction: Bool {
+        guard viewModel.outputURL != nil else { return false }
+        guard viewModel.validationMessage == nil else { return false }
+        return !viewModel.hasFailureCard
+    }
+
+    private func isIntegratedPreviewPrimaryActionDisabled(for title: String) -> Bool {
+        isToolbarPrimaryActionDisabled(for: title)
+    }
+
+    private func previewActionSummaryTitle(for title: String) -> String? {
+        if viewModel.isExporting {
+            return "正在导出"
+        }
+        switch title {
+        case "生成预览":
+            return "当前设置已更新，可先生成预览。"
+        case "再次导出":
+            return "可以沿用当前设置再次导出。"
+        default:
+            return nil
+        }
+    }
+
     @ViewBuilder
     private var previewOutputBar: some View {
         if viewModel.hasSelectedImages, previewOutputDirectoryURL != nil {
-            HStack(alignment: .center, spacing: 12) {
-                Image(systemName: "folder.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.accentColor)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .center, spacing: 12) {
+                    Image(systemName: "folder.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.accentColor)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("导出目录")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(previewOutputDirectoryText)
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .textSelection(.enabled)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("导出目录")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        HStack(alignment: .center, spacing: 6) {
+                            Text(previewOutputDirectoryText)
+                                .font(.callout.weight(.semibold))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .textSelection(.enabled)
+
+                            Button {
+                                viewModel.openLatestOutputDirectory()
+                            } label: {
+                                Image(systemName: "arrow.up.forward.app")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.secondary)
+                            .help("打开导出文件夹")
+                            .accessibilityLabel("打开导出文件夹")
+                        }
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Button("设置位置") { viewModel.chooseOutput() }
+                        .controlSize(.small)
+                        .disabled(!viewModel.actionAvailability.canSelectOutput)
                 }
 
-                Spacer(minLength: 0)
+                if let primary = firstRunPrimaryAction, showsIntegratedPreviewPrimaryAction {
+                    HStack(alignment: .center, spacing: 12) {
+                        if let title = previewActionSummaryTitle(for: primary.title) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(title)
+                                    .font(.callout.weight(.semibold))
+                                    .foregroundStyle(.primary)
+                                if let subtitle = previewActionSubtitle(for: primary.title) {
+                                    Text(subtitle)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
 
-                Button("设置位置") { viewModel.chooseOutput() }
-                    .controlSize(.small)
-                    .disabled(!viewModel.actionAvailability.canSelectOutput)
+                        Spacer(minLength: 0)
 
-                Button("打开文件夹") { viewModel.openLatestOutputDirectory() }
-                    .controlSize(.small)
-                    .disabled(false)
+                        if viewModel.isExporting {
+                            Button("取消导出") { viewModel.cancelExport() }
+                                .buttonStyle(.bordered)
+                                .controlSize(.regular)
+                                .accessibilityIdentifier("preview_output_cancel_action")
+                                .disabled(!viewModel.actionAvailability.canCancelExport)
+                        } else {
+                            WorkflowPrimaryActionButton(
+                                title: primary.title,
+                                subtitle: nil,
+                                isBusy: viewModel.isBusy,
+                                accessibilityIdentifier: "preview_output_primary_action",
+                                action: primary.handler
+                            )
+                            .disabled(isIntegratedPreviewPrimaryActionDisabled(for: primary.title))
+                        }
+                    }
+                }
+
+                if viewModel.isExporting {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .center, spacing: 8) {
+                            Text("导出进度")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
+
+                            Spacer(minLength: 0)
+
+                            Text(exportProgressText)
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+
+                        ProgressView(value: viewModel.progress)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .padding(.top, 2)
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
@@ -849,6 +938,18 @@ struct ContentView: View {
     private var previewOutputDirectoryText: String {
         guard let directoryURL = previewOutputDirectoryURL else { return "" }
         return (directoryURL.path as NSString).abbreviatingWithTildeInPath
+    }
+
+    private var exportProgressText: String {
+        let progress = min(max(viewModel.progress, 0), 1)
+        return "\(Int((progress * 100).rounded()))%"
+    }
+
+    private func previewActionSubtitle(for title: String) -> String? {
+        if viewModel.isExporting {
+            return "导出期间预览与输出设置暂时锁定。"
+        }
+        return nil
     }
 
     private func presentSuccessSheetIfNeeded() {
@@ -977,6 +1078,13 @@ struct ContentView: View {
 
     private var videoPreviewPanel: some View {
         let videoDuration = max(viewModel.previewMaxSecond, 0)
+        let settings = viewModel.currentRenderSettings
+        let timeline = TimelineEngine(
+            itemCount: max(viewModel.imageURLs.count, 1),
+            imageDuration: settings.imageDuration,
+            transitionDuration: settings.effectiveTransitionDuration,
+            transitionDipDuration: settings.transitionDipDuration
+        )
         let audioSegments = audioTimelineSegments(
             videoDuration: videoDuration,
             audioDuration: viewModel.selectedAudioDuration,
@@ -984,7 +1092,8 @@ struct ContentView: View {
         )
         return VideoTimelinePreviewPanel(
             viewModel: viewModel,
-            audioSegments: audioSegments
+            audioSegments: audioSegments,
+            imageSegmentStarts: timeline.clips.map(\.start)
         )
     }
 

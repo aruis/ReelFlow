@@ -288,6 +288,15 @@ struct FailureStatusCard: View {
                 .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 HStack(spacing: 10) {
+                    Spacer(minLength: 0)
+
+                    Button {
+                        onOpenLog()
+                    } label: {
+                        Label("查看日志", systemImage: "doc.text")
+                    }
+                        .accessibilityIdentifier("failure_open_log")
+
                     Button {
                         onPrimaryAction()
                     } label: {
@@ -296,14 +305,10 @@ struct FailureStatusCard: View {
                         .accessibilityIdentifier("failure_primary_action")
                         .buttonStyle(.borderedProminent)
                         .disabled(isBusy)
-                    Button {
-                        onOpenLog()
-                    } label: {
-                        Label("查看日志", systemImage: "doc.text")
-                    }
-                        .accessibilityIdentifier("failure_open_log")
                 }
                 .controlSize(.small)
+                .padding(.top, 4)
+                .padding(.bottom, 2)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
