@@ -8,7 +8,16 @@ struct PurchaseStoreTests {
         let store = PurchaseStore(mode: .preview(hasProAccess: true))
 
         #expect(store.hasProAccess == true)
+        #expect(store.entitlementState == .pro)
         #expect(store.statusMessage?.contains("已解锁") == true)
+    }
+
+    @Test
+    func previewModeResolvesFreeStateImmediately() async throws {
+        let store = PurchaseStore(mode: .preview(hasProAccess: false))
+
+        #expect(store.entitlementState == .free)
+        #expect(store.isEntitlementResolved == true)
     }
 
     @Test

@@ -3,6 +3,12 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AssetSidebarPanel: View {
+    enum PlanPresentationState {
+        case loading
+        case free
+        case pro
+    }
+
     private struct SidebarGridLayout {
         let columns: [GridItem]
         let cardHeight: CGFloat
@@ -15,6 +21,7 @@ struct AssetSidebarPanel: View {
     @Binding var selectedAssetURLs: Set<URL>
     @Binding var isAssetDropTarget: Bool
     @Binding var draggingAssetURL: URL?
+    let planPresentationState: PlanPresentationState
     @State private var localKeyMonitor: Any?
     @State private var focusedAssetURL: URL?
     private let sidebarGridSpacing: CGFloat = 10
@@ -81,8 +88,8 @@ struct AssetSidebarPanel: View {
             .buttonStyle(.borderedProminent)
             VStack(spacing: 4) {
                 Text("支持拖入图片或文件夹")
-                if !viewModel.hasProAccess {
-                    Text("免费版最多导入 20 张，升级 Pro 可解锁无限导入")
+                if planPresentationState == .free {
+                    Text("免费版最多导入 20 张，升级 Pro 可解锁无限图片导入")
                 }
             }
             .font(.caption2)
@@ -96,7 +103,7 @@ struct AssetSidebarPanel: View {
 
     private var assetBottomBar: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !viewModel.hasProAccess {
+            if planPresentationState == .free {
                 quotaStatusStrip
             }
             ViewThatFits(in: .horizontal) {

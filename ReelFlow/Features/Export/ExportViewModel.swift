@@ -31,6 +31,12 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         let message: String
     }
 
+    enum EntitlementState: String, Equatable {
+        case loading
+        case free
+        case pro
+    }
+
     static let freePhotoLimit = 20
 
     enum FileListFilter: String, CaseIterable, Identifiable {
@@ -103,7 +109,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var failureCardCopy: FailureCardCopy?
     @Published var workflow = ExportWorkflowModel()
 
-    let proAccessProvider: @MainActor () -> Bool
+    let entitlementStateProvider: @MainActor () -> EntitlementState
     let makeEngine: (RenderSettings) -> any RenderingEngineClient
     var exportTask: Task<Void, Never>?
     var previewTask: Task<Void, Never>?
@@ -121,12 +127,12 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     var hasUserSelectedOutputURL = false
 
     init(
-        hasProAccess: @escaping @MainActor () -> Bool = { false },
+        entitlementState: @escaping @MainActor () -> EntitlementState = { .free },
         makeEngine: @escaping (RenderSettings) -> any RenderingEngineClient = { settings in
         RenderEngine(settings: settings)
     }
     ) {
-        self.proAccessProvider = hasProAccess
+        self.entitlementStateProvider = entitlementState
         self.makeEngine = makeEngine
         super.init()
         outputURL = Self.defaultOutputURL()
@@ -136,6 +142,18 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
         applyUITestScenarioIfNeeded()
         refreshSelectedAudioDuration(force: true)
+    }
+
+    convenience init(
+        hasProAccess: @escaping @MainActor () -> Bool,
+        makeEngine: @escaping (RenderSettings) -> any RenderingEngineClient = { settings in
+            RenderEngine(settings: settings)
+        }
+    ) {
+        self.init(
+            entitlementState: { hasProAccess() ? .pro : .free },
+            makeEngine: makeEngine
+        )
     }
 
     var isBusy: Bool {
@@ -239,12 +257,20 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         actionAvailability.canStartExport && hasSelectedImages && validationMessage == nil
     }
 
+    var entitlementState: EntitlementState {
+        entitlementStateProvider()
+    }
+
+    var isEntitlementResolved: Bool {
+        entitlementState != .loading
+    }
+
     var hasProAccess: Bool {
-        proAccessProvider()
+        entitlementState == .pro
     }
 
     var activeWatermark: WatermarkSettings? {
-        hasProAccess ? nil : .reelFlowFreeTier
+        entitlementState == .free ? .reelFlowFreeTier : nil
     }
 
     var currentRenderSettings: RenderSettings {
@@ -252,7 +278,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     var photoImportLimit: Int? {
-        hasProAccess ? nil : Self.freePhotoLimit
+        entitlementState == .free ? Self.freePhotoLimit : nil
     }
 
     var photoImportSummary: String {
@@ -278,6 +304,9 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     var photoImportStatusMessage: String {
+        if entitlementState == .loading {
+            return "正在检查购买状态…"
+        }
         guard let remainingPhotoImportSlots else {
             return "Pro 已解锁：可继续导入更多照片。"
         }
@@ -285,16 +314,20 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             return "已到免费版 20 张上限，升级 Pro 可继续添加。"
         }
         if isNearPhotoImportLimit {
-            return "还可再导入 \(remainingPhotoImportSlots) 张，升级 Pro 可解锁无限导入。"
+            return "还可再导入 \(remainingPhotoImportSlots) 张，升级 Pro 可解锁无限图片导入。"
         }
         return "免费版当前最多支持 20 张照片。"
     }
 
     var planStatusMessage: String {
-        if hasProAccess {
-            return "ReelFlow Pro 已解锁：无限导入，导出无水印。"
+        switch entitlementState {
+        case .loading:
+            return "正在检查购买状态…"
+        case .pro:
+            return "ReelFlow Pro 已解锁：无限图片导入，导出无水印。"
+        case .free:
+            return "免费版支持最多 20 张照片，导出会带 Made with ReelFlow 水印。"
         }
-        return "免费版支持最多 20 张照片，导出会带 Made with ReelFlow 水印。"
     }
 
     var flowSteps: [FlowStep] {
@@ -445,14 +478,14 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             config.audioFilePath,
             String(format: "%.3f", config.audioVolume),
             config.audioLoopEnabled ? "1" : "0",
-            hasProAccess ? "pro" : "free"
+            entitlementState.rawValue
         ].joined(separator: "|")
     }
 
     func presentFreeTierImportLimitAlert(incomingCount: Int, resultingCount: Int, replacingExisting: Bool) {
         let actionText = replacingExisting ? "导入这批素材" : "继续添加这些素材"
         let title = "免费版最多支持 20 张照片"
-        let message = "\(actionText)后会达到 \(resultingCount) 张，因此本次不会导入任何新素材。升级 ReelFlow Pro 可解锁无限导入，并移除导出水印。"
+        let message = "\(actionText)后会达到 \(resultingCount) 张，因此本次不会导入任何新素材。升级 ReelFlow Pro 可解锁无限图片导入，并移除导出水印。"
         entitlementAlert = EntitlementAlert(title: title, message: message)
         workflow.setIdleMessage("免费版最多支持 20 张照片；本次有 \(incomingCount) 张未导入。")
     }

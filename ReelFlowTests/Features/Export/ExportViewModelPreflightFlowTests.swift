@@ -54,6 +54,17 @@ struct ExportViewModelPreflightFlowTests {
     }
 
     @Test
+    func loadingEntitlementDoesNotApplyFreeTierRestrictionsYet() async throws {
+        let viewModel = ExportViewModel(entitlementState: { .loading })
+
+        #expect(viewModel.hasProAccess == false)
+        #expect(viewModel.isEntitlementResolved == false)
+        #expect(viewModel.currentRenderSettings.watermark == nil)
+        #expect(viewModel.photoImportLimit == nil)
+        #expect(viewModel.photoImportStatusMessage.contains("正在检查") == true)
+    }
+
+    @Test
     func freeTierRejectsImportsBeyondTwentyPhotos() async throws {
         let viewModel = ExportViewModel(hasProAccess: { false })
         let tempDir = try Self.makeTempDirectory()

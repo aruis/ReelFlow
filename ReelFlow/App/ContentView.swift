@@ -72,7 +72,7 @@ struct ContentView: View {
         _purchaseStore = ObservedObject(wrappedValue: purchaseStore)
         _viewModel = StateObject(
             wrappedValue: ExportViewModel(
-                hasProAccess: { purchaseStore.hasProAccess }
+                entitlementState: { Self.mapEntitlementState(purchaseStore.entitlementState) }
             )
         )
         self.layoutMode = .app
@@ -83,7 +83,7 @@ struct ContentView: View {
         _purchaseStore = ObservedObject(wrappedValue: purchaseStore)
         _viewModel = StateObject(
             wrappedValue: ExportViewModel(
-                hasProAccess: { purchaseStore.hasProAccess }
+                entitlementState: { Self.mapEntitlementState(purchaseStore.entitlementState) }
             )
         )
         self.layoutMode = .app
@@ -117,13 +117,14 @@ struct ContentView: View {
                 }
             }
             .alert(item: $viewModel.entitlementAlert) { alert in
-                if purchaseStore.hasProAccess {
+                switch purchaseStore.entitlementState {
+                case .pro:
                     Alert(
                         title: Text(alert.title),
                         message: Text(alert.message),
                         dismissButton: .default(Text("知道了"))
                     )
-                } else {
+                case .free:
                     Alert(
                         title: Text(alert.title),
                         message: Text(alert.message),
@@ -131,6 +132,12 @@ struct ContentView: View {
                             purchaseStore.purchasePro()
                         },
                         secondaryButton: .cancel(Text("稍后"))
+                    )
+                case .loading:
+                    Alert(
+                        title: Text(alert.title),
+                        message: Text(alert.message),
+                        dismissButton: .default(Text("知道了"))
                     )
                 }
             }
@@ -140,7 +147,7 @@ struct ContentView: View {
                     scheduleSingleFramePreview()
                 }
             }
-            .onChange(of: purchaseStore.hasProAccess) { _, _ in
+            .onChange(of: purchaseStore.entitlementState) { _, _ in
                 if centerPreviewTab == .singleFrame {
                     scheduleSingleFramePreview()
                 } else if viewModel.hasSelectedImages {
@@ -275,8 +282,31 @@ struct ContentView: View {
             selectedAssetURL: $selectedAssetURL,
             selectedAssetURLs: $selectedAssetURLs,
             isAssetDropTarget: $isAssetDropTarget,
-            draggingAssetURL: $draggingAssetURL
+            draggingAssetURL: $draggingAssetURL,
+            planPresentationState: sidebarPlanPresentationState
         )
+    }
+
+    private var sidebarPlanPresentationState: AssetSidebarPanel.PlanPresentationState {
+        switch purchaseStore.entitlementState {
+        case .loading:
+            return .loading
+        case .free:
+            return .free
+        case .pro:
+            return .pro
+        }
+    }
+
+    private static func mapEntitlementState(_ state: PurchaseStore.EntitlementState) -> ExportViewModel.EntitlementState {
+        switch state {
+        case .loading:
+            return .loading
+        case .free:
+            return .free
+        case .pro:
+            return .pro
+        }
     }
 
     private var workspaceDetailSplit: some View {
@@ -392,7 +422,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(purchaseStore.hasProAccess ? "ReelFlow Pro" : "免费版")
+                    Text(planTitle)
                         .font(.callout.weight(.semibold))
                     Text(planBenefitSummary)
                         .font(.caption)
@@ -401,7 +431,7 @@ struct ContentView: View {
 
                 Spacer(minLength: 0)
 
-                if !purchaseStore.hasProAccess {
+                if purchaseStore.entitlementState == .free {
                     HStack(spacing: 8) {
                         Button(purchaseStore.purchaseButtonTitle) {
                             purchaseStore.purchasePro()
@@ -423,8 +453,16 @@ struct ContentView: View {
 
             Divider()
 
-            if purchaseStore.hasProAccess {
-                Label("已解锁无限导入与无水印导出", systemImage: "checkmark.circle.fill")
+            if purchaseStore.entitlementState == .loading {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("正在同步购买状态")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else if purchaseStore.entitlementState == .pro {
+                Label("已解锁无限图片导入与无水印导出", systemImage: "checkmark.circle.fill")
                     .font(.caption)
                     .foregroundStyle(.green)
             } else {
@@ -437,18 +475,42 @@ struct ContentView: View {
         .padding(.top, 12)
         .padding(.bottom, 10)
         .background(
-            purchaseStore.hasProAccess
-                ? Color.green.opacity(0.06)
-                : Color.secondary.opacity(0.05)
+            planStatusBackground
         )
         .accessibilityIdentifier("plan_status_banner")
     }
 
-    private var planBenefitSummary: String {
-        if purchaseStore.hasProAccess {
-            return "无限导入 · 无水印导出"
+    private var planTitle: String {
+        switch purchaseStore.entitlementState {
+        case .loading:
+            return "正在检查购买状态"
+        case .free:
+            return "免费版"
+        case .pro:
+            return "ReelFlow Pro"
         }
-        return "最多 20 张照片 · 导出带水印"
+    }
+
+    private var planBenefitSummary: String {
+        switch purchaseStore.entitlementState {
+        case .loading:
+            return "稍后会根据你的购买记录自动更新。"
+        case .pro:
+            return "无限图片导入 · 无水印导出"
+        case .free:
+            return "最多 20 张照片 · 导出带水印"
+        }
+    }
+
+    private var planStatusBackground: Color {
+        switch purchaseStore.entitlementState {
+        case .loading:
+            return Color.secondary.opacity(0.04)
+        case .free:
+            return Color.secondary.opacity(0.05)
+        case .pro:
+            return Color.green.opacity(0.06)
+        }
     }
 
     private var quotaSummaryText: String {
@@ -566,7 +628,7 @@ struct ContentView: View {
                 exportStatusPanel
             }
 
-            if !purchaseStore.hasProAccess, viewModel.hasSelectedImages {
+            if purchaseStore.entitlementState == .free, viewModel.hasSelectedImages {
                 freeTierExportNoticePanel
             }
 

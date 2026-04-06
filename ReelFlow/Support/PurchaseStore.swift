@@ -4,6 +4,12 @@ import StoreKit
 
 @MainActor
 final class PurchaseStore: ObservableObject {
+    enum EntitlementState: Equatable {
+        case loading
+        case free
+        case pro
+    }
+
     enum Mode {
         case live
         case preview(hasProAccess: Bool)
@@ -25,7 +31,7 @@ final class PurchaseStore: ObservableObject {
 
     static let proProductID = "net.ximatai.reelflow.pro"
 
-    @Published private(set) var hasProAccess = false
+    @Published private(set) var entitlementState: EntitlementState = .loading
     @Published private(set) var proProduct: Product?
     @Published private(set) var isBusy = false
     @Published private(set) var statusMessage: String?
@@ -52,7 +58,7 @@ final class PurchaseStore: ObservableObject {
                 await refreshStore()
             }
         case .preview(let hasProAccess):
-            self.hasProAccess = hasProAccess
+            entitlementState = hasProAccess ? .pro : .free
             self.statusMessage = hasProAccess ? "测试场景：ReelFlow Pro 已解锁" : "测试场景：免费版"
         }
     }
@@ -61,8 +67,16 @@ final class PurchaseStore: ObservableObject {
         updatesTask?.cancel()
     }
 
+    var hasProAccess: Bool {
+        entitlementState == .pro
+    }
+
+    var isEntitlementResolved: Bool {
+        entitlementState != .loading
+    }
+
     var purchaseButtonTitle: String {
-        if hasProAccess {
+        if entitlementState == .pro {
             return "ReelFlow Pro 已解锁"
         }
         if let proProduct {
@@ -72,8 +86,11 @@ final class PurchaseStore: ObservableObject {
     }
 
     var planDescription: String {
-        if hasProAccess {
-            return "ReelFlow Pro 已解锁：无限导入，导出无水印。"
+        if entitlementState == .loading {
+            return "正在检查购买状态…"
+        }
+        if entitlementState == .pro {
+            return "ReelFlow Pro 已解锁：无限图片导入，导出无水印。"
         }
         return "免费版最多导入 20 张照片，导出会带 Made with ReelFlow 水印。"
     }
@@ -112,12 +129,12 @@ final class PurchaseStore: ObservableObject {
                         return
                     }
 
-                    hasProAccess = true
+                    entitlementState = .pro
                     statusMessage = "ReelFlow Pro 已解锁。"
                     feedback = Feedback(
                         tone: .success,
                         title: "ReelFlow Pro 已解锁",
-                        message: "无限导入与无水印导出已立即生效。"
+                        message: "无限图片导入与无水印导出已立即生效。"
                     )
                     await transaction.finish()
                     await refreshEntitlements()
@@ -170,7 +187,7 @@ final class PurchaseStore: ObservableObject {
                     ? Feedback(
                         tone: .success,
                         title: "已恢复购买",
-                        message: "ReelFlow Pro 已恢复，无限导入与无水印导出已生效。"
+                        message: "ReelFlow Pro 已恢复，无限图片导入与无水印导出已生效。"
                     )
                     : Feedback(
                         tone: .info,
@@ -222,7 +239,7 @@ final class PurchaseStore: ObservableObject {
             break
         }
 
-        hasProAccess = unlocked
+        entitlementState = unlocked ? .pro : .free
     }
 
     private func observeTransactionUpdates() -> Task<Void, Never> {
