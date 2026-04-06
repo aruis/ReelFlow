@@ -46,6 +46,7 @@ struct ContentView: View {
     }
 
     @StateObject private var viewModel: ExportViewModel
+    @ObservedObject private var purchaseStore: PurchaseStore
     private let layoutMode: LayoutMode
     @State private var centerPreviewTab: CenterPreviewTab = .singleFrame
     @State private var settingsTab: SettingsTab = .simple
@@ -63,13 +64,34 @@ struct ContentView: View {
     @State private var preflightSecondaryActionsExpanded = false
     @State private var splitColumnVisibility: NavigationSplitViewVisibility = .all
     @State private var successSheetContext: SuccessSheetContext?
+    @State private var feedbackDismissTask: Task<Void, Never>?
 
+    @MainActor
     init() {
-        _viewModel = StateObject(wrappedValue: ExportViewModel())
+        let purchaseStore = PurchaseStore()
+        _purchaseStore = ObservedObject(wrappedValue: purchaseStore)
+        _viewModel = StateObject(
+            wrappedValue: ExportViewModel(
+                hasProAccess: { purchaseStore.hasProAccess }
+            )
+        )
         self.layoutMode = .app
     }
 
-    fileprivate init(viewModel: ExportViewModel, layoutMode: LayoutMode) {
+    @MainActor
+    init(purchaseStore: PurchaseStore) {
+        _purchaseStore = ObservedObject(wrappedValue: purchaseStore)
+        _viewModel = StateObject(
+            wrappedValue: ExportViewModel(
+                hasProAccess: { purchaseStore.hasProAccess }
+            )
+        )
+        self.layoutMode = .app
+    }
+
+    @MainActor
+    fileprivate init(viewModel: ExportViewModel, layoutMode: LayoutMode, purchaseStore: PurchaseStore) {
+        _purchaseStore = ObservedObject(wrappedValue: purchaseStore)
         _viewModel = StateObject(wrappedValue: viewModel)
         self.layoutMode = layoutMode
     }
@@ -94,11 +116,39 @@ struct ContentView: View {
                     scheduleSingleFramePreview()
                 }
             }
+            .alert(item: $viewModel.entitlementAlert) { alert in
+                if purchaseStore.hasProAccess {
+                    Alert(
+                        title: Text(alert.title),
+                        message: Text(alert.message),
+                        dismissButton: .default(Text("知道了"))
+                    )
+                } else {
+                    Alert(
+                        title: Text(alert.title),
+                        message: Text(alert.message),
+                        primaryButton: .default(Text("升级 Pro")) {
+                            purchaseStore.purchasePro()
+                        },
+                        secondaryButton: .cancel(Text("稍后"))
+                    )
+                }
+            }
             .onChange(of: viewModel.configSignature) { _, _ in
                 viewModel.handleConfigChanged()
                 if centerPreviewTab == .singleFrame {
                     scheduleSingleFramePreview()
                 }
+            }
+            .onChange(of: purchaseStore.hasProAccess) { _, _ in
+                if centerPreviewTab == .singleFrame {
+                    scheduleSingleFramePreview()
+                } else if viewModel.hasSelectedImages {
+                    viewModel.generatePreview()
+                }
+            }
+            .onChange(of: purchaseStore.feedback) { _, feedback in
+                schedulePurchaseFeedbackDismiss(for: feedback)
             }
             .onChange(of: viewModel.imageURLs) { _, urls in
                 guard !urls.isEmpty else {
@@ -145,6 +195,7 @@ struct ContentView: View {
                 presentSuccessSheetIfNeeded()
             }
             .onDisappear {
+                feedbackDismissTask?.cancel()
                 viewModel.stopAudioPreview()
                 viewModel.stopShutterSoundPreview()
             }
@@ -182,26 +233,16 @@ struct ContentView: View {
                 ToolbarItem(placement: .automatic) {
                     Menu("更多") {
                         if viewModel.hasSelectedImages {
-                            Button("设置位置") { viewModel.chooseOutput() }
-                                .accessibilityIdentifier("toolbar_select_output")
-                                .disabled(!viewModel.actionAvailability.canSelectOutput)
-                            Divider()
-                        }
-                        if viewModel.hasSelectedImages {
-                            Button("运行预检") { viewModel.rerunPreflight() }
-                                .accessibilityIdentifier("secondary_rerun_preflight")
-                                .disabled(viewModel.isBusy || viewModel.imageURLs.isEmpty)
-                            Divider()
                             Button("导入模板") { viewModel.importTemplate() }
                                 .accessibilityIdentifier("secondary_import_template")
                                 .disabled(!viewModel.actionAvailability.canImportTemplate)
                             Button("保存模板") { viewModel.exportTemplate() }
                                 .accessibilityIdentifier("secondary_export_template")
                                 .disabled(!viewModel.actionAvailability.canSaveTemplate)
+                            Divider()
                             Button("重试上次导出") { viewModel.retryLastExport() }
                                 .accessibilityIdentifier("secondary_retry_export")
                                 .disabled(!viewModel.actionAvailability.canRetryExport)
-                            Divider()
                             Button("导出排障包") { viewModel.exportDiagnosticsBundle() }
                                 .accessibilityIdentifier("secondary_export_diagnostics")
                                 .disabled(viewModel.isBusy)
@@ -311,6 +352,10 @@ struct ContentView: View {
 
     private var rightSettingsColumn: some View {
         VStack(alignment: .leading, spacing: 0) {
+            planStatusBanner
+            if let feedback = purchaseStore.feedback {
+                purchaseFeedbackBanner(feedback)
+            }
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Spacer(minLength: 0)
@@ -343,6 +388,111 @@ struct ContentView: View {
                 endPoint: .bottom
             )
         )
+    }
+
+    private var planStatusBanner: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(purchaseStore.hasProAccess ? "ReelFlow Pro" : "免费版")
+                        .font(.callout.weight(.semibold))
+                    Text(planBenefitSummary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+
+                if !purchaseStore.hasProAccess {
+                    HStack(spacing: 8) {
+                        Button(purchaseStore.purchaseButtonTitle) {
+                            purchaseStore.purchasePro()
+                        }
+                        .accessibilityIdentifier("plan_upgrade_button")
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .disabled(purchaseStore.isBusy)
+
+                        Button("恢复购买") {
+                            purchaseStore.restorePurchases()
+                        }
+                        .accessibilityIdentifier("plan_restore_button")
+                        .controlSize(.small)
+                        .disabled(purchaseStore.isBusy)
+                    }
+                }
+            }
+
+            Divider()
+
+            if purchaseStore.hasProAccess {
+                Label("已解锁无限导入与无水印导出", systemImage: "checkmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+            } else {
+                Label(quotaSummaryText, systemImage: "photo.on.rectangle.angled")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 10)
+        .background(
+            purchaseStore.hasProAccess
+                ? Color.green.opacity(0.06)
+                : Color.secondary.opacity(0.05)
+        )
+        .accessibilityIdentifier("plan_status_banner")
+    }
+
+    private var planBenefitSummary: String {
+        if purchaseStore.hasProAccess {
+            return "无限导入 · 无水印导出"
+        }
+        return "最多 20 张照片 · 导出带水印"
+    }
+
+    private var quotaSummaryText: String {
+        if viewModel.isAtPhotoImportLimit {
+            return "当前素材 \(viewModel.photoImportSummary)，已到上限"
+        }
+        if viewModel.isNearPhotoImportLimit, let remaining = viewModel.remainingPhotoImportSlots {
+            return "当前素材 \(viewModel.photoImportSummary)，还可导入 \(remaining) 张"
+        }
+        return "当前素材 \(viewModel.photoImportSummary)"
+    }
+
+    private func purchaseFeedbackBanner(_ feedback: PurchaseStore.Feedback) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: iconName(for: feedback.tone))
+                .font(.subheadline)
+                .foregroundStyle(color(for: feedback.tone))
+                .padding(.top, 1)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(feedback.title)
+                    .font(.callout.weight(.semibold))
+                Text(feedback.message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Button {
+                purchaseStore.clearFeedback()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(color(for: feedback.tone).opacity(0.10))
+        .accessibilityIdentifier("purchase_feedback_banner")
     }
 
     @ViewBuilder
@@ -407,6 +557,10 @@ struct ContentView: View {
                 exportStatusPanel
             }
 
+            if !purchaseStore.hasProAccess, viewModel.hasSelectedImages {
+                freeTierExportNoticePanel
+            }
+
             if viewModel.hasSelectedImages, viewModel.outputURL == nil {
                 outputPathHintPanel
             }
@@ -436,6 +590,67 @@ struct ContentView: View {
             }
         }
         .textSelection(.enabled)
+    }
+
+    private var freeTierExportNoticePanel: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "watermark")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(.top, 1)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("免费版导出将带水印")
+                    .font(.callout.weight(.semibold))
+                Text("当前预览与导出都会显示较轻的 Made with ReelFlow 标记。升级 Pro 后会自动移除。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.secondary.opacity(0.07), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityIdentifier("free_tier_export_notice")
+    }
+
+    private func schedulePurchaseFeedbackDismiss(for feedback: PurchaseStore.Feedback?) {
+        feedbackDismissTask?.cancel()
+        guard feedback != nil else { return }
+
+        feedbackDismissTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
+            if !Task.isCancelled {
+                purchaseStore.clearFeedback()
+            }
+        }
+    }
+
+    private func color(for tone: PurchaseStore.Feedback.Tone) -> Color {
+        switch tone {
+        case .success:
+            return .green
+        case .info:
+            return .blue
+        case .warning:
+            return .orange
+        case .error:
+            return .red
+        }
+    }
+
+    private func iconName(for tone: PurchaseStore.Feedback.Tone) -> String {
+        switch tone {
+        case .success:
+            return "checkmark.circle.fill"
+        case .info:
+            return "info.circle.fill"
+        case .warning:
+            return "exclamationmark.triangle.fill"
+        case .error:
+            return "xmark.octagon.fill"
+        }
     }
 
     private var outputPathHintPanel: some View {
@@ -844,40 +1059,44 @@ struct ContentView: View {
 }
 
 #Preview("App") {
-    ContentView()
+    ContentView(purchaseStore: PurchaseStore(mode: .preview(hasProAccess: false)))
 }
 
 #Preview("Workspace") {
     ContentView(
         viewModel: ContentView.makeWorkspacePreviewViewModel(),
-        layoutMode: .workspaceOnly
+        layoutMode: .workspaceOnly,
+        purchaseStore: PurchaseStore(mode: .preview(hasProAccess: false))
     )
 }
 
 #Preview("Sidebar") {
     ContentView(
         viewModel: ContentView.makeWorkspacePreviewViewModel(),
-        layoutMode: .sidebarOnly
+        layoutMode: .sidebarOnly,
+        purchaseStore: PurchaseStore(mode: .preview(hasProAccess: false))
     )
 }
 
 #Preview("Center") {
     ContentView(
         viewModel: ContentView.makeWorkspacePreviewViewModel(),
-        layoutMode: .centerOnly
+        layoutMode: .centerOnly,
+        purchaseStore: PurchaseStore(mode: .preview(hasProAccess: false))
     )
 }
 
 #Preview("Settings") {
     ContentView(
         viewModel: ContentView.makeWorkspacePreviewViewModel(),
-        layoutMode: .settingsOnly
+        layoutMode: .settingsOnly,
+        purchaseStore: PurchaseStore(mode: .preview(hasProAccess: false))
     )
 }
 
 private extension ContentView {
     static func makeWorkspacePreviewViewModel() -> ExportViewModel {
-        let viewModel = ExportViewModel()
+        let viewModel = ExportViewModel(hasProAccess: { false })
         viewModel.imageURLs = [
             URL(fileURLWithPath: "/tmp/preview-a.jpg"),
             URL(fileURLWithPath: "/tmp/preview-b.jpg"),

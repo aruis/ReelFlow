@@ -24,6 +24,7 @@ final class FrameComposer {
     private let settings: RenderSettings
     private let layout: FrameLayout
     private let backgroundImage: CIImage
+    private let watermarkOverlay: CIImage?
     private let strokeColor: CGColor
     private let textColor: CGColor
 
@@ -41,6 +42,7 @@ final class FrameComposer {
         let bg = CGFloat(settings.canvas.backgroundGray)
         backgroundImage = CIImage(color: CIColor(red: bg, green: bg, blue: bg, alpha: 1))
             .cropped(to: layout.canvas)
+        watermarkOverlay = Self.makeWatermarkOverlay(settings: settings)
     }
 
     nonisolated func makeClip(_ asset: RenderAsset) -> ComposedClip {
@@ -113,6 +115,10 @@ final class FrameComposer {
                 frame = composite(photo, opacity: layer.opacity, over: frame)
                 frame = composite(clip.textOverlay, opacity: layer.opacity, over: frame)
             }
+        }
+
+        if let watermarkOverlay {
+            frame = composite(watermarkOverlay, opacity: 1, over: frame)
         }
 
         return frame.cropped(to: layout.canvas)
@@ -291,6 +297,96 @@ final class FrameComposer {
         context.textMatrix = .identity
         CTFrameDraw(frame, context)
         context.restoreGState()
+    }
+
+    nonisolated private func drawWatermark(_ watermark: WatermarkSettings, in context: CGContext) {
+        let widthScale = max(settings.outputSize.width / 1920, 0.7)
+        let resolvedFontSize = CGFloat(watermark.fontSize) * widthScale
+        let font = PlatformDrawing.systemFont(ofSize: resolvedFontSize)
+        let attributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key(kCTFontAttributeName as String): font,
+            NSAttributedString.Key(kCTForegroundColorAttributeName as String): CGColor(
+                red: 1,
+                green: 1,
+                blue: 1,
+                alpha: CGFloat(watermark.textOpacity)
+            )
+        ]
+        let attributedText = NSAttributedString(string: watermark.text, attributes: attributes)
+        let line = CTLineCreateWithAttributedString(attributedText)
+
+        var ascent: CGFloat = 0
+        var descent: CGFloat = 0
+        var leading: CGFloat = 0
+        let textWidth = CGFloat(CTLineGetTypographicBounds(line, &ascent, &descent, &leading)).rounded(.up)
+        let textHeight = (ascent + descent + leading).rounded(.up)
+        let horizontalPadding = CGFloat(watermark.horizontalPadding) * widthScale
+        let verticalPadding = CGFloat(watermark.verticalPadding) * widthScale
+        let inset = CGFloat(watermark.inset) * widthScale
+        let capsuleRect = CGRect(
+            x: settings.outputSize.width - textWidth - horizontalPadding * 2 - inset,
+            y: inset,
+            width: textWidth + horizontalPadding * 2,
+            height: textHeight + verticalPadding * 2
+        ).integral
+
+        let path = CGPath(
+            roundedRect: capsuleRect,
+            cornerWidth: CGFloat(watermark.cornerRadius) * widthScale,
+            cornerHeight: CGFloat(watermark.cornerRadius) * widthScale,
+            transform: nil
+        )
+        context.saveGState()
+        context.setFillColor(CGColor(gray: 0, alpha: CGFloat(watermark.backgroundOpacity)))
+        context.addPath(path)
+        context.fillPath()
+        context.textPosition = CGPoint(
+            x: capsuleRect.minX + horizontalPadding,
+            y: capsuleRect.minY + verticalPadding + descent
+        )
+        CTLineDraw(line, context)
+        context.restoreGState()
+    }
+
+    nonisolated private static func makeWatermarkOverlay(settings: RenderSettings) -> CIImage? {
+        guard let watermark = settings.watermark else { return nil }
+        let width = Int(settings.outputSize.width)
+        let height = Int(settings.outputSize.height)
+
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return nil
+        }
+
+        let composer = FrameComposer(settings: settings, watermarkOnly: true)
+        composer.drawWatermark(watermark, in: context)
+        guard let cgImage = context.makeImage() else {
+            return nil
+        }
+        return CIImage(cgImage: cgImage)
+    }
+
+    nonisolated private init(settings: RenderSettings, watermarkOnly: Bool) {
+        self.settings = settings
+        self.layout = LayoutEngine.makeLayout(outputSize: settings.outputSize, settings: settings)
+        self.strokeColor = CGColor(
+            red: CGFloat(settings.canvas.strokeGray),
+            green: CGFloat(settings.canvas.strokeGray),
+            blue: CGFloat(settings.canvas.strokeGray),
+            alpha: 1
+        )
+        self.textColor = PlatformDrawing.textColor(gray: CGFloat(settings.canvas.textGray))
+        let bg = CGFloat(settings.canvas.backgroundGray)
+        backgroundImage = CIImage(color: CIColor(red: bg, green: bg, blue: bg, alpha: 1))
+            .cropped(to: layout.canvas)
+        watermarkOverlay = watermarkOnly ? nil : Self.makeWatermarkOverlay(settings: settings)
     }
 
     nonisolated private func resolvedFrameRects(for orientedImage: CIImage) -> (paperRect: CGRect, photoRect: CGRect, plateTextRect: CGRect) {

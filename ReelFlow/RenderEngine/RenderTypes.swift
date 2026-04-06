@@ -184,6 +184,28 @@ struct ShutterSoundTrackSettings: Sendable {
     }
 }
 
+struct WatermarkSettings: Sendable, Equatable {
+    let text: String
+    let textOpacity: Double
+    let backgroundOpacity: Double
+    let fontSize: Double
+    let cornerRadius: Double
+    let horizontalPadding: Double
+    let verticalPadding: Double
+    let inset: Double
+
+    nonisolated static let reelFlowFreeTier = WatermarkSettings(
+        text: "Made with ReelFlow",
+        textOpacity: 0.68,
+        backgroundOpacity: 0.18,
+        fontSize: 22,
+        cornerRadius: 12,
+        horizontalPadding: 12,
+        verticalPadding: 7,
+        inset: 28
+    )
+}
+
 struct RenderSettings {
     let outputSize: CGSize
     let fps: Int32
@@ -202,6 +224,7 @@ struct RenderSettings {
     let canvas: CanvasSettings
     let audioTrack: AudioTrackSettings?
     let shutterSoundTrack: ShutterSoundTrackSettings?
+    let watermark: WatermarkSettings?
 
     nonisolated init(
         outputSize: CGSize,
@@ -220,7 +243,8 @@ struct RenderSettings {
         plate: PlateSettings = .default,
         canvas: CanvasSettings = .default,
         audioTrack: AudioTrackSettings? = nil,
-        shutterSoundTrack: ShutterSoundTrackSettings? = nil
+        shutterSoundTrack: ShutterSoundTrackSettings? = nil,
+        watermark: WatermarkSettings? = nil
     ) {
         self.outputSize = outputSize
         self.fps = fps
@@ -239,6 +263,7 @@ struct RenderSettings {
         self.canvas = canvas
         self.audioTrack = audioTrack
         self.shutterSoundTrack = shutterSoundTrack
+        self.watermark = watermark
     }
 
     nonisolated static let mvp = RenderSettings(
@@ -314,7 +339,31 @@ struct RenderSettings {
                     sourceURL: resolvedURL,
                     volume: template.shutterSound.volume
                 )
-            }()
+            }(),
+            watermark: nil
+        )
+    }
+
+    nonisolated func applying(watermark: WatermarkSettings?) -> RenderSettings {
+        RenderSettings(
+            outputSize: outputSize,
+            fps: fps,
+            imageDuration: imageDuration,
+            transitionDuration: transitionDuration,
+            transitionEnabled: transitionEnabled,
+            transitionStyle: transitionStyle,
+            transitionDipDuration: transitionDipDuration,
+            orientationStrategy: orientationStrategy,
+            enableKenBurns: enableKenBurns,
+            kenBurnsIntensity: kenBurnsIntensity,
+            prefetchRadius: prefetchRadius,
+            prefetchMaxConcurrent: prefetchMaxConcurrent,
+            layout: layout,
+            plate: plate,
+            canvas: canvas,
+            audioTrack: audioTrack,
+            shutterSoundTrack: shutterSoundTrack,
+            watermark: watermark
         )
     }
 

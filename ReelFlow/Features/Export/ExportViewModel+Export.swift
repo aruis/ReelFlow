@@ -122,7 +122,7 @@ extension ExportViewModel {
         let request = ExportRequest(
             imageURLs: imageURLs,
             outputURL: outputURL,
-            settings: config.renderSettings
+            settings: currentRenderSettings
         )
         let report = ExportPreflightScanner.scan(imageURLs: request.imageURLs)
         preflightReport = report
@@ -295,7 +295,7 @@ extension ExportViewModel {
         previewErrorMessage = nil
 
         pendingPreviewRequest = nil
-        let baseSettings = config.renderSettings
+        let baseSettings = currentRenderSettings
         let settings = useProxySettings
             ? interactivePreviewSettings(from: baseSettings)
             : baseSettings
@@ -450,7 +450,10 @@ extension ExportViewModel {
             prefetchMaxConcurrent: settings.prefetchMaxConcurrent,
             layout: scaledLayout,
             plate: scaledPlate,
-            canvas: settings.canvas
+            canvas: settings.canvas,
+            audioTrack: settings.audioTrack,
+            shutterSoundTrack: settings.shutterSoundTrack,
+            watermark: settings.watermark
         )
     }
 

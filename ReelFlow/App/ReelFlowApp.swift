@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct ReelFlowApp: App {
+    @StateObject private var purchaseStore = PurchaseStore()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(purchaseStore: purchaseStore)
         }
         .defaultSize(width: 1200, height: 760)
     }

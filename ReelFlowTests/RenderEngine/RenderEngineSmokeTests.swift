@@ -157,6 +157,34 @@ struct RenderEngineSmokeTests {
         #expect(diff.max > 0.05)
     }
 
+    @Test
+    func watermarkChangesPreviewPixels() async throws {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ReelFlowWatermark-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let imageURLs = try makeTestImages(in: tempDir, count: 1)
+        let baseSettings = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false
+        )
+
+        let watermarked = try await RenderEngine(
+            settings: baseSettings.applying(watermark: .reelFlowFreeTier)
+        ).previewFrame(imageURLs: imageURLs, at: 0)
+        let plain = try await RenderEngine(
+            settings: baseSettings.applying(watermark: nil)
+        ).previewFrame(imageURLs: imageURLs, at: 0)
+        let diff = try Self.diffStats(lhs: watermarked, rhs: plain)
+
+        #expect(diff.mean > 0.0004)
+        #expect(diff.max > 0.05)
+    }
+
     @Test(arguments: [false, true])
     func previewFramesMatchExportedFramesAtKeyTimes(enableKenBurns: Bool) async throws {
         let settings = RenderSettings(

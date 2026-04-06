@@ -1,0 +1,38 @@
+{
+  "identifier" : "7C3E19B4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "4D9AF0C1",
+      "localizations" : [
+        {
+          "description" : "Unlock unlimited photo imports and remove the ReelFlow watermark from exports.",
+          "displayName" : "ReelFlow Pro",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁无限照片导入，并移除导出视频中的 ReelFlow 水印。",
+          "displayName" : "ReelFlow Pro",
+          "locale" : "zh_Hans"
+        }
+      ],
+      "productID" : "net.ximatai.reelflow.pro",
+      "referenceName" : "reelflow-pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 1,
+    "minor" : 0
+  }
+}

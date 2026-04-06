@@ -105,7 +105,7 @@ final class ReelFlowUITests: XCTestCase {
         app.launchArguments += ["-ui-test-scenario", "invalid"]
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["settings_validation_message"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(elementByIdentifier(app, id: "settings_validation_message").waitForExistence(timeout: uiTimeout))
     }
 
     @MainActor
@@ -147,5 +147,36 @@ final class ReelFlowUITests: XCTestCase {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
+    }
+
+    @MainActor
+    func testFreeTierScenarioShowsQuotaAndWatermarkNotices() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "disabled"]
+        app.launch()
+
+        let quotaStrip = elementByIdentifier(app, id: "photo_quota_strip")
+        let exportNotice = elementByIdentifier(app, id: "free_tier_export_notice")
+        let upgradeButton = elementByIdentifier(app, id: "plan_upgrade_button")
+        let restoreButton = elementByIdentifier(app, id: "plan_restore_button")
+
+        XCTAssertTrue(quotaStrip.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(exportNotice.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(upgradeButton.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(restoreButton.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue((quotaStrip.value as? String)?.contains("免费版") == true)
+    }
+
+    @MainActor
+    func testProScenarioHidesFreeTierNotices() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "enabled"]
+        app.launch()
+
+        XCTAssertTrue(elementByIdentifier(app, id: "plan_status_banner").waitForExistence(timeout: uiTimeout))
+        XCTAssertFalse(elementByIdentifier(app, id: "photo_quota_strip").exists)
+        XCTAssertFalse(elementByIdentifier(app, id: "free_tier_export_notice").exists)
+        XCTAssertFalse(elementByIdentifier(app, id: "plan_upgrade_button").exists)
+        XCTAssertFalse(elementByIdentifier(app, id: "plan_restore_button").exists)
     }
 }

@@ -13,7 +13,10 @@ extension ExportViewModel {
         panel.canChooseDirectories = false
 
         guard panel.runModal() == .OK else { return }
-        imageURLs = normalizedImageURLs(from: panel.urls)
+        let selected = normalizedImageURLs(from: panel.urls)
+        guard canImportImages(appendingCount: selected.count, replacingExisting: true) else { return }
+
+        imageURLs = selected
         previewImage = nil
         previewSecond = 0
         previewStatusMessage = "素材已更新，请生成预览"
@@ -163,6 +166,8 @@ extension ExportViewModel {
             return
         }
 
+        guard canImportImages(appendingCount: appended.count, replacingExisting: false) else { return }
+
         imageURLs.append(contentsOf: appended)
         preflightReport = nil
         ignoredPreflightIssueKeys = []
@@ -178,6 +183,20 @@ extension ExportViewModel {
         if isSettingsValid {
             generatePreview()
         }
+    }
+
+    func canImportImages(appendingCount: Int, replacingExisting: Bool) -> Bool {
+        guard let photoImportLimit else { return true }
+
+        let resultingCount = replacingExisting ? appendingCount : imageURLs.count + appendingCount
+        guard resultingCount > photoImportLimit else { return true }
+
+        presentFreeTierImportLimitAlert(
+            incomingCount: appendingCount,
+            resultingCount: resultingCount,
+            replacingExisting: replacingExisting
+        )
+        return false
     }
 
     func normalizedImageURLs(from urls: [URL]) -> [URL] {

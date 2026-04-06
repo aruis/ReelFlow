@@ -81,6 +81,9 @@ struct AssetSidebarPanel: View {
             .buttonStyle(.borderedProminent)
             VStack(spacing: 4) {
                 Text("支持拖入图片或文件夹")
+                if !viewModel.hasProAccess {
+                    Text("免费版最多导入 20 张，升级 Pro 可解锁无限导入")
+                }
             }
             .font(.caption2)
             .foregroundStyle(.secondary)
@@ -92,9 +95,14 @@ struct AssetSidebarPanel: View {
     }
 
     private var assetBottomBar: some View {
-        ViewThatFits(in: .horizontal) {
-            assetBottomBarRegular
-            assetBottomBarCompact
+        VStack(alignment: .leading, spacing: 8) {
+            if !viewModel.hasProAccess {
+                quotaStatusStrip
+            }
+            ViewThatFits(in: .horizontal) {
+                assetBottomBarRegular
+                assetBottomBarCompact
+            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
@@ -160,6 +168,26 @@ struct AssetSidebarPanel: View {
         .lineLimit(1)
     }
 
+    private var quotaStatusStrip: some View {
+        HStack(spacing: 8) {
+            Label(viewModel.photoImportSummary, systemImage: "person.crop.rectangle.stack")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(quotaTint)
+
+            Text(viewModel.photoImportStatusMessage)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .background(quotaTint.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityIdentifier("photo_quota_strip")
+        .accessibilityValue(viewModel.photoImportStatusMessage)
+    }
+
     private var assetSelectionSummaryText: String {
         let totalCount = viewModel.imageURLs.count
         let selectedCount = selectedAssetURLs.count
@@ -167,6 +195,16 @@ struct AssetSidebarPanel: View {
             return "\(totalCount)"
         }
         return "\(selectedCount)/\(totalCount)"
+    }
+
+    private var quotaTint: Color {
+        if viewModel.isAtPhotoImportLimit {
+            return .orange
+        }
+        if viewModel.isNearPhotoImportLimit {
+            return .yellow
+        }
+        return .secondary
     }
 
     private func assetThumbnailItem(

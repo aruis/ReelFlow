@@ -40,6 +40,51 @@ struct ExportViewModelPreflightFlowTests {
     }
 
     @Test
+    func freeTierAddsWatermarkToCurrentRenderSettings() async throws {
+        let viewModel = ExportViewModel(hasProAccess: { false })
+
+        #expect(viewModel.currentRenderSettings.watermark?.text == "Made with ReelFlow")
+    }
+
+    @Test
+    func proTierRemovesWatermarkFromCurrentRenderSettings() async throws {
+        let viewModel = ExportViewModel(hasProAccess: { true })
+
+        #expect(viewModel.currentRenderSettings.watermark == nil)
+    }
+
+    @Test
+    func freeTierRejectsImportsBeyondTwentyPhotos() async throws {
+        let viewModel = ExportViewModel(hasProAccess: { false })
+        let tempDir = try Self.makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let urls = try (0..<21).map { index -> URL in
+            let url = tempDir.appendingPathComponent("img-\(index).png")
+            try Self.writeImage(to: url, width: 1200, height: 800)
+            return url
+        }
+
+        viewModel.appendImages(urls, source: "测试导入")
+
+        #expect(viewModel.imageURLs.isEmpty)
+        #expect(viewModel.entitlementAlert?.title.contains("20 张照片") == true)
+        #expect(viewModel.entitlementAlert?.message.contains("本次不会导入任何新素材") == true)
+    }
+
+    @Test
+    func freeTierNearLimitShowsRemainingSlotsMessage() async throws {
+        let viewModel = ExportViewModel(hasProAccess: { false })
+        viewModel.imageURLs = (0..<18).map { index in
+            URL(fileURLWithPath: "/tmp/\(index).jpg")
+        }
+
+        #expect(viewModel.isNearPhotoImportLimit == true)
+        #expect(viewModel.remainingPhotoImportSlots == 2)
+        #expect(viewModel.photoImportStatusMessage.contains("还可再导入 2 张") == true)
+    }
+
+    @Test
     func startAudioPreviewFailsWhenAudioDisabled() async throws {
         let viewModel = ExportViewModel()
         viewModel.config.audioEnabled = false
