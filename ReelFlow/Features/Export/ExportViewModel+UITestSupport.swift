@@ -61,8 +61,11 @@ extension ExportViewModel {
                 message: "导出完成: ReelFlow-UI-Success.mp4\n日志: /tmp/reelflow-ui-success.render.log"
             )
         case "invalid":
-            config.outputWidth = 100
-            config.outputHeight = 100
+            imageURLs = [
+                URL(fileURLWithPath: "/tmp/invalid-sample.jpg")
+            ]
+            config.audioEnabled = true
+            config.audioFilePath = ""
             workflow.setIdleMessage("测试场景：参数无效")
         case "first_run_ready":
             imageURLs = [

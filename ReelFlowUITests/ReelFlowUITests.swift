@@ -100,12 +100,19 @@ final class ReelFlowUITests: XCTestCase {
     }
 
     @MainActor
-    func testInvalidScenarioShowsInlineValidation() throws {
+    func testInvalidScenarioBlocksPrimaryActionAndShowsStatus() throws {
         let app = XCUIApplication()
         app.launchArguments += ["-ui-test-scenario", "invalid"]
         app.launch()
 
-        XCTAssertTrue(elementByIdentifier(app, id: "settings_validation_message").waitForExistence(timeout: uiTimeout))
+        let statusMessage = elementByIdentifier(app, id: "workflow_status_message")
+        let validationMessage = elementByIdentifier(app, id: "settings_validation_message")
+
+        XCTAssertTrue(statusMessage.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue((statusMessage.value as? String)?.contains("测试场景：参数无效") == true)
+        XCTAssertTrue(validationMessage.waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue((validationMessage.value as? String)?.contains("已启用音频") == true)
+        XCTAssertFalse(elementByIdentifier(app, id: "toolbar_primary_action").exists)
     }
 
     @MainActor
@@ -155,15 +162,13 @@ final class ReelFlowUITests: XCTestCase {
         app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "disabled"]
         app.launch()
 
+        let planBanner = elementByIdentifier(app, id: "plan_status_banner")
         let quotaStrip = elementByIdentifier(app, id: "photo_quota_strip")
         let exportNotice = elementByIdentifier(app, id: "free_tier_export_notice")
-        let upgradeButton = elementByIdentifier(app, id: "plan_upgrade_button")
-        let restoreButton = elementByIdentifier(app, id: "plan_restore_button")
 
+        XCTAssertTrue(planBanner.waitForExistence(timeout: uiTimeout))
         XCTAssertTrue(quotaStrip.waitForExistence(timeout: uiTimeout))
         XCTAssertTrue(exportNotice.waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(upgradeButton.waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(restoreButton.waitForExistence(timeout: uiTimeout))
         XCTAssertTrue((quotaStrip.value as? String)?.contains("免费版") == true)
     }
 
