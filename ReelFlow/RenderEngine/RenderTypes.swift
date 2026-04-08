@@ -78,11 +78,11 @@ enum KenBurnsIntensity: String, Codable, CaseIterable, Sendable {
     var displayName: String {
         switch self {
         case .small:
-            return "小"
+            return String(localized: "小")
         case .medium:
-            return "中"
+            return String(localized: "中")
         case .large:
-            return "大"
+            return String(localized: "大")
         }
     }
 

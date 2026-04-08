@@ -15,7 +15,7 @@ extension ExportViewModel {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         outputURL = url
         hasUserSelectedOutputURL = true
-        workflow.setIdleMessage("导出路径: \(url.path)")
+        workflow.setIdleMessage(String(localized: "导出路径: \(url.path)"))
     }
 
     static func defaultOutputURL() -> URL? {
@@ -43,13 +43,13 @@ extension ExportViewModel {
             let data = try Data(contentsOf: url)
             let template = try JSONDecoder().decode(RenderTemplate.self, from: data)
             guard template.schemaVersion > 0, template.schemaVersion <= RenderTemplate.currentSchemaVersion else {
-                workflow.setIdleMessage("模板版本不支持: v\(template.schemaVersion)")
+                workflow.setIdleMessage(String(localized: "模板版本不支持: v\(template.schemaVersion)"))
                 return
             }
             apply(template: template)
-            workflow.setIdleMessage("已导入模板: \(url.lastPathComponent)")
+            workflow.setIdleMessage(String(localized: "已导入模板: \(url.lastPathComponent)"))
         } catch {
-            workflow.setIdleMessage("模板导入失败: \(error.localizedDescription)")
+            workflow.setIdleMessage(String(localized: "模板导入失败: \(error.localizedDescription)"))
         }
     }
 
@@ -58,7 +58,7 @@ extension ExportViewModel {
         config.clampToSafeRange()
 
         guard isSettingsValid else {
-            workflow.setIdleMessage(invalidSettingsMessage ?? "参数无效")
+            workflow.setIdleMessage(invalidSettingsMessage ?? String(localized: "参数无效"))
             return
         }
 
@@ -73,16 +73,16 @@ extension ExportViewModel {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let data = try encoder.encode(config.template)
             try data.write(to: url, options: .atomic)
-            workflow.setIdleMessage("模板已保存: \(url.path)")
+            workflow.setIdleMessage(String(localized: "模板已保存: \(url.path)"))
         } catch {
-            workflow.setIdleMessage("模板保存失败: \(error.localizedDescription)")
+            workflow.setIdleMessage(String(localized: "模板保存失败: \(error.localizedDescription)"))
         }
     }
 
     func export() {
         guard !isBusy else { return }
         guard !imageURLs.isEmpty else {
-            workflow.setIdleMessage("请先选择图片")
+            workflow.setIdleMessage(String(localized: "请先选择图片，再开始导出。"))
             return
         }
         let initialOutputURL: URL
@@ -91,7 +91,7 @@ extension ExportViewModel {
         } else {
             chooseOutput()
             guard let selectedOutputURL = outputURL else {
-                workflow.setIdleMessage("已取消选择导出路径。")
+                workflow.setIdleMessage(String(localized: "已取消选择导出路径。"))
                 return
             }
             initialOutputURL = selectedOutputURL
@@ -100,21 +100,21 @@ extension ExportViewModel {
 
         config.clampToSafeRange()
         guard isSettingsValid else {
-            workflow.setIdleMessage(invalidSettingsMessage ?? "参数无效")
+            workflow.setIdleMessage(invalidSettingsMessage ?? String(localized: "参数无效"))
             return
         }
         if config.audioEnabled {
             let audioURL = URL(fileURLWithPath: config.audioFilePath)
             if let message = AudioTrackValidation.validate(url: audioURL) {
                 audioStatusMessage = message
-                workflow.setIdleMessage("音频校验失败: \(message)")
+                workflow.setIdleMessage(String(localized: "音频校验失败: \(message)"))
                 return
             }
         }
         if let shutterTrack = config.resolvedShutterSoundTrack {
             if let message = AudioTrackValidation.validate(url: shutterTrack.sourceURL) {
                 shutterSoundStatusMessage = message
-                workflow.setIdleMessage("快门声校验失败: \(message)")
+                workflow.setIdleMessage(String(localized: "快门声校验失败: \(message)"))
                 return
             }
         }
@@ -133,12 +133,12 @@ extension ExportViewModel {
 
         if report.hasBlockingIssues {
             fileListFilter = .problematic
-            workflow.setIdleMessage("导出前检查发现 \(report.blockingIssues.count) 个必须修复问题，请先处理或跳过问题素材。")
+            workflow.setIdleMessage(String(localized: "导出前检查发现 \(report.blockingIssues.count) 个必须修复问题，请先处理或跳过问题素材。"))
             return
         }
 
         if !report.reviewIssues.isEmpty {
-            workflow.setIdleMessage("导出前检查完成：\(report.reviewIssues.count) 个建议关注问题，将继续导出。")
+            workflow.setIdleMessage(String(localized: "导出前检查完成：\(report.reviewIssues.count) 个建议关注问题，将继续导出。"))
         }
 
         pendingRequestFromPreflight = nil
@@ -155,7 +155,7 @@ extension ExportViewModel {
         }
 
         guard !filtered.isEmpty else {
-            workflow.setIdleMessage("问题素材过多，过滤后没有可导出的图片。")
+            workflow.setIdleMessage(String(localized: "问题素材过多，过滤后没有可导出的图片。"))
             return
         }
 
@@ -171,14 +171,14 @@ extension ExportViewModel {
             outputURL: request.outputURL,
             settings: request.settings
         )
-        workflow.setIdleMessage("已跳过 \(skippedAssetNamesFromPreflight.count) 张问题素材，开始导出。")
+        workflow.setIdleMessage(String(localized: "已跳过 \(skippedAssetNamesFromPreflight.count) 张问题素材，开始导出。"))
         startExport(request: filteredRequest, fromRetry: false)
     }
 
     func rerunPreflight() {
         guard !isBusy else { return }
         guard !imageURLs.isEmpty else {
-            workflow.setIdleMessage("请先选择图片")
+            workflow.setIdleMessage(String(localized: "请先选择图片，再开始导出。"))
             return
         }
 
@@ -191,41 +191,41 @@ extension ExportViewModel {
 
         if report.issues.isEmpty {
             fileListFilter = .all
-            workflow.setIdleMessage("复检通过：当前未发现导出风险。")
+            workflow.setIdleMessage(String(localized: "复检通过：当前未发现导出风险。"))
             return
         }
 
         if report.hasBlockingIssues {
             fileListFilter = .problematic
-            workflow.setIdleMessage("复检结果：仍有 \(report.blockingIssues.count) 个必须修复问题。")
+            workflow.setIdleMessage(String(localized: "复检结果：仍有 \(report.blockingIssues.count) 个必须修复问题。"))
         } else {
-            workflow.setIdleMessage("复检完成：存在 \(report.reviewIssues.count) 个建议关注问题。")
+            workflow.setIdleMessage(String(localized: "复检完成：存在 \(report.reviewIssues.count) 个建议关注问题。"))
         }
     }
 
     func focusOnProblematicAssets() -> URL? {
         let issues = filteredPreflightIssues
         guard !issues.isEmpty else {
-            workflow.setIdleMessage("当前没有问题素材。")
+            workflow.setIdleMessage(String(localized: "当前没有问题素材。"))
             return nil
         }
         fileListFilter = .problematic
         guard let url = defaultProblematicAssetURL(from: issues) else {
-            workflow.setIdleMessage("已切到“仅问题”，请先处理必须修复项。")
+            workflow.setIdleMessage(String(localized: "已切到“仅问题”，请先处理必须修复项。"))
             return nil
         }
-        workflow.setIdleMessage("已切到“仅问题”，优先处理：\(url.lastPathComponent)")
+        workflow.setIdleMessage(String(localized: "已切到“仅问题”，优先处理：\(url.lastPathComponent)"))
         return url
     }
 
     func focusAssetForIssue(_ issue: PreflightIssue) -> URL? {
         fileListFilter = .problematic
         guard imageURLs.indices.contains(issue.index) else {
-            workflow.setIdleMessage("无法定位问题素材：索引越界。")
+            workflow.setIdleMessage(String(localized: "无法定位问题素材：索引越界。"))
             return nil
         }
         let url = imageURLs[issue.index]
-        workflow.setIdleMessage("已定位问题素材：\(url.lastPathComponent)")
+        workflow.setIdleMessage(String(localized: "已定位问题素材：\(url.lastPathComponent)"))
         return url
     }
 
@@ -245,10 +245,10 @@ extension ExportViewModel {
         let key = issue.ignoreKey
         if ignoredPreflightIssueKeys.contains(key) {
             ignoredPreflightIssueKeys.remove(key)
-            workflow.setIdleMessage("已恢复问题项：\(issue.fileName)")
+            workflow.setIdleMessage(String(localized: "已恢复问题项：\(issue.fileName)"))
         } else {
             ignoredPreflightIssueKeys.insert(key)
-            workflow.setIdleMessage("已忽略本次：\(issue.fileName)")
+            workflow.setIdleMessage(String(localized: "已忽略本次：\(issue.fileName)"))
         }
     }
 
@@ -256,13 +256,13 @@ extension ExportViewModel {
         guard !ignoredPreflightIssueKeys.isEmpty else { return }
         let count = ignoredPreflightIssueKeys.count
         ignoredPreflightIssueKeys.removeAll()
-        workflow.setIdleMessage("已恢复 \(count) 项忽略问题。")
+        workflow.setIdleMessage(String(localized: "已恢复 \(count) 项忽略问题。"))
     }
 
     func retryLastExport() {
         guard !isBusy else { return }
         guard let request = lastFailedRequest else {
-            workflow.setIdleMessage("没有可重试的导出任务")
+            workflow.setIdleMessage(String(localized: "没有可重试的导出任务"))
             return
         }
         startExport(request: request, fromRetry: true)
@@ -286,12 +286,12 @@ extension ExportViewModel {
 
         config.clampToSafeRange()
         guard isSettingsValid else {
-            workflow.setIdleMessage(invalidSettingsMessage ?? "参数无效")
+            workflow.setIdleMessage(invalidSettingsMessage ?? String(localized: "参数无效"))
             return
         }
 
         guard workflow.beginPreview() else { return }
-        previewStatusMessage = "预览生成中..."
+        previewStatusMessage = String(localized: "预览生成中...")
         previewErrorMessage = nil
 
         pendingPreviewRequest = nil
@@ -318,7 +318,7 @@ extension ExportViewModel {
                 let engine = makeEngine(settings)
                 let cgImage = try await engine.previewFrame(imageURLs: urls, at: second)
                 previewImage = cgImage
-                previewStatusMessage = "预览已更新 (\(String(format: "%.2f", second))s)"
+                previewStatusMessage = String(localized: "预览已更新 (\(second, specifier: "%.2f")s)")
                 previewErrorMessage = nil
                 workflow.finishPreviewSuccess()
             } catch {
@@ -331,7 +331,7 @@ extension ExportViewModel {
                     stage: .preview
                 )
                 let advice = ExportRecoveryAdvisor.advice(for: failureContext)
-                previewStatusMessage = "预览生成失败"
+                previewStatusMessage = String(localized: "预览生成失败")
                 previewErrorMessage = failureContext.displayHead
                 if !previewFailedAssetNames.isEmpty {
                     failedAssetNames = Array(Set(failedAssetNames + previewFailedAssetNames)).sorted()
@@ -340,7 +340,7 @@ extension ExportViewModel {
                 failureCardCopy = nil
                 workflow.finishPreviewFailure(
                     message: makeConciseFailureStatus(
-                        summary: "预览生成失败，详情见预览区域提示。",
+                        summary: String(localized: "预览生成失败，详情见预览区域提示。"),
                         context: failureContext,
                         advice: advice
                     )
@@ -394,7 +394,7 @@ extension ExportViewModel {
         refreshSelectedAudioDuration()
 
         guard autoPreviewRefreshEnabled else { return }
-        previewStatusMessage = "参数已变更，预览将自动刷新"
+        previewStatusMessage = String(localized: "参数已变更，预览将自动刷新")
         schedulePreviewRegeneration()
     }
 
@@ -517,7 +517,7 @@ extension ExportViewModel {
                 await ExportFailureTelemetry.shared.record(failureContext)
                 workflow.finishExportFailure(
                     message: makeConciseFailureStatus(
-                        summary: "导出失败，请查看下方详情。",
+                        summary: String(localized: "导出失败，请查看下方详情。"),
                         context: failureContext,
                         advice: advice
                     )
@@ -530,7 +530,7 @@ extension ExportViewModel {
 
     func openLatestLog() {
         guard let url = lastLogURL else {
-            workflow.setIdleMessage("暂无日志文件可打开")
+            workflow.setIdleMessage(String(localized: "暂无日志文件可打开"))
             return
         }
         if !FileManager.default.fileExists(atPath: url.path) {
@@ -545,7 +545,7 @@ extension ExportViewModel {
             #endif
         }
         if !FileManager.default.fileExists(atPath: url.path) {
-            workflow.setIdleMessage("日志文件不存在: \(url.path)")
+            workflow.setIdleMessage(String(localized: "日志文件不存在: \(url.path)"))
             return
         }
         NSWorkspace.shared.open(url)
@@ -554,7 +554,7 @@ extension ExportViewModel {
     func openLatestOutputDirectory() {
         let targetURL = lastSuccessfulOutputURL ?? outputURL
         guard let url = targetURL else {
-            workflow.setIdleMessage("暂无可打开的输出目录")
+            workflow.setIdleMessage(String(localized: "暂无可打开的输出目录"))
             return
         }
         NSWorkspace.shared.activateFileViewerSelecting([url])
@@ -563,15 +563,15 @@ extension ExportViewModel {
     func openLatestOutputFile() {
         let targetURL = lastSuccessfulOutputURL ?? outputURL
         guard let url = targetURL else {
-            workflow.setIdleMessage("暂无可打开的输出文件")
+            workflow.setIdleMessage(String(localized: "暂无可打开的输出文件"))
             return
         }
         guard FileManager.default.fileExists(atPath: url.path) else {
-            workflow.setIdleMessage("输出文件不存在: \(url.path)")
+            workflow.setIdleMessage(String(localized: "输出文件不存在: \(url.path)"))
             return
         }
         if !NSWorkspace.shared.open(url) {
-            workflow.setIdleMessage("无法打开输出文件，请在 Finder 手动定位：\(url.path)")
+            workflow.setIdleMessage(String(localized: "无法打开输出文件，请在 Finder 手动定位：\(url.path)"))
         }
     }
 
@@ -636,22 +636,22 @@ extension ExportViewModel {
     }
 
     private func resolveOutputURLForExport(original: URL) -> URL? {
-        if let outputValidationMessage = Self.validateOutputURL(original) {
-            guard outputValidationMessage.contains("导出路径不可写"),
+        if let outputValidationError = Self.validateOutputURL(original) {
+            guard outputValidationError == .unwritable,
                   !hasUserSelectedOutputURL,
                   !Self.isRunningUnitTests() else {
-                workflow.setIdleMessage(outputValidationMessage)
+                workflow.setIdleMessage(outputValidationError.localizedMessage)
                 return nil
             }
 
-            workflow.setIdleMessage("默认导出路径当前不可写，请在弹窗中重新选择导出位置。")
+            workflow.setIdleMessage(String(localized: "默认导出路径当前不可写，请在弹窗中重新选择导出位置。"))
             chooseOutput()
             guard let selectedOutputURL = outputURL else {
-                workflow.setIdleMessage("已取消选择导出路径。")
+                workflow.setIdleMessage(String(localized: "已取消选择导出路径。"))
                 return nil
             }
-            if let selectedValidationMessage = Self.validateOutputURL(selectedOutputURL) {
-                workflow.setIdleMessage(selectedValidationMessage)
+            if let selectedValidationError = Self.validateOutputURL(selectedOutputURL) {
+                workflow.setIdleMessage(selectedValidationError.localizedMessage)
                 return nil
             }
             return selectedOutputURL
@@ -659,7 +659,7 @@ extension ExportViewModel {
         return original
     }
 
-    private static func validateOutputURL(_ url: URL) -> String? {
+    private static func validateOutputURL(_ url: URL) -> OutputURLValidationError? {
         let fm = FileManager.default
         let scopedAccessEnabled = url.startAccessingSecurityScopedResource()
         defer {
@@ -670,11 +670,11 @@ extension ExportViewModel {
 
         var isDirectory: ObjCBool = false
         if fm.fileExists(atPath: url.path, isDirectory: &isDirectory), isDirectory.boolValue {
-            return "导出路径不能是文件夹，请选择具体的 .mp4 文件。"
+            return .pathIsDirectory
         }
 
         guard url.pathExtension.lowercased() == "mp4" else {
-            return "导出文件需使用 .mp4 扩展名。"
+            return .invalidExtension
         }
 
         let directoryURL = url.deletingLastPathComponent()
@@ -682,13 +682,13 @@ extension ExportViewModel {
         var directoryIsDir: ObjCBool = false
         if fm.fileExists(atPath: directoryURL.path, isDirectory: &directoryIsDir) {
             if !directoryIsDir.boolValue {
-                return "导出路径不可写，请重新选择可写目录。"
+                return .unwritable
             }
         } else {
             do {
                 try fm.createDirectory(at: directoryURL, withIntermediateDirectories: true)
             } catch {
-                return "导出路径不可写，请重新选择可写目录。"
+                return .unwritable
             }
         }
 
@@ -698,24 +698,41 @@ extension ExportViewModel {
                 let handle = try FileHandle(forWritingTo: url)
                 try handle.close()
             } catch {
-                return "导出路径不可写，请重新选择可写目录。"
+                return .unwritable
             }
             return nil
         }
 
         guard fm.createFile(atPath: url.path, contents: Data()) else {
-            return "导出路径不可写，请重新选择可写目录。"
+            return .unwritable
         }
         do {
             try fm.removeItem(at: url)
         } catch {
-            return "导出路径不可写，请重新选择可写目录。"
+            return .unwritable
         }
         return nil
     }
 
     private static func isRunningUnitTests() -> Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
+    private enum OutputURLValidationError {
+        case pathIsDirectory
+        case invalidExtension
+        case unwritable
+
+        var localizedMessage: String {
+            switch self {
+            case .pathIsDirectory:
+                String(localized: "导出路径不能是文件夹，请选择具体的 .mp4 文件。")
+            case .invalidExtension:
+                String(localized: "导出文件需使用 .mp4 扩展名。")
+            case .unwritable:
+                String(localized: "导出路径不可写，请重新选择可写目录。")
+            }
+        }
     }
 
 }

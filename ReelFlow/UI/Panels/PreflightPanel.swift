@@ -29,7 +29,7 @@ struct PreflightPanel: View {
                         issueListSection
                         secondaryOptionsPanel
                         if !viewModel.skippedAssetNamesFromPreflight.isEmpty {
-                            Text("已跳过: \(viewModel.skippedAssetNamesFromPreflight.joined(separator: ", "))")
+                            Text(String(localized: "已跳过: \(viewModel.skippedAssetNamesFromPreflight.joined(separator: ", "))"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -67,17 +67,17 @@ struct PreflightPanel: View {
 
             HStack(spacing: 8) {
                 summaryBadge(
-                    title: "必须修复",
+                    title: String(localized: "必须修复"),
                     count: viewModel.preflightReport?.blockingIssues.count ?? 0,
                     tint: .red
                 )
                 summaryBadge(
-                    title: "建议关注",
+                    title: String(localized: "建议关注"),
                     count: viewModel.preflightReport?.reviewIssues.count ?? 0,
                     tint: .orange
                 )
                 summaryBadge(
-                    title: "已忽略",
+                    title: String(localized: "已忽略"),
                     count: viewModel.ignoredIssueCount,
                     tint: .secondary
                 )
@@ -119,7 +119,7 @@ struct PreflightPanel: View {
 
                 let hiddenCount = max(0, allDisplayIssues.count - compactIssues.count)
                 if hiddenCount > 0 {
-                    Text("另有 \(hiddenCount) 项问题，展开“查看全部问题与筛选”可处理。")
+                    Text(String(localized: "另有 \(hiddenCount) 项问题，展开“查看全部问题与筛选”可处理。"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -202,7 +202,7 @@ struct PreflightPanel: View {
 
     private var ignoredIssuesSection: some View {
         DisclosureGroup(
-            "已忽略 \(viewModel.ignoredIssueCount) 项（本次）",
+            String(localized: "已忽略 \(viewModel.ignoredIssueCount) 项（本次）"),
             isExpanded: $ignoredIssuesExpanded
         ) {
             VStack(alignment: .leading, spacing: 6) {
@@ -217,7 +217,7 @@ struct PreflightPanel: View {
                         ignoredIssueSearchText = ""
                     }
                     .disabled(viewModel.isBusy)
-                    Text("显示 \(filteredIgnoredIssues.count) / \(viewModel.ignoredIssueCount)")
+                    Text(String(localized: "显示 \(filteredIgnoredIssues.count) / \(viewModel.ignoredIssueCount)"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -250,7 +250,7 @@ struct PreflightPanel: View {
         let isSelectedAssetIssue = selectedAssetURL?.lastPathComponent == issue.fileName
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(issue.severity == .mustFix ? "必须修复" : "建议关注")
+                Text(issue.severity == .mustFix ? String(localized: "必须修复") : String(localized: "建议关注"))
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
@@ -274,7 +274,7 @@ struct PreflightPanel: View {
                 .disabled(viewModel.isBusy)
                 .accessibilityIdentifier("preflight_locate_\(accessibilityToken(for: issue.fileName))")
 
-                Button(viewModel.isIssueIgnored(issue) ? "恢复" : "忽略") {
+                Button(viewModel.isIssueIgnored(issue) ? String(localized: "恢复") : String(localized: "忽略")) {
                     viewModel.toggleIgnoreIssue(issue)
                 }
                 .font(.caption)
@@ -325,22 +325,22 @@ struct PreflightPanel: View {
 
     private var preflightHeaderTitle: String {
         if viewModel.hasBlockingPreflightIssues {
-            return "先处理这些问题再导出"
+            return String(localized: "先处理这些问题再导出")
         }
         if allDisplayIssues.isEmpty {
-            return "目前没有需要处理的问题"
+            return String(localized: "目前没有需要处理的问题")
         }
-        return "有一些建议先看一下"
+        return String(localized: "有一些建议先看一下")
     }
 
     private var preflightHeaderSubtitle: String {
         if viewModel.hasBlockingPreflightIssues {
-            return "先定位必须修复项，处理后再继续。"
+            return String(localized: "先定位必须修复项，处理后再继续。")
         }
         if allDisplayIssues.isEmpty {
-            return "当前筛选下没有明显风险，可以继续下一步。"
+            return String(localized: "当前筛选下没有明显风险，可以继续下一步。")
         }
-        return "可以继续，但先看一下这些提示会更稳妥。"
+        return String(localized: "可以继续，但先看一下这些提示会更稳妥。")
     }
 
     private func accessibilityToken(for value: String) -> String {

@@ -41,7 +41,7 @@ struct AudioSettingsSection: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("音量: \(Int((viewModel.config.audioVolume * 100).rounded()))%")
+                    Text(String(localized: "音量: \(Int((viewModel.config.audioVolume * 100).rounded()))%"))
                     Slider(value: $viewModel.config.audioVolume, in: RenderEditorConfig.audioVolumeRange, step: 0.01)
                         .disabled(viewModel.isBusy)
                 }
@@ -106,7 +106,7 @@ struct AudioSettingsSection: View {
                     .disabled(viewModel.isBusy)
 
                     if ShutterSoundCatalog.bundledURL(for: viewModel.config.shutterSoundPreset) != nil {
-                        Text("导出时会在每张新照片开始时插入 \(viewModel.config.shutterSoundPreset.displayName) 风格快门声。")
+                        Text(String(localized: "导出时会在每张新照片开始时插入 \(viewModel.config.shutterSoundPreset.displayName) 风格快门声。"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     } else {
@@ -150,7 +150,7 @@ struct AudioSettingsSection: View {
                 }
 
                 HStack(spacing: 10) {
-                    Button(viewModel.isShutterSoundPreviewPlaying ? "试听中…" : "试听快门声") {
+                    Button(viewModel.isShutterSoundPreviewPlaying ? String(localized: "试听中…") : String(localized: "试听快门声")) {
                         _ = viewModel.startShutterSoundPreview()
                     }
                     .disabled(viewModel.isBusy || viewModel.isShutterSoundPreviewPlaying)
@@ -162,7 +162,7 @@ struct AudioSettingsSection: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("快门声音量: \(Int((viewModel.config.shutterSoundVolume * 100).rounded()))%")
+                    Text(String(localized: "快门声音量: \(Int((viewModel.config.shutterSoundVolume * 100).rounded()))%"))
                     Slider(value: $viewModel.config.shutterSoundVolume, in: RenderEditorConfig.audioVolumeRange, step: 0.01)
                         .disabled(viewModel.isBusy)
                 }

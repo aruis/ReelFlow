@@ -8,11 +8,11 @@ enum ExportFailureStage: String, Sendable {
     var displayName: String {
         switch self {
         case .preview:
-            return "预览"
+            return String(localized: "预览")
         case .export:
-            return "导出"
+            return String(localized: "导出")
         case .unknown:
-            return "未知"
+            return String(localized: "未知")
         }
     }
 }

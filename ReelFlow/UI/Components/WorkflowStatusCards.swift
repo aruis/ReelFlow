@@ -1,5 +1,28 @@
 import SwiftUI
 
+enum WorkflowPrimaryActionKind {
+    case importImages
+    case generatePreview
+    case exportMP4
+    case exportAgain
+    case custom(systemImage: String)
+
+    var systemImage: String {
+        switch self {
+        case .importImages:
+            return "photo.badge.plus"
+        case .generatePreview:
+            return "play.rectangle.fill"
+        case .exportMP4:
+            return "square.and.arrow.up.fill"
+        case .exportAgain:
+            return "arrow.clockwise.circle.fill"
+        case .custom(let systemImage):
+            return systemImage
+        }
+    }
+}
+
 struct ExportSuccessSheet: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -34,13 +57,13 @@ struct ExportSuccessSheet: View {
             VStack(alignment: .leading, spacing: 10) {
                 successInfoRow(
                     systemImage: "doc.fill",
-                    title: "导出文件",
+                    title: String(localized: "导出文件"),
                     value: filename,
                     emphasized: true
                 )
                 successInfoRow(
                     systemImage: "folder.fill",
-                    title: "导出目录",
+                    title: String(localized: "导出目录"),
                     value: directoryPath
                 )
             }
@@ -111,6 +134,7 @@ struct ExportSuccessSheet: View {
 struct WorkflowOverviewPanel: View {
     let statusMessage: String
     let nextActionHint: String
+    let firstRunPrimaryActionKind: WorkflowPrimaryActionKind?
     let firstRunPrimaryActionTitle: String?
     let firstRunPrimaryActionSubtitle: String?
     let isBusy: Bool
@@ -141,17 +165,18 @@ struct WorkflowOverviewPanel: View {
 
                 workflowInfoRow(
                     systemImage: "text.alignleft",
-                    title: "当前情况",
+                    title: String(localized: "当前情况"),
                     value: statusMessage,
                     emphasized: true
                 )
                 .padding(14)
                 .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
-                if let firstRunPrimaryActionTitle {
+                if let firstRunPrimaryActionKind, let firstRunPrimaryActionTitle {
                     HStack {
                         Spacer(minLength: 0)
                         WorkflowPrimaryActionButton(
+                            kind: firstRunPrimaryActionKind,
                             title: firstRunPrimaryActionTitle,
                             subtitle: firstRunPrimaryActionSubtitle,
                             isBusy: isBusy,
@@ -195,24 +220,12 @@ struct WorkflowOverviewPanel: View {
 }
 
 struct WorkflowPrimaryActionButton: View {
+    let kind: WorkflowPrimaryActionKind
     let title: String
     let subtitle: String?
     let isBusy: Bool
     let accessibilityIdentifier: String
     let action: () -> Void
-
-    private var systemImage: String {
-        switch title {
-        case "导出 MP4":
-            return "square.and.arrow.up.fill"
-        case "再次导出":
-            return "arrow.clockwise.circle.fill"
-        case "导入图片":
-            return "photo.badge.plus"
-        default:
-            return "play.rectangle.fill"
-        }
-    }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -224,7 +237,7 @@ struct WorkflowPrimaryActionButton: View {
                         Text(title)
                     }
                 } else {
-                    Label(title, systemImage: systemImage)
+                    Label(title, systemImage: kind.systemImage)
                 }
             }
             .buttonStyle(.borderedProminent)
@@ -260,7 +273,7 @@ struct FailureStatusCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("导出没有完成")
                             .font(.headline)
-                        Text("建议先做：\(copy.actionTitle)")
+                        Text(String(localized: "建议先做：\(copy.actionTitle)"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -274,13 +287,13 @@ struct FailureStatusCard: View {
                 VStack(alignment: .leading, spacing: 10) {
                     failureInfoRow(
                         systemImage: "exclamationmark.bubble.fill",
-                        title: "问题是什么",
+                        title: String(localized: "问题是什么"),
                         value: copy.problemSummary,
                         emphasized: true
                     )
                     failureInfoRow(
                         systemImage: "arrow.trianglehead.turn.up.right.circle.fill",
-                        title: "建议操作",
+                        title: String(localized: "建议操作"),
                         value: copy.nextStep
                     )
                 }
@@ -354,7 +367,7 @@ struct FailedAssetsPanel: View {
                     .font(.callout)
             }
             if hiddenCount > 0 {
-                Text("另有 \(hiddenCount) 项失败素材，可在“素材列表”查看全部。")
+                Text(String(localized: "另有 \(hiddenCount) 项失败素材，可在“素材列表”查看全部。"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -374,14 +387,14 @@ struct SuccessStatusCard: View {
     var body: some View {
         GroupBox("导出完成") {
             VStack(alignment: .leading, spacing: 8) {
-                Text(filename ?? "已生成可播放的 MP4 文件")
+                Text(filename ?? String(localized: "已生成可播放的 MP4 文件"))
                     .font(.callout.weight(.semibold))
 
                 HStack(spacing: 10) {
                     Button("打开文件") { onOpenOutputFile() }
                         .accessibilityIdentifier("success_open_file")
                         .buttonStyle(.borderedProminent)
-                    Button("打开目录") { onOpenOutputDirectory() }
+                    Button("打开文件夹") { onOpenOutputDirectory() }
                         .accessibilityIdentifier("success_open_output")
                     Button("再次导出") { onExportAgain() }
                         .accessibilityIdentifier("success_export_again")

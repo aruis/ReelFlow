@@ -25,8 +25,8 @@ struct ContentView: View {
 
         var title: String {
             switch self {
-            case .singleFrame: return "单帧预览"
-            case .videoTimeline: return "时间轴预览"
+            case .singleFrame: return String(localized: "单帧预览")
+            case .videoTimeline: return String(localized: "时间轴预览")
             }
         }
     }
@@ -39,8 +39,8 @@ struct ContentView: View {
 
         var title: String {
             switch self {
-            case .simple: return "简单"
-            case .advanced: return "高级"
+            case .simple: return String(localized: "简单")
+            case .advanced: return String(localized: "高级")
             }
         }
     }
@@ -228,7 +228,7 @@ struct ContentView: View {
                             .accessibilityIdentifier("toolbar_primary_action")
                             .buttonStyle(.borderedProminent)
                             .controlSize(.regular)
-                            .disabled(isToolbarPrimaryActionDisabled(for: primary.title))
+                            .disabled(isToolbarPrimaryActionDisabled(for: primary.kind))
                     }
                     if viewModel.isExporting {
                         Button("取消导出") { viewModel.cancelExport() }
@@ -483,22 +483,22 @@ struct ContentView: View {
     private var planTitle: String {
         switch purchaseStore.entitlementState {
         case .loading:
-            return "正在检查购买状态"
+            return String(localized: "正在检查购买状态")
         case .free:
-            return "免费版"
+            return String(localized: "免费版")
         case .pro:
-            return "ReelFlow Pro"
+            return String(localized: "ReelFlow Pro")
         }
     }
 
     private var planBenefitSummary: String {
         switch purchaseStore.entitlementState {
         case .loading:
-            return "稍后会根据你的购买记录自动更新。"
+            return String(localized: "稍后会根据你的购买记录自动更新。")
         case .pro:
-            return "无限图片导入 · 无水印导出"
+            return String(localized: "无限图片导入 · 无水印导出")
         case .free:
-            return "最多 20 张照片 · 导出带水印"
+            return String(localized: "最多 20 张照片 · 导出带水印")
         }
     }
 
@@ -515,12 +515,12 @@ struct ContentView: View {
 
     private var quotaSummaryText: String {
         if viewModel.isAtPhotoImportLimit {
-            return "当前素材 \(viewModel.photoImportSummary)，已到上限"
+            return String(localized: "当前素材 \(viewModel.photoImportSummary)，已到上限")
         }
         if viewModel.isNearPhotoImportLimit, let remaining = viewModel.remainingPhotoImportSlots {
-            return "当前素材 \(viewModel.photoImportSummary)，还可导入 \(remaining) 张"
+            return String(localized: "当前素材 \(viewModel.photoImportSummary)，还可导入 \(remaining) 张")
         }
-        return "当前素材 \(viewModel.photoImportSummary)"
+        return String(localized: "当前素材 \(viewModel.photoImportSummary)")
     }
 
     private func purchaseFeedbackBanner(_ feedback: PurchaseStore.Feedback) -> some View {
@@ -597,29 +597,31 @@ struct ContentView: View {
 
     private var settingsSummaryText: String {
         let durationText = String(format: "%.2f", viewModel.previewMaxSecond)
-        return "预计 \(durationText)s · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS"
+        return String(
+            localized: "预计 \(durationText)s · \(viewModel.config.outputWidth)×\(viewModel.config.outputHeight) · \(viewModel.config.fps) FPS"
+        )
     }
 
     private var previewSummaryTitle: String {
-        "\(viewModel.imageURLs.count) 张图片已就绪"
+        String(localized: "\(viewModel.imageURLs.count) 张图片已就绪")
     }
 
 
     private var settingsAudioSummaryMessage: String? {
         guard viewModel.config.audioEnabled else { return nil }
         guard let audioDuration = viewModel.selectedAudioDuration else {
-            return "音频时长尚未读取，导出前会再次校验。"
+            return String(localized: "音频时长尚未读取，导出前会再次校验。")
         }
         let videoDuration = viewModel.previewMaxSecond
         let audioText = String(format: "%.2f", audioDuration)
         let videoText = String(format: "%.2f", videoDuration)
         if viewModel.config.audioLoopEnabled {
-            return "音频 \(audioText)s，将循环覆盖约 \(videoText)s 视频。"
+            return String(localized: "音频 \(audioText)s，将循环覆盖约 \(videoText)s 视频。")
         }
         if audioDuration >= videoDuration {
-            return "音频 \(audioText)s，导出时会截断到视频时长 \(videoText)s。"
+            return String(localized: "音频 \(audioText)s，导出时会截断到视频时长 \(videoText)s。")
         }
-        return "音频 \(audioText)s，结束后视频仍会继续到 \(videoText)s。"
+        return String(localized: "音频 \(audioText)s，结束后视频仍会继续到 \(videoText)s。")
     }
 
     private var workflowPanel: some View {
@@ -791,6 +793,7 @@ struct ContentView: View {
                 WorkflowOverviewPanel(
                     statusMessage: viewModel.statusMessage,
                     nextActionHint: viewModel.nextActionHint,
+                    firstRunPrimaryActionKind: firstRunPrimaryAction?.kind,
                     firstRunPrimaryActionTitle: firstRunPrimaryAction?.title,
                     firstRunPrimaryActionSubtitle: firstRunPrimaryActionSubtitle,
                     isBusy: viewModel.isBusy,
@@ -802,6 +805,7 @@ struct ContentView: View {
 
                     if let primary = firstRunPrimaryAction, !showsIntegratedPreviewPrimaryAction {
                         WorkflowPrimaryActionButton(
+                            kind: primary.kind,
                             title: primary.title,
                             subtitle: firstRunPrimaryActionSubtitle,
                             isBusy: viewModel.isBusy,
@@ -815,18 +819,18 @@ struct ContentView: View {
         }
     }
 
-    private var firstRunPrimaryAction: (title: String, handler: () -> Void)? {
+    private var firstRunPrimaryAction: (kind: WorkflowPrimaryActionKind, title: String, handler: () -> Void)? {
         if !viewModel.hasSelectedImages {
-            return ("导入图片", { viewModel.chooseImages() })
+            return (.importImages, String(localized: "导入图片"), { viewModel.chooseImages() })
         }
         if viewModel.validationMessage != nil {
             return nil
         }
         if viewModel.hasSuccessCard {
-            return ("再次导出", { viewModel.export() })
+            return (.exportAgain, String(localized: "再次导出"), { viewModel.export() })
         }
         if !viewModel.hasPreviewFrame {
-            return ("生成预览", {
+            return (.generatePreview, String(localized: "生成预览"), {
                 if centerPreviewTab == .singleFrame, let selected = selectedAssetForPreview {
                     viewModel.generatePreviewForSelectedAsset(selected)
                 } else {
@@ -834,32 +838,32 @@ struct ContentView: View {
                 }
             })
         }
-        return ("导出 MP4", { viewModel.export() })
+        return (.exportMP4, String(localized: "导出 MP4"), { viewModel.export() })
     }
 
     private var firstRunPrimaryActionSubtitle: String? {
         guard let primary = firstRunPrimaryAction else { return nil }
-        switch primary.title {
-        case "导出 MP4":
-            return viewModel.outputURL == nil ? "请先选择导出路径" : nil
-        case "再次导出":
-            return viewModel.outputURL == nil ? "请先选择导出路径" : nil
-        case "导入图片":
-            return "从本地选择素材，开始生成视频"
-        case "生成预览":
-            return "先确认画面效果，再决定是否导出"
+        switch primary.kind {
+        case .exportMP4:
+            return viewModel.outputURL == nil ? String(localized: "请先选择导出路径") : nil
+        case .exportAgain:
+            return viewModel.outputURL == nil ? String(localized: "请先选择导出路径") : nil
+        case .importImages:
+            return String(localized: "从本地选择素材，开始生成视频")
+        case .generatePreview:
+            return String(localized: "先确认画面效果，再决定是否导出")
         default:
             return nil
         }
     }
 
-    private func isToolbarPrimaryActionDisabled(for title: String) -> Bool {
-        switch title {
-        case "导出 MP4", "再次导出":
+    private func isToolbarPrimaryActionDisabled(for kind: WorkflowPrimaryActionKind) -> Bool {
+        switch kind {
+        case .exportMP4, .exportAgain:
             return !viewModel.canRunExport
-        case "生成预览":
+        case .generatePreview:
             return !viewModel.canRunPreview
-        case "导入图片":
+        case .importImages:
             return viewModel.isBusy
         default:
             return viewModel.isBusy
@@ -872,19 +876,19 @@ struct ContentView: View {
         return !viewModel.hasFailureCard
     }
 
-    private func isIntegratedPreviewPrimaryActionDisabled(for title: String) -> Bool {
-        isToolbarPrimaryActionDisabled(for: title)
+    private func isIntegratedPreviewPrimaryActionDisabled(for kind: WorkflowPrimaryActionKind) -> Bool {
+        isToolbarPrimaryActionDisabled(for: kind)
     }
 
-    private func previewActionSummaryTitle(for title: String) -> String? {
+    private func previewActionSummaryTitle(for kind: WorkflowPrimaryActionKind) -> String? {
         if viewModel.isExporting {
-            return "正在导出"
+            return String(localized: "正在导出")
         }
-        switch title {
-        case "生成预览":
-            return "当前设置已更新，可先生成预览。"
-        case "再次导出":
-            return "可以沿用当前设置再次导出。"
+        switch kind {
+        case .generatePreview:
+            return String(localized: "当前设置已更新，可先生成预览。")
+        case .exportAgain:
+            return String(localized: "可以沿用当前设置再次导出。")
         default:
             return nil
         }
@@ -933,12 +937,12 @@ struct ContentView: View {
 
                 if let primary = firstRunPrimaryAction, showsIntegratedPreviewPrimaryAction {
                     HStack(alignment: .center, spacing: 12) {
-                        if let title = previewActionSummaryTitle(for: primary.title) {
+                        if let title = previewActionSummaryTitle(for: primary.kind) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(title)
                                     .font(.callout.weight(.semibold))
                                     .foregroundStyle(.primary)
-                                if let subtitle = previewActionSubtitle(for: primary.title) {
+                                if let subtitle = previewActionSubtitle(for: primary.kind) {
                                     Text(subtitle)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
@@ -956,13 +960,14 @@ struct ContentView: View {
                                 .disabled(!viewModel.actionAvailability.canCancelExport)
                         } else {
                             WorkflowPrimaryActionButton(
+                                kind: primary.kind,
                                 title: primary.title,
                                 subtitle: nil,
                                 isBusy: viewModel.isBusy,
                                 accessibilityIdentifier: "preview_output_primary_action",
                                 action: primary.handler
                             )
-                            .disabled(isIntegratedPreviewPrimaryActionDisabled(for: primary.title))
+                            .disabled(isIntegratedPreviewPrimaryActionDisabled(for: primary.kind))
                         }
                     }
                 }
@@ -1007,9 +1012,9 @@ struct ContentView: View {
         return "\(Int((progress * 100).rounded()))%"
     }
 
-    private func previewActionSubtitle(for title: String) -> String? {
+    private func previewActionSubtitle(for kind: WorkflowPrimaryActionKind) -> String? {
         if viewModel.isExporting {
-            return "导出期间预览与输出设置暂时锁定。"
+            return String(localized: "导出期间预览与输出设置暂时锁定。")
         }
         return nil
     }

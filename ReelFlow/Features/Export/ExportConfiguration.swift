@@ -11,15 +11,15 @@ enum FrameStylePreset: String, CaseIterable, Sendable {
     var displayName: String {
         switch self {
         case .classic:
-            return "经典暗底"
+            return String(localized: "经典暗底")
         case .soft:
-            return "柔和浅灰"
+            return String(localized: "柔和浅灰")
         case .contrast:
-            return "高对比"
+            return String(localized: "高对比")
         case .gallery:
-            return "画廊暖白"
+            return String(localized: "画廊暖白")
         case .custom:
-            return "自定义"
+            return String(localized: "自定义")
         }
     }
 
@@ -68,11 +68,11 @@ enum PlateEditorMode: String, CaseIterable, Sendable {
     var displayName: String {
         switch self {
         case .none:
-            return "无"
+            return String(localized: "无")
         case .simple:
-            return "简易"
+            return String(localized: "简易")
         case .custom:
-            return "自定义"
+            return String(localized: "自定义")
         }
     }
 }
@@ -88,17 +88,17 @@ enum PlateSimpleElementKey: String, CaseIterable, Codable, Sendable {
     var displayName: String {
         switch self {
         case .camera:
-            return "相机"
+            return String(localized: "相机")
         case .lens:
-            return "镜头"
+            return String(localized: "镜头")
         case .shutter:
-            return "快门"
+            return String(localized: "快门")
         case .aperture:
-            return "光圈"
+            return String(localized: "光圈")
         case .iso:
             return "ISO"
         case .focal:
-            return "焦距"
+            return String(localized: "焦距")
         }
     }
 
@@ -344,24 +344,24 @@ struct RenderEditorConfig: Sendable {
 
     var invalidMessage: String? {
         if !Self.outputWidthRange.contains(outputWidth) || !Self.outputHeightRange.contains(outputHeight) {
-            return "分辨率过低，请至少设置为 640x360"
+            return String(localized: "分辨率过低，请至少设置为 640x360")
         }
         if !Self.fpsRange.contains(fps) {
-            return "FPS 必须大于 0"
+            return String(localized: "FPS 必须大于 0")
         }
         if imageDuration <= 0 {
-            return "单图时长必须大于 0"
+            return String(localized: "单图时长必须大于 0")
         }
         if enableCrossfade && (transitionDuration < 0 || transitionDuration >= imageDuration) {
-            return "转场时长必须满足 0 <= 转场 < 单图时长"
+            return String(localized: "转场时长必须满足 0 <= 转场 < 单图时长")
         }
         if audioEnabled && audioFilePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "已启用音频，请先选择音频文件"
+            return String(localized: "已启用音频，请先选择音频文件")
         }
         if shutterSoundEnabled && resolvedShutterSoundTrack == nil {
             return shutterSoundSource == .preset
-                ? "已启用快门声，但当前型号声音资源不可用"
-                : "已启用快门声，请先选择音效文件"
+                ? String(localized: "已启用快门声，但当前型号声音资源不可用")
+                : String(localized: "已启用快门声，请先选择音效文件")
         }
         return nil
     }

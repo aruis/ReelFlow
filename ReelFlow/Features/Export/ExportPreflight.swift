@@ -54,7 +54,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "文件名较长，部分系统导出时可能遇到路径/兼容问题",
+                        message: String(localized: "文件名较长，部分系统导出时可能遇到路径/兼容问题"),
                         severity: .shouldReview
                     )
                 )
@@ -65,7 +65,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "文件不存在或已被移动",
+                        message: String(localized: "文件不存在或已被移动"),
                         severity: .mustFix
                     )
                 )
@@ -77,7 +77,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "文件不可读，请检查权限",
+                        message: String(localized: "文件不可读，请检查权限"),
                         severity: .mustFix
                     )
                 )
@@ -93,7 +93,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "文件大小为 0，无法导出",
+                        message: String(localized: "文件大小为 0，无法导出"),
                         severity: .mustFix
                     )
                 )
@@ -105,7 +105,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "图片源无法读取，可能已损坏",
+                        message: String(localized: "图片源无法读取，可能已损坏"),
                         severity: .mustFix
                     )
                 )
@@ -117,7 +117,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "无法读取图片属性",
+                        message: String(localized: "无法读取图片属性"),
                         severity: .mustFix
                     )
                 )
@@ -131,7 +131,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "像素尺寸异常（宽高为 0）",
+                        message: String(localized: "像素尺寸异常（宽高为 0）"),
                         severity: .mustFix
                     )
                 )
@@ -143,7 +143,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "分辨率较低，导出画质可能受影响",
+                        message: String(localized: "分辨率较低，导出画质可能受影响"),
                         severity: .shouldReview
                     )
                 )
@@ -155,7 +155,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: String(format: "长宽比极端(%.2f:1)，导出构图可能异常", aspectRatio),
+                        message: String(localized: "长宽比极端(\(String(format: "%.2f", aspectRatio)):1)，导出构图可能异常"),
                         severity: .shouldReview
                     )
                 )
@@ -169,7 +169,7 @@ enum ExportPreflightScanner {
                     PreflightIssue(
                         index: index,
                         fileName: fileName,
-                        message: "色彩模型为 \(colorModel)，建议先转换为 RGB 以降低导出风险",
+                        message: String(localized: "色彩模型为 \(colorModel)，建议先转换为 RGB 以降低导出风险"),
                         severity: .shouldReview
                     )
                 )

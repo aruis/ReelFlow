@@ -81,7 +81,7 @@ struct ExportPreflightTests {
 
         let report = ExportPreflightScanner.scan(imageURLs: [url])
         #expect(report.reviewIssues.count == 1)
-        #expect(report.reviewIssues.first?.message.contains("文件名较长") == true)
+        #expect(report.reviewIssues.first?.message == "文件名较长，部分系统导出时可能遇到路径/兼容问题")
     }
 
     @Test
@@ -96,7 +96,7 @@ struct ExportPreflightTests {
 
         let report = ExportPreflightScanner.scan(imageURLs: [url])
         #expect(report.reviewIssues.count == 1)
-        #expect(report.reviewIssues.first?.message.contains("长宽比极端") == true)
+        #expect(report.reviewIssues.first?.message == "长宽比极端(8.00:1)，导出构图可能异常")
     }
 
     private static func writeImage(to url: URL, width: Int, height: Int) throws {

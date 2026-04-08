@@ -9,7 +9,7 @@ struct SingleFramePreviewPanel: View {
                 previewSurface(
                     image: viewModel.previewImage,
                     placeholderSystemImage: "photo",
-                    placeholderText: "尚未生成单帧预览",
+                    placeholderText: String(localized: "尚未生成单帧预览"),
                     accessibilityIdentifier: "single_frame_preview_surface"
                 )
             }
@@ -25,10 +25,10 @@ struct VideoTimelinePreviewPanel: View {
     private var previewBlockedMessage: String? {
         guard !viewModel.imageURLs.isEmpty else { return nil }
         if let validationMessage = viewModel.validationMessage {
-            return "当前参数下无法刷新预览：\(validationMessage)"
+            return String(localized: "当前参数下无法刷新预览：\(validationMessage)")
         }
         if viewModel.isBusy && !viewModel.isPreviewGenerating {
-            return "导出进行中，时间轴预览暂不刷新。"
+            return String(localized: "导出进行中，时间轴预览暂不刷新。")
         }
         return nil
     }
@@ -40,9 +40,9 @@ struct VideoTimelinePreviewPanel: View {
                     VStack(alignment: .leading, spacing: 6) {
                         let videoDuration = max(viewModel.previewMaxSecond, 0)
                         let audioDuration = viewModel.selectedAudioDuration
-                        let audioName = viewModel.selectedAudioFilename ?? "未选择音频"
+                        let audioName = viewModel.selectedAudioFilename ?? String(localized: "未选择音频")
 
-                        Text("音轨: \(audioName)")
+                        Text(String(localized: "音轨: \(audioName)"))
                             .font(.caption)
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 4)
@@ -64,9 +64,8 @@ struct VideoTimelinePreviewPanel: View {
                         .frame(height: 18)
 
                         if let audioDuration {
-                            Text(
-                                "视频 \(videoDuration, specifier: "%.2f")s · 音频 \(audioDuration, specifier: "%.2f")s · \(viewModel.config.audioLoopEnabled ? "自动循环开启" : "自动循环关闭")"
-                            )
+                            let loopState = viewModel.config.audioLoopEnabled ? String(localized: "自动循环开启") : String(localized: "自动循环关闭")
+                            Text(String(localized: "视频 \(videoDuration, specifier: "%.2f")s · 音频 \(audioDuration, specifier: "%.2f")s · \(loopState)"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         } else {
@@ -76,7 +75,7 @@ struct VideoTimelinePreviewPanel: View {
                         }
 
                         HStack(spacing: 8) {
-                            Button(viewModel.isAudioPreviewPlaying ? "暂停试听" : "试听当前时间点") {
+                            Button(viewModel.isAudioPreviewPlaying ? String(localized: "暂停试听") : String(localized: "试听当前时间点")) {
                                 viewModel.toggleAudioPreview()
                             }
                             .disabled(!viewModel.canPreviewAudio)
@@ -93,7 +92,7 @@ struct VideoTimelinePreviewPanel: View {
                 previewSurface(
                     image: viewModel.previewImage,
                     placeholderSystemImage: "film",
-                    placeholderText: "尚未生成时间轴预览",
+                    placeholderText: String(localized: "尚未生成时间轴预览"),
                     accessibilityIdentifier: "timeline_preview_surface"
                 )
 

@@ -32,7 +32,7 @@ struct ExportViewModelPreflightFlowTests {
 
         #expect(viewModel.hasOutputPath == true)
         #expect(viewModel.hasPreviewFrame == false)
-        #expect(viewModel.nextActionHint.contains("直接导出 MP4") == true)
+        #expect(viewModel.nextActionHint == "可选：点击“生成预览”确认画面；也可直接导出 MP4。")
 
         let previewStep = viewModel.flowSteps.first { $0.id == "preview" }
         #expect(previewStep?.title.contains("可选") == true)
@@ -359,8 +359,8 @@ struct ExportViewModelPreflightFlowTests {
                 viewModel.previewErrorMessage?.contains("[E_IMAGE_LOAD]") == true
             }
         }
-        #expect(viewModel.statusMessage.contains("失败阶段: 预览"))
-        #expect(viewModel.statusMessage.contains("建议动作"))
+        #expect(viewModel.statusMessage.contains("预览"))
+        #expect(viewModel.statusMessage.contains("重新选择素材"))
     }
 
     @Test

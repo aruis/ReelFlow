@@ -17,9 +17,9 @@ struct AdvancedSettingsPanel: View {
 
         var title: String {
             switch self {
-            case .off: return "关闭"
-            case .subtle: return "轻微"
-            case .standard: return "标准"
+            case .off: return String(localized: "关闭")
+            case .subtle: return String(localized: "轻微")
+            case .standard: return String(localized: "标准")
             }
         }
     }
@@ -58,9 +58,9 @@ struct AdvancedSettingsPanel: View {
                     settingsValidationView(settingsValidationMessage)
                 }
 
-                Stepper("宽: \(viewModel.config.outputWidth)", value: $viewModel.config.outputWidth, in: RenderEditorConfig.outputWidthRange, step: 2)
+                Stepper(String(localized: "宽: \(viewModel.config.outputWidth)"), value: $viewModel.config.outputWidth, in: RenderEditorConfig.outputWidthRange, step: 2)
                     .disabled(viewModel.isBusy)
-                Stepper("高: \(viewModel.config.outputHeight)", value: $viewModel.config.outputHeight, in: RenderEditorConfig.outputHeightRange, step: 2)
+                Stepper(String(localized: "高: \(viewModel.config.outputHeight)"), value: $viewModel.config.outputHeight, in: RenderEditorConfig.outputHeightRange, step: 2)
                     .disabled(viewModel.isBusy)
 
                 HStack(spacing: 6) {
@@ -79,7 +79,7 @@ struct AdvancedSettingsPanel: View {
                 .disabled(viewModel.isBusy)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("单图时长: \(viewModel.config.imageDuration, specifier: "%.2f")s")
+                    Text(String(localized: "单图时长: \(viewModel.config.imageDuration, specifier: "%.2f")s"))
                     Slider(value: imageDurationBinding, in: RenderEditorConfig.imageDurationRange, step: 0.1)
                         .disabled(viewModel.isBusy)
                 }
@@ -97,22 +97,22 @@ struct AdvancedSettingsPanel: View {
                 .disabled(viewModel.isBusy)
                 if viewModel.config.frameStylePreset == .custom {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("背景灰度: \(viewModel.config.canvasBackgroundGray, specifier: "%.2f")")
+                        Text(String(localized: "背景灰度: \(viewModel.config.canvasBackgroundGray, specifier: "%.2f")"))
                         Slider(value: $viewModel.config.canvasBackgroundGray, in: RenderEditorConfig.grayRange, step: 0.01)
                             .disabled(viewModel.isBusy)
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("相纸亮度: \(viewModel.config.canvasPaperWhite, specifier: "%.2f")")
+                        Text(String(localized: "相纸亮度: \(viewModel.config.canvasPaperWhite, specifier: "%.2f")"))
                         Slider(value: $viewModel.config.canvasPaperWhite, in: RenderEditorConfig.grayRange, step: 0.01)
                             .disabled(viewModel.isBusy)
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("边框灰度: \(viewModel.config.canvasStrokeGray, specifier: "%.2f")")
+                        Text(String(localized: "边框灰度: \(viewModel.config.canvasStrokeGray, specifier: "%.2f")"))
                         Slider(value: $viewModel.config.canvasStrokeGray, in: RenderEditorConfig.grayRange, step: 0.01)
                             .disabled(viewModel.isBusy)
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("文字灰度: \(viewModel.config.canvasTextGray, specifier: "%.2f")")
+                        Text(String(localized: "文字灰度: \(viewModel.config.canvasTextGray, specifier: "%.2f")"))
                         Slider(value: $viewModel.config.canvasTextGray, in: RenderEditorConfig.grayRange, step: 0.01)
                             .disabled(viewModel.isBusy)
                     }
@@ -120,7 +120,7 @@ struct AdvancedSettingsPanel: View {
                 Toggle("启用淡入淡出转场", isOn: $viewModel.config.enableCrossfade)
                     .disabled(viewModel.isBusy)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("转场时长: \(viewModel.config.transitionDuration, specifier: "%.2f")s")
+                    Text(String(localized: "转场时长: \(viewModel.config.transitionDuration, specifier: "%.2f")s"))
                     Slider(value: transitionDurationBinding, in: RenderEditorConfig.transitionDurationRange, step: 0.05)
                         .disabled(viewModel.isBusy || !viewModel.config.enableCrossfade)
                     if let transitionValidationMessage {
@@ -130,7 +130,7 @@ struct AdvancedSettingsPanel: View {
                     }
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("背景空窗时长: \(viewModel.config.transitionDipDuration, specifier: "%.2f")s")
+                    Text(String(localized: "背景空窗时长: \(viewModel.config.transitionDipDuration, specifier: "%.2f")s"))
                     Slider(value: transitionDipDurationBinding, in: RenderEditorConfig.transitionDipDurationRange, step: 0.01)
                         .disabled(viewModel.isBusy)
                 }
@@ -145,22 +145,22 @@ struct AdvancedSettingsPanel: View {
 
             Section("高级布局") {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("左右留白: \(viewModel.config.horizontalMargin, specifier: "%.0f")")
+                    Text(String(localized: "左右留白: \(viewModel.config.horizontalMargin, specifier: "%.0f")"))
                     Slider(value: $viewModel.config.horizontalMargin, in: RenderEditorConfig.horizontalMarginRange, step: 1)
                         .disabled(viewModel.isBusy)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("上留白: \(viewModel.config.topMargin, specifier: "%.0f")")
+                    Text(String(localized: "上留白: \(viewModel.config.topMargin, specifier: "%.0f")"))
                     Slider(value: $viewModel.config.topMargin, in: RenderEditorConfig.topMarginRange, step: 1)
                         .disabled(viewModel.isBusy)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("下留白: \(viewModel.config.bottomMargin, specifier: "%.0f")")
+                    Text(String(localized: "下留白: \(viewModel.config.bottomMargin, specifier: "%.0f")"))
                     Slider(value: $viewModel.config.bottomMargin, in: RenderEditorConfig.bottomMarginRange, step: 1)
                         .disabled(viewModel.isBusy)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("内边距: \(viewModel.config.innerPadding, specifier: "%.0f")")
+                    Text(String(localized: "内边距: \(viewModel.config.innerPadding, specifier: "%.0f")"))
                     Slider(value: $viewModel.config.innerPadding, in: RenderEditorConfig.innerPaddingRange, step: 1)
                         .disabled(viewModel.isBusy)
                 }
@@ -177,9 +177,9 @@ struct AdvancedSettingsPanel: View {
             }
 
             Section("性能设置") {
-                Stepper("预取半径: \(viewModel.config.prefetchRadius)", value: $viewModel.config.prefetchRadius, in: RenderEditorConfig.prefetchRadiusRange)
+                Stepper(String(localized: "预取半径: \(viewModel.config.prefetchRadius)"), value: $viewModel.config.prefetchRadius, in: RenderEditorConfig.prefetchRadiusRange)
                     .disabled(viewModel.isBusy)
-                Stepper("预取并发: \(viewModel.config.prefetchMaxConcurrent)", value: $viewModel.config.prefetchMaxConcurrent, in: RenderEditorConfig.prefetchMaxConcurrentRange)
+                Stepper(String(localized: "预取并发: \(viewModel.config.prefetchMaxConcurrent)"), value: $viewModel.config.prefetchMaxConcurrent, in: RenderEditorConfig.prefetchMaxConcurrentRange)
                     .disabled(viewModel.isBusy)
             }
 
@@ -199,7 +199,7 @@ struct AdvancedSettingsPanel: View {
     private var transitionValidationMessage: String? {
         guard viewModel.config.enableCrossfade else { return nil }
         guard viewModel.config.transitionDuration >= viewModel.config.imageDuration else { return nil }
-        return "转场时长必须小于单图时长，请缩短转场或延长单图时长。"
+        return String(localized: "转场时长必须小于单图时长，请缩短转场或延长单图时长。")
     }
 
     private func resolutionPresetButton(_ preset: ResolutionPreset) -> some View {
@@ -327,7 +327,7 @@ struct AdvancedSettingsPanel: View {
                             commitAllPlateSimpleDrafts()
                             isPlateReordering.toggle()
                         } label: {
-                            Label(isPlateReordering ? "完成" : "排序", systemImage: isPlateReordering ? "checkmark" : "arrow.up.arrow.down")
+                            Label(isPlateReordering ? String(localized: "完成") : String(localized: "排序"), systemImage: isPlateReordering ? "checkmark" : "arrow.up.arrow.down")
                                 .font(.caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
@@ -438,13 +438,13 @@ struct AdvancedSettingsPanel: View {
                 plateTemplatePreview
 
                 HStack(spacing: 6) {
-                    plateTokenButton(title: "快门", token: "{shutter}")
-                    plateTokenButton(title: "光圈", token: "{aperture}")
+                    plateTokenButton(title: String(localized: "快门"), token: "{shutter}")
+                    plateTokenButton(title: String(localized: "光圈"), token: "{aperture}")
                     plateTokenButton(title: "ISO", token: "{iso}")
-                    plateTokenButton(title: "焦距", token: "{focal}")
-                    plateTokenButton(title: "日期", token: "{date}")
-                    plateTokenButton(title: "机型", token: "{camera}")
-                    plateTokenButton(title: "镜头", token: "{lens}")
+                    plateTokenButton(title: String(localized: "焦距"), token: "{focal}")
+                    plateTokenButton(title: String(localized: "日期"), token: "{date}")
+                    plateTokenButton(title: String(localized: "机型"), token: "{camera}")
+                    plateTokenButton(title: String(localized: "镜头"), token: "{lens}")
                 }
 
                 HStack {

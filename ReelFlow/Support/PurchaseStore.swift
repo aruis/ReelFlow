@@ -59,7 +59,9 @@ final class PurchaseStore: ObservableObject {
             }
         case .preview(let hasProAccess):
             entitlementState = hasProAccess ? .pro : .free
-            self.statusMessage = hasProAccess ? "测试场景：ReelFlow Pro 已解锁" : "测试场景：免费版"
+            self.statusMessage = hasProAccess
+                ? String(localized: "测试场景：ReelFlow Pro 已解锁")
+                : String(localized: "测试场景：免费版")
         }
     }
 
@@ -77,33 +79,33 @@ final class PurchaseStore: ObservableObject {
 
     var purchaseButtonTitle: String {
         if entitlementState == .pro {
-            return "ReelFlow Pro 已解锁"
+            return String(localized: "ReelFlow Pro 已解锁")
         }
         if let proProduct {
-            return "升级 Pro · \(proProduct.displayPrice)"
+            return String(localized: "升级 Pro · \(proProduct.displayPrice)")
         }
-        return "升级到 Pro"
+        return String(localized: "升级到 Pro")
     }
 
     var planDescription: String {
         if entitlementState == .loading {
-            return "正在检查购买状态…"
+            return String(localized: "正在检查购买状态…")
         }
         if entitlementState == .pro {
-            return "ReelFlow Pro 已解锁：无限图片导入，导出无水印。"
+            return String(localized: "ReelFlow Pro 已解锁：无限图片导入，导出无水印。")
         }
-        return "免费版最多导入 20 张照片，导出会带 Made with ReelFlow 水印。"
+        return String(localized: "免费版最多导入 20 张照片，导出会带 Made with ReelFlow 水印。")
     }
 
     func purchasePro() {
         guard case .live = mode else { return }
         guard !isBusy else { return }
         guard let proProduct else {
-            statusMessage = "暂时无法连接 App Store，请稍后重试。"
+            statusMessage = String(localized: "暂时无法连接 App Store，请稍后重试。")
             feedback = Feedback(
                 tone: .error,
-                title: "无法开始购买",
-                message: "当前未读取到 ReelFlow Pro 商品，请稍后重试。"
+                title: String(localized: "无法开始购买"),
+                message: String(localized: "当前未读取到 ReelFlow Pro 商品，请稍后重试。")
             )
             Task {
                 await refreshProducts()
@@ -120,51 +122,51 @@ final class PurchaseStore: ObservableObject {
                 switch result {
                 case .success(let verification):
                     guard case .verified(let transaction) = verification else {
-                        statusMessage = "购买未通过验证，请稍后重试。"
+                        statusMessage = String(localized: "购买未通过验证，请稍后重试。")
                         feedback = Feedback(
                             tone: .error,
-                            title: "购买未完成",
-                            message: "App Store 返回了未验证交易，当前不会解锁 Pro。"
+                            title: String(localized: "购买未完成"),
+                            message: String(localized: "App Store 返回了未验证交易，当前不会解锁 Pro。")
                         )
                         return
                     }
 
                     entitlementState = .pro
-                    statusMessage = "ReelFlow Pro 已解锁。"
+                    statusMessage = String(localized: "ReelFlow Pro 已解锁。")
                     feedback = Feedback(
                         tone: .success,
-                        title: "ReelFlow Pro 已解锁",
-                        message: "无限图片导入与无水印导出已立即生效。"
+                        title: String(localized: "ReelFlow Pro 已解锁"),
+                        message: String(localized: "无限图片导入与无水印导出已立即生效。")
                     )
                     await transaction.finish()
                     await refreshEntitlements()
                 case .userCancelled:
-                    statusMessage = "已取消购买。"
+                    statusMessage = String(localized: "已取消购买。")
                     feedback = Feedback(
                         tone: .info,
-                        title: "已取消购买",
-                        message: "当前仍处于免费版，你可以稍后再升级。"
+                        title: String(localized: "已取消购买"),
+                        message: String(localized: "当前仍处于免费版，你可以稍后再升级。")
                     )
                 case .pending:
-                    statusMessage = "购买正在等待确认。"
+                    statusMessage = String(localized: "购买正在等待确认。")
                     feedback = Feedback(
                         tone: .warning,
-                        title: "购买等待确认",
-                        message: "交易仍在处理中，确认完成后会自动解锁 Pro。"
+                        title: String(localized: "购买等待确认"),
+                        message: String(localized: "交易仍在处理中，确认完成后会自动解锁 Pro。")
                     )
                 @unknown default:
-                    statusMessage = "购买结果暂不可用，请稍后查看。"
+                    statusMessage = String(localized: "购买结果暂不可用，请稍后查看。")
                     feedback = Feedback(
                         tone: .warning,
-                        title: "购买状态未知",
-                        message: "当前无法确认购买结果，请稍后再看。"
+                        title: String(localized: "购买状态未知"),
+                        message: String(localized: "当前无法确认购买结果，请稍后再看。")
                     )
                 }
             } catch {
-                statusMessage = "购买失败：\(error.localizedDescription)"
+                statusMessage = String(localized: "购买失败：") + error.localizedDescription
                 feedback = Feedback(
                     tone: .error,
-                    title: "购买失败",
+                    title: String(localized: "购买失败"),
                     message: error.localizedDescription
                 )
             }
@@ -182,23 +184,25 @@ final class PurchaseStore: ObservableObject {
             do {
                 try await AppStore.sync()
                 await refreshEntitlements()
-                statusMessage = hasProAccess ? "已恢复 ReelFlow Pro。" : "未找到可恢复的 ReelFlow Pro 购买。"
+                statusMessage = hasProAccess
+                    ? String(localized: "已恢复 ReelFlow Pro。")
+                    : String(localized: "未找到可恢复的 ReelFlow Pro 购买。")
                 feedback = hasProAccess
                     ? Feedback(
                         tone: .success,
-                        title: "已恢复购买",
-                        message: "ReelFlow Pro 已恢复，无限图片导入与无水印导出已生效。"
+                        title: String(localized: "已恢复购买"),
+                        message: String(localized: "ReelFlow Pro 已恢复，无限图片导入与无水印导出已生效。")
                     )
                     : Feedback(
                         tone: .info,
-                        title: "未找到可恢复购买",
-                        message: "当前 Apple 账号下没有 ReelFlow Pro 的可恢复记录。"
+                        title: String(localized: "未找到可恢复购买"),
+                        message: String(localized: "当前 Apple 账号下没有 ReelFlow Pro 的可恢复记录。")
                     )
             } catch {
-                statusMessage = "恢复购买失败：\(error.localizedDescription)"
+                statusMessage = String(localized: "恢复购买失败：") + error.localizedDescription
                 feedback = Feedback(
                     tone: .error,
-                    title: "恢复购买失败",
+                    title: String(localized: "恢复购买失败"),
                     message: error.localizedDescription
                 )
             }
@@ -216,10 +220,10 @@ final class PurchaseStore: ObservableObject {
             let products = try await Product.products(for: [Self.proProductID])
             proProduct = products.first
             if proProduct == nil {
-                statusMessage = "未找到 ReelFlow Pro 商品，请检查 App Store Connect 配置。"
+                statusMessage = String(localized: "未找到 ReelFlow Pro 商品，请检查 App Store Connect 配置。")
             }
         } catch {
-            statusMessage = "无法读取购买信息：\(error.localizedDescription)"
+            statusMessage = String(localized: "无法读取购买信息：") + error.localizedDescription
         }
     }
 

@@ -41,17 +41,17 @@ struct SimpleSettingsPanel: View {
 
         var title: String {
             switch self {
-            case .quick: return "快节奏"
-            case .standard: return "标准"
-            case .relaxed: return "舒缓"
+            case .quick: return String(localized: "快节奏")
+            case .standard: return String(localized: "标准")
+            case .relaxed: return String(localized: "舒缓")
             }
         }
 
         var subtitle: String? {
             switch self {
-            case .quick: return "约 1.5 秒/张"
-            case .standard: return "约 2.5 秒/张"
-            case .relaxed: return "约 4 秒/张"
+            case .quick: return String(localized: "约 1.5 秒/张")
+            case .standard: return String(localized: "约 2.5 秒/张")
+            case .relaxed: return String(localized: "约 4 秒/张")
             }
         }
 
@@ -73,17 +73,17 @@ struct SimpleSettingsPanel: View {
 
         var title: String {
             switch self {
-            case .off: return "关闭"
-            case .soft: return "柔和"
-            case .standard: return "标准"
+            case .off: return String(localized: "关闭")
+            case .soft: return String(localized: "柔和")
+            case .standard: return String(localized: "标准")
             }
         }
 
         var subtitle: String? {
             switch self {
-            case .off: return "不使用转场"
-            case .soft: return "0.4 秒"
-            case .standard: return "0.8 秒"
+            case .off: return String(localized: "不使用转场")
+            case .soft: return String(localized: "0.4 秒")
+            case .standard: return String(localized: "0.8 秒")
             }
         }
 
@@ -105,17 +105,17 @@ struct SimpleSettingsPanel: View {
 
         var title: String {
             switch self {
-            case .none: return "无"
-            case .short: return "短"
-            case .medium: return "中"
+            case .none: return String(localized: "无")
+            case .short: return String(localized: "短")
+            case .medium: return String(localized: "中")
             }
         }
 
         var subtitle: String? {
             switch self {
-            case .none: return "无空窗"
-            case .short: return "0.18 秒"
-            case .medium: return "0.36 秒"
+            case .none: return String(localized: "无空窗")
+            case .short: return String(localized: "0.18 秒")
+            case .medium: return String(localized: "0.36 秒")
             }
         }
 
@@ -137,17 +137,17 @@ struct SimpleSettingsPanel: View {
 
         var title: String {
             switch self {
-            case .off: return "关闭"
-            case .subtle: return "轻微"
-            case .standard: return "标准"
+            case .off: return String(localized: "关闭")
+            case .subtle: return String(localized: "轻微")
+            case .standard: return String(localized: "标准")
             }
         }
 
         var subtitle: String? {
             switch self {
-            case .off: return "无动效"
-            case .subtle: return "更克制"
-            case .standard: return "标准幅度"
+            case .off: return String(localized: "无动效")
+            case .subtle: return String(localized: "更克制")
+            case .standard: return String(localized: "标准幅度")
             }
         }
     }
@@ -161,9 +161,9 @@ struct SimpleSettingsPanel: View {
 
         var title: String {
             switch self {
-            case .small: return "小"
-            case .medium: return "中"
-            case .large: return "大"
+            case .small: return String(localized: "小")
+            case .medium: return String(localized: "中")
+            case .large: return String(localized: "大")
             }
         }
     }

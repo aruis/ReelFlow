@@ -167,7 +167,7 @@ struct AssetSidebarPanel: View {
                 .foregroundStyle(.secondary)
 
             if showProblemCount, viewModel.problematicAssetNameSet.count > 0 {
-                Text("\(viewModel.problematicAssetNameSet.count) 问题")
+                Text(String(localized: "\(viewModel.problematicAssetNameSet.count) 问题"))
                     .font(.caption2)
                     .foregroundStyle(.orange)
             }
@@ -369,10 +369,10 @@ struct AssetSidebarPanel: View {
     private func assetTagLine(fileName: String, issueTags: [String]) -> String {
         var tags = issueTags
         if viewModel.failedAssetNames.contains(fileName) {
-            tags.append("导出失败")
+            tags.append(String(localized: "导出失败"))
         }
         if viewModel.skippedAssetNamesFromPreflight.contains(fileName) {
-            tags.append("已跳过")
+            tags.append(String(localized: "已跳过"))
         }
         return tags.joined(separator: " · ")
     }
@@ -380,30 +380,30 @@ struct AssetSidebarPanel: View {
     private func filterToggleButtons(compact: Bool) -> some View {
         HStack(spacing: 4) {
             filterButton(
-                title: "全部",
+                title: String(localized: "全部"),
                 icon: "line.3.horizontal.decrease.circle",
-                help: "显示全部素材",
+                help: String(localized: "显示全部素材"),
                 filter: .all,
                 compact: compact
             )
             filterButton(
-                title: "问题",
+                title: String(localized: "问题"),
                 icon: "exclamationmark.triangle",
-                help: "仅显示问题素材",
+                help: String(localized: "仅显示问题素材"),
                 filter: .problematic,
                 compact: compact
             )
             filterButton(
-                title: "必修",
+                title: String(localized: "必修"),
                 icon: "xmark.octagon",
-                help: "仅显示必须修复",
+                help: String(localized: "仅显示必须修复"),
                 filter: .mustFix,
                 compact: compact
             )
             filterButton(
-                title: "正常",
+                title: String(localized: "正常"),
                 icon: "checkmark.circle",
-                help: "仅显示正常素材",
+                help: String(localized: "仅显示正常素材"),
                 filter: .normal,
                 compact: compact
             )

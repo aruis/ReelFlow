@@ -12,7 +12,7 @@ enum ExportWorkflowState: String, Sendable {
 struct ExportWorkflowModel: Sendable {
     private(set) var state: ExportWorkflowState = .idle
     private(set) var progress: Double = 0
-    private(set) var statusMessage: String = "请选择图片，导出时可设置保存路径"
+    private(set) var statusMessage: String = String(localized: "请选择图片，导出时可设置保存路径")
 
     var isBusy: Bool {
         switch state {
@@ -35,13 +35,13 @@ struct ExportWorkflowModel: Sendable {
     mutating func beginPreview() -> Bool {
         guard !isBusy else { return false }
         state = .previewing
-        statusMessage = "生成预览中..."
+        statusMessage = String(localized: "生成预览中...")
         return true
     }
 
     mutating func finishPreviewSuccess() {
         state = .idle
-        statusMessage = "预览已更新"
+        statusMessage = String(localized: "预览已更新")
     }
 
     mutating func finishPreviewFailure(message: String) {
@@ -53,7 +53,7 @@ struct ExportWorkflowModel: Sendable {
         guard !isBusy else { return false }
         state = .exporting
         progress = 0
-        statusMessage = isRetry ? "开始重试导出..." : "开始导出..."
+        statusMessage = isRetry ? String(localized: "开始重试导出...") : String(localized: "开始导出...")
         return true
     }
 
@@ -65,7 +65,7 @@ struct ExportWorkflowModel: Sendable {
     mutating func requestCancel() {
         guard state == .exporting else { return }
         state = .cancelling
-        statusMessage = "正在取消导出..."
+        statusMessage = String(localized: "正在取消导出...")
     }
 
     mutating func finishExportSuccess(message: String) {

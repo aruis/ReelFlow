@@ -63,7 +63,7 @@ struct ExportRecoveryAdvisorTests {
 
         let advice = ExportRecoveryAdvisor.advice(for: context)
         #expect(advice.action == .reselectAssets)
-        #expect(advice.message.contains("移除或替换"))
+        #expect(advice.message == "请移除或替换失败素材后重试。")
     }
 
     @Test
@@ -79,7 +79,7 @@ struct ExportRecoveryAdvisorTests {
 
         let advice = ExportRecoveryAdvisor.advice(for: context)
         #expect(advice.action == .reselectAssets)
-        #expect(advice.message.contains("检查素材"))
+        #expect(advice.message == "请检查素材是否可读、格式是否正常，再重试。")
     }
 
     @Test

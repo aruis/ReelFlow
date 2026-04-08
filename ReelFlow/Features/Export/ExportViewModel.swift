@@ -8,11 +8,11 @@ extension PhotoOrientationStrategy {
     var displayName: String {
         switch self {
         case .followAsset:
-            return "按素材方向"
+            return String(localized: "按素材方向")
         case .forceLandscape:
-            return "强制横图"
+            return String(localized: "强制横图")
         case .forcePortrait:
-            return "强制竖图"
+            return String(localized: "强制竖图")
         }
     }
 }
@@ -50,13 +50,13 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         var title: String {
             switch self {
             case .all:
-                return "全部"
+                return String(localized: "全部")
             case .problematic:
-                return "仅问题"
+                return String(localized: "仅问题")
             case .mustFix:
-                return "仅必须修复"
+                return String(localized: "仅必须修复")
             case .normal:
-                return "仅正常"
+                return String(localized: "仅正常")
             }
         }
     }
@@ -71,11 +71,11 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         var title: String {
             switch self {
             case .all:
-                return "全部问题"
+                return String(localized: "全部问题")
             case .mustFix:
-                return "仅必须修复"
+                return String(localized: "仅必须修复")
             case .review:
-                return "仅建议关注"
+                return String(localized: "仅建议关注")
             }
         }
     }
@@ -90,7 +90,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var outputURL: URL?
     @Published var previewImage: CGImage?
     @Published var previewSecond: Double = 0
-    @Published var previewStatusMessage: String = "未生成预览"
+    @Published var previewStatusMessage: String = String(localized: "未生成预览")
     @Published var previewErrorMessage: String?
     @Published var failedAssetNames: [String] = []
     @Published var preflightReport: PreflightReport?
@@ -138,7 +138,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         outputURL = Self.defaultOutputURL()
         hasUserSelectedOutputURL = false
         if let outputURL {
-            workflow.setIdleMessage("默认导出路径已设置：\(outputURL.lastPathComponent)（可修改）")
+            workflow.setIdleMessage(String(localized: "默认导出路径已设置：\(outputURL.lastPathComponent)（可修改）"))
         }
         applyUITestScenarioIfNeeded()
         refreshSelectedAudioDuration(force: true)
@@ -283,9 +283,9 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     var photoImportSummary: String {
         if let photoImportLimit {
-            return "\(imageURLs.count)/\(photoImportLimit) 张"
+            return String(localized: "\(imageURLs.count)/\(photoImportLimit) 张")
         }
-        return "\(imageURLs.count) 张"
+        return String(localized: "\(imageURLs.count) 张")
     }
 
     var remainingPhotoImportSlots: Int? {
@@ -305,36 +305,36 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     var photoImportStatusMessage: String {
         if entitlementState == .loading {
-            return "正在检查购买状态…"
+            return String(localized: "正在检查购买状态…")
         }
         guard let remainingPhotoImportSlots else {
-            return "Pro 已解锁：可继续导入更多照片。"
+            return String(localized: "Pro 已解锁：可继续导入更多照片。")
         }
         if isAtPhotoImportLimit {
-            return "已到免费版 20 张上限，升级 Pro 可继续添加。"
+            return String(localized: "已到免费版 20 张上限，升级 Pro 可继续添加。")
         }
         if isNearPhotoImportLimit {
-            return "还可再导入 \(remainingPhotoImportSlots) 张，升级 Pro 可解锁无限图片导入。"
+            return String(localized: "还可再导入 \(remainingPhotoImportSlots) 张，升级 Pro 可解锁无限图片导入。")
         }
-        return "免费版当前最多支持 20 张照片。"
+        return String(localized: "免费版当前最多支持 20 张照片。")
     }
 
     var planStatusMessage: String {
         switch entitlementState {
         case .loading:
-            return "正在检查购买状态…"
+            return String(localized: "正在检查购买状态…")
         case .pro:
-            return "ReelFlow Pro 已解锁：无限图片导入，导出无水印。"
+            return String(localized: "ReelFlow Pro 已解锁：无限图片导入，导出无水印。")
         case .free:
-            return "免费版支持最多 20 张照片，导出会带 Made with ReelFlow 水印。"
+            return String(localized: "免费版支持最多 20 张照片，导出会带 Made with ReelFlow 水印。")
         }
     }
 
     var flowSteps: [FlowStep] {
         [
-            FlowStep(id: "select-images", title: "选择图片", done: hasSelectedImages),
-            FlowStep(id: "preview", title: "（可选）生成预览", done: hasPreviewFrame || hasSelectedImages),
-            FlowStep(id: "export", title: "导出 MP4（必要时选择路径）", done: hasSuccessCard)
+            FlowStep(id: "select-images", title: String(localized: "选择图片"), done: hasSelectedImages),
+            FlowStep(id: "preview", title: String(localized: "（可选）生成预览"), done: hasPreviewFrame || hasSelectedImages),
+            FlowStep(id: "export", title: String(localized: "导出 MP4（必要时选择路径）"), done: hasSuccessCard)
         ]
     }
 
@@ -361,18 +361,18 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     var nextActionHint: String {
         if !hasSelectedImages {
-            return "下一步：点击左侧“导入图片”或直接拖入素材。"
+            return String(localized: "下一步：点击左侧“导入图片”或直接拖入素材。")
         }
         if validationMessage != nil {
-            return "下一步：先修正参数校验错误，再继续。"
+            return String(localized: "下一步：先修正参数校验错误，再继续。")
         }
         if !hasPreviewFrame {
-            return "可选：点击“生成预览”确认画面；也可直接导出 MP4。"
+            return String(localized: "可选：点击“生成预览”确认画面；也可直接导出 MP4。")
         }
         if isExporting {
-            return "正在导出，请等待完成。"
+            return String(localized: "正在导出，请等待完成。")
         }
-        return "已就绪：点击顶部“导出 MP4”即可完成首次导出。"
+        return String(localized: "已就绪：点击顶部“导出 MP4”即可完成首次导出。")
     }
 
     var orderedImageURLsForDisplay: [URL] {
@@ -433,10 +433,10 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
         var tags: [String] = []
         if issues.contains(where: { $0.severity == .mustFix }) {
-            tags.append("必须修复")
+            tags.append(String(localized: "必须修复"))
         }
         if issues.contains(where: { $0.severity == .shouldReview }) {
-            tags.append("建议关注")
+            tags.append(String(localized: "建议关注"))
         }
         return tags
     }
@@ -483,11 +483,11 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     func presentFreeTierImportLimitAlert(incomingCount: Int, resultingCount: Int, replacingExisting: Bool) {
-        let actionText = replacingExisting ? "导入这批素材" : "继续添加这些素材"
-        let title = "免费版最多支持 20 张照片"
-        let message = "\(actionText)后会达到 \(resultingCount) 张，因此本次不会导入任何新素材。升级 ReelFlow Pro 可解锁无限图片导入，并移除导出水印。"
+        let actionText = replacingExisting ? String(localized: "导入这批素材") : String(localized: "继续添加这些素材")
+        let title = String(localized: "免费版最多支持 20 张照片")
+        let message = String(localized: "\(actionText)后会达到 \(resultingCount) 张，因此本次不会导入任何新素材。升级 ReelFlow Pro 可解锁无限图片导入，并移除导出水印。")
         entitlementAlert = EntitlementAlert(title: title, message: message)
-        workflow.setIdleMessage("免费版最多支持 20 张照片；本次有 \(incomingCount) 张未导入。")
+        workflow.setIdleMessage(String(localized: "免费版最多支持 20 张照片；本次有 \(incomingCount) 张未导入。"))
     }
 
 }
