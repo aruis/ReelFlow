@@ -72,25 +72,11 @@
     "App Store 返回了未验证交易，当前不会解锁 Pro。" : {
 
     },
-    "focused" : {
-
-    },
-    "FPS" : {
-
-    },
+    
     "FPS 必须大于 0" : {
 
     },
-    "idle" : {
-
-    },
-    "Ken Burns" : {
-
-    },
     "Pro 已解锁：可继续导入更多照片。" : {
-
-    },
-    "ReelFlow" : {
 
     },
     "ReelFlow Pro" : {
@@ -106,9 +92,6 @@
 
     },
     "ReelFlow Pro 已解锁。" : {
-
-    },
-    "selected" : {
 
     },
     "上留白" : {

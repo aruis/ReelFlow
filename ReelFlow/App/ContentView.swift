@@ -220,7 +220,7 @@ struct ContentView: View {
                     .navigationSplitViewColumnWidth(min: 860, ideal: 1040)
             }
             .navigationSplitViewStyle(.balanced)
-            .navigationTitle("ReelFlow")
+            .navigationTitle(Text(verbatim: "ReelFlow"))
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     if let primary = firstRunPrimaryAction {

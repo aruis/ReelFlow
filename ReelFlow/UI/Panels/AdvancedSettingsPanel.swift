@@ -70,10 +70,12 @@ struct AdvancedSettingsPanel: View {
                 }
                 .disabled(viewModel.isBusy)
 
-                Picker("FPS", selection: $viewModel.config.fps) {
+                Picker(selection: $viewModel.config.fps) {
                     ForEach([24, 30, 60], id: \.self) { fps in
                         Text("\(fps)").tag(fps)
                     }
+                } label: {
+                    Text(verbatim: "FPS")
                 }
                 .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)
@@ -134,10 +136,12 @@ struct AdvancedSettingsPanel: View {
                     Slider(value: transitionDipDurationBinding, in: RenderEditorConfig.transitionDipDurationRange, step: 0.01)
                         .disabled(viewModel.isBusy)
                 }
-                Picker("Ken Burns", selection: kenBurnsChoiceBinding) {
+                Picker(selection: kenBurnsChoiceBinding) {
                     ForEach(KenBurnsChoice.allCases) { choice in
                         Text(choice.title).tag(choice)
                     }
+                } label: {
+                    Text(verbatim: "Ken Burns")
                 }
                 .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)

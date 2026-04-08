@@ -266,7 +266,7 @@ struct AssetSidebarPanel: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .clipped()
         .accessibilityIdentifier("asset_card_\(accessibilityToken(for: fileName))")
-        .accessibilityValue(isFocused ? "focused" : (isSelected ? "selected" : "idle"))
+        .accessibilityValue(Text(verbatim: isFocused ? "focused" : (isSelected ? "selected" : "idle")))
         .onTapGesture {
             handleAssetTap(url)
         }

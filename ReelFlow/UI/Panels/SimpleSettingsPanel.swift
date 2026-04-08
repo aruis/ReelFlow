@@ -182,10 +182,12 @@ struct SimpleSettingsPanel: View {
                 }
                 .disabled(viewModel.isBusy)
 
-                Picker("FPS", selection: $viewModel.config.fps) {
+                Picker(selection: $viewModel.config.fps) {
                     ForEach([24, 30, 60], id: \.self) { fps in
                         Text("\(fps)").tag(fps)
                     }
+                } label: {
+                    Text(verbatim: "FPS")
                 }
                 .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)
@@ -227,7 +229,7 @@ struct SimpleSettingsPanel: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Ken Burns")
+                    Text(verbatim: "Ken Burns")
                         .font(.subheadline.weight(.medium))
                     choiceGrid(
                         KenBurnsChoice.allCases,

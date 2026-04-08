@@ -296,7 +296,7 @@ struct PreflightPanel: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityIdentifier("preflight_issue_\(accessibilityToken(for: issue.fileName))")
-        .accessibilityValue(isSelectedAssetIssue ? "selected" : "idle")
+        .accessibilityValue(Text(verbatim: isSelectedAssetIssue ? "selected" : "idle"))
     }
 
     private func summaryBadge(title: String, count: Int, tint: Color) -> some View {
