@@ -108,6 +108,8 @@ struct VideoTimelinePreviewPanel: View {
                     TimelineScrubber(
                         value: $viewModel.previewSecond,
                         range: 0...max(viewModel.previewMaxSecond, 0.001),
+                        audioSegments: audioSegments,
+                        audioWaveformSamples: viewModel.audioWaveformSamples,
                         markers: imageSegmentStarts,
                         isEnabled: !(viewModel.isBusy || viewModel.imageURLs.isEmpty)
                     )
@@ -131,6 +133,8 @@ struct VideoTimelinePreviewPanel: View {
 private struct TimelineScrubber: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
+    let audioSegments: [(start: Double, end: Double)]
+    let audioWaveformSamples: [CGFloat]
     let markers: [Double]
     let isEnabled: Bool
 
@@ -140,7 +144,9 @@ private struct TimelineScrubber: View {
         static let labelBandHeight: CGFloat = 10
         static let topPadding: CGFloat = 4
         static let labelToTrackGap: CGFloat = 0
-        static let railHeight: CGFloat = 24
+        static let waveformHeight: CGFloat = 18
+        static let waveformTopInset: CGFloat = 4
+        static let railHeight: CGFloat = 28
         static let bottomPadding: CGFloat = 6
         static let labelWidth: CGFloat = 18
 
@@ -169,6 +175,10 @@ private struct TimelineScrubber: View {
     private var currentSectionIndex: Int? {
         guard !normalizedMarkers.isEmpty else { return nil }
         return normalizedMarkers.lastIndex(where: { progress >= $0 }) ?? 0
+    }
+
+    private var hasAudioWaveform: Bool {
+        !audioSegments.isEmpty && !audioWaveformSamples.isEmpty
     }
 
     private func markerX(for marker: Double, availableWidth: CGFloat) -> CGFloat {
@@ -210,6 +220,30 @@ private struct TimelineScrubber: View {
                             .stroke(Color.white.opacity(0.04), lineWidth: 1)
                     }
                     .frame(height: Metrics.totalHeight)
+
+                if hasAudioWaveform {
+                    GeometryReader { waveformProxy in
+                        let waveformWidth = max(waveformProxy.size.width - Metrics.knobSize, 1)
+
+                        ForEach(Array(audioSegments.enumerated()), id: \.offset) { index, segment in
+                            AudioWaveformOverlay(
+                                samples: audioWaveformSamples,
+                                range: range,
+                                segment: segment,
+                                availableWidth: waveformWidth,
+                                height: Metrics.waveformHeight,
+                                tint: index.isMultiple(of: 2)
+                                    ? Color.accentColor.opacity(isEnabled ? 0.30 : 0.18)
+                                    : Color.accentColor.opacity(isEnabled ? 0.22 : 0.14)
+                            )
+                            .offset(
+                                x: Metrics.knobSize / 2,
+                                y: Metrics.topPadding + Metrics.labelBandHeight + Metrics.waveformTopInset
+                            )
+                        }
+                    }
+                    .frame(height: Metrics.totalHeight)
+                }
 
                 ForEach(Array(normalizedMarkers.enumerated()), id: \.offset) { index, marker in
                     if labelIndices.contains(index) {
@@ -298,6 +332,41 @@ private struct TimelineScrubber: View {
             indices.insert(currentSectionIndex)
         }
         return indices
+    }
+}
+
+private struct AudioWaveformOverlay: View {
+    let samples: [CGFloat]
+    let range: ClosedRange<Double>
+    let segment: (start: Double, end: Double)
+    let availableWidth: CGFloat
+    let height: CGFloat
+    let tint: Color
+
+    private var span: Double {
+        max(range.upperBound - range.lowerBound, 0.001)
+    }
+
+    private var segmentWidth: CGFloat {
+        max(CGFloat((segment.end - segment.start) / span) * availableWidth, 1)
+    }
+
+    private var offsetX: CGFloat {
+        CGFloat((segment.start - range.lowerBound) / span) * availableWidth
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 1) {
+            ForEach(Array(samples.enumerated()), id: \.offset) { _, sample in
+                Capsule(style: .continuous)
+                    .fill(tint)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: max(2, sample * height))
+            }
+        }
+        .frame(width: segmentWidth, height: height, alignment: .center)
+        .offset(x: offsetX)
+        .clipped()
     }
 }
 

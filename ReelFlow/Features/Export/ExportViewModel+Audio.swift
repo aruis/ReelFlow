@@ -1,5 +1,6 @@
 import AppKit
 import AVFoundation
+import CoreGraphics
 import Foundation
 
 @MainActor
@@ -268,7 +269,9 @@ extension ExportViewModel {
         lastAudioDurationLookupKey = lookupKey
 
         audioDurationTask?.cancel()
+        audioWaveformTask?.cancel()
         selectedAudioDuration = nil
+        audioWaveformSamples = []
 
         guard config.audioEnabled else { return }
         let path = config.audioFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -280,6 +283,13 @@ extension ExportViewModel {
             guard let self, !Task.isCancelled else { return }
             guard self.audioDurationLookupKey == lookupKey else { return }
             self.selectedAudioDuration = duration
+        }
+
+        audioWaveformTask = Task { [weak self] in
+            let samples = await Self.loadAudioWaveformSamples(from: url)
+            guard let self, !Task.isCancelled else { return }
+            guard self.audioDurationLookupKey == lookupKey else { return }
+            self.audioWaveformSamples = samples
         }
     }
 
@@ -293,5 +303,65 @@ extension ExportViewModel {
         } catch {
             return nil
         }
+    }
+
+    static func loadAudioWaveformSamples(from url: URL, sampleCount: Int = 96) async -> [CGFloat] {
+        await Task.detached(priority: .utility) {
+            guard sampleCount > 0 else { return [] }
+
+            do {
+                let audioFile = try AVAudioFile(forReading: url)
+                guard let format = AVAudioFormat(
+                    commonFormat: .pcmFormatFloat32,
+                    sampleRate: audioFile.processingFormat.sampleRate,
+                    channels: audioFile.processingFormat.channelCount,
+                    interleaved: false
+                ) else {
+                    return []
+                }
+
+                let frameCount = AVAudioFrameCount(audioFile.length)
+                guard frameCount > 0,
+                      let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+                    return []
+                }
+
+                try audioFile.read(into: buffer)
+                guard let channelData = buffer.floatChannelData else { return [] }
+
+                let frames = Int(buffer.frameLength)
+                let channels = Int(format.channelCount)
+                guard frames > 0, channels > 0 else { return [] }
+
+                let bucketSize = max(frames / sampleCount, 1)
+                var samples: [CGFloat] = []
+                samples.reserveCapacity(sampleCount)
+
+                for bucket in 0..<sampleCount {
+                    let start = bucket * bucketSize
+                    if start >= frames {
+                        samples.append(0.08)
+                        continue
+                    }
+                    let end = min(frames, start + bucketSize)
+                    var peak: Float = 0
+
+                    for frame in start..<end {
+                        var mixedSample: Float = 0
+                        for channel in 0..<channels {
+                            mixedSample += abs(channelData[channel][frame])
+                        }
+                        peak = max(peak, mixedSample / Float(channels))
+                    }
+
+                    let clamped = min(max(CGFloat(peak), 0), 1)
+                    samples.append(max(clamped, 0.08))
+                }
+
+                return samples
+            } catch {
+                return []
+            }
+        }.value
     }
 }

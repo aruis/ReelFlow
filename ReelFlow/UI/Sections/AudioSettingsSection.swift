@@ -7,6 +7,26 @@ struct AudioSettingsSection: View {
     let onAudioDrop: ([NSItemProvider]) -> Bool
     var showsBackgroundAudio: Bool = true
 
+    private var shutterPreviewButton: some View {
+        Button {
+            _ = viewModel.startShutterSoundPreview()
+        } label: {
+            Image(systemName: viewModel.isShutterSoundPreviewPlaying ? "speaker.wave.2.fill" : "play.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .frame(width: 28, height: 28)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .background(
+            Circle()
+                .fill(Color.accentColor.opacity(viewModel.isBusy || viewModel.isShutterSoundPreviewPlaying ? 0.18 : 0.9))
+        )
+        .foregroundStyle(.white.opacity(viewModel.isBusy || viewModel.isShutterSoundPreviewPlaying ? 0.7 : 1))
+        .disabled(viewModel.isBusy || viewModel.isShutterSoundPreviewPlaying)
+        .help(viewModel.isShutterSoundPreviewPlaying ? "试听中…" : "试听快门声")
+        .accessibilityLabel(viewModel.isShutterSoundPreviewPlaying ? "试听中…" : "试听快门声")
+    }
+
     var body: some View {
         Section("音频") {
             if showsBackgroundAudio {
@@ -101,18 +121,18 @@ struct AudioSettingsSection: View {
 
                 switch viewModel.config.shutterSoundSource {
                 case .preset:
-                    Picker("相机型号", selection: $viewModel.config.shutterSoundPreset) {
-                        ForEach(ShutterSoundPreset.allCases, id: \.self) { preset in
-                            Text(preset.displayName).tag(preset)
+                    HStack(spacing: 8) {
+                        Picker("相机型号", selection: $viewModel.config.shutterSoundPreset) {
+                            ForEach(ShutterSoundPreset.allCases, id: \.self) { preset in
+                                Text(preset.displayName).tag(preset)
+                            }
                         }
-                    }
-                    .disabled(viewModel.isBusy)
+                        .disabled(viewModel.isBusy)
 
-                    if ShutterSoundCatalog.bundledURL(for: viewModel.config.shutterSoundPreset) != nil {
-                        Text(String(localized: "导出时会在每张新照片开始时插入 \(viewModel.config.shutterSoundPreset.displayName) 风格快门声。"))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    } else {
+                        shutterPreviewButton
+                    }
+
+                    if ShutterSoundCatalog.bundledURL(for: viewModel.config.shutterSoundPreset) == nil {
                         Text("当前构建未包含该型号快门声资源，请改用“自定义文件”或补充资源。")
                             .font(.caption2)
                             .foregroundStyle(.red)
@@ -129,6 +149,8 @@ struct AudioSettingsSection: View {
                             viewModel.clearShutterSoundTrack()
                         }
                         .disabled(viewModel.isBusy || viewModel.selectedShutterSoundFilename == nil)
+
+                        shutterPreviewButton
                     }
 
                     if let name = viewModel.selectedShutterSoundFilename {
@@ -150,18 +172,6 @@ struct AudioSettingsSection: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
-                }
-
-                HStack(spacing: 10) {
-                    Button(viewModel.isShutterSoundPreviewPlaying ? String(localized: "试听中…") : String(localized: "试听快门声")) {
-                        _ = viewModel.startShutterSoundPreview()
-                    }
-                    .disabled(viewModel.isBusy || viewModel.isShutterSoundPreviewPlaying)
-
-                    Button("停止试听") {
-                        viewModel.stopShutterSoundPreview()
-                    }
-                    .disabled(viewModel.isBusy || !viewModel.isShutterSoundPreviewPlaying)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {

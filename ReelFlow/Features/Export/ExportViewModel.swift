@@ -102,6 +102,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var audioStatusMessage: String?
     @Published var shutterSoundStatusMessage: String?
     @Published var selectedAudioDuration: TimeInterval?
+    @Published var audioWaveformSamples: [CGFloat] = []
     @Published var isAudioPreviewPlaying = false
     @Published var isShutterSoundPreviewPlaying = false
     @Published var entitlementAlert: EntitlementAlert?
@@ -123,6 +124,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     var previewAudioPlayer: AVAudioPlayer?
     var shutterSoundPreviewPlayer: AVAudioPlayer?
     var audioDurationTask: Task<Void, Never>?
+    var audioWaveformTask: Task<Void, Never>?
     var lastAudioDurationLookupKey = ""
     var hasUserSelectedOutputURL = false
 

@@ -517,6 +517,7 @@
       }
     },
     "停止试听" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1378,6 +1379,7 @@
       }
     },
     "导出时会在每张新照片开始时插入 %@ 风格快门声。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
