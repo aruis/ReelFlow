@@ -8,7 +8,7 @@ enum ImageLoaderError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedImage(let url):
-            return "无法读取图片: \(url.lastPathComponent)"
+            return String(localized: "无法读取图片: \(url.lastPathComponent)")
         }
     }
 }

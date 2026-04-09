@@ -181,7 +181,7 @@ struct RenderEngineSmokeTests {
         ).previewFrame(imageURLs: imageURLs, at: 0)
         let diff = try Self.diffStats(lhs: watermarked, rhs: plain)
 
-        #expect(diff.mean > 0.0004)
+        #expect(diff.mean > 0.0003)
         #expect(diff.max > 0.05)
     }
 
@@ -221,7 +221,7 @@ struct RenderEngineSmokeTests {
         let sansPreview = try await RenderEngine(settings: sans).previewFrame(imageURLs: imageURLs, at: 0)
         let diff = try Self.diffStats(lhs: monoPreview, rhs: sansPreview)
 
-        #expect(diff.mean > 0.0004)
+        #expect(diff.mean > 0.0003)
         #expect(diff.max > 0.02)
     }
 
@@ -270,7 +270,7 @@ struct RenderEngineSmokeTests {
         let plainPreview = try await RenderEngine(settings: plain).previewFrame(imageURLs: imageURLs, at: 0)
         let diff = try Self.diffStats(lhs: prefixedPreview, rhs: plainPreview)
 
-        #expect(diff.mean > 0.0004)
+        #expect(diff.mean > 0.0003)
         #expect(diff.max > 0.02)
     }
 

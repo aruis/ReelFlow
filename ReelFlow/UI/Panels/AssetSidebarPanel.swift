@@ -231,7 +231,7 @@ struct AssetSidebarPanel: View {
 
                 if !tags.isEmpty || viewModel.failedAssetNames.contains(fileName) {
                     Circle()
-                        .fill(tags.contains("必须修复") || viewModel.failedAssetNames.contains(fileName) ? .red : .orange)
+                        .fill(viewModel.mustFixAssetNameSet.contains(fileName) || viewModel.failedAssetNames.contains(fileName) ? .red : .orange)
                         .frame(width: 8, height: 8)
                         .padding(6)
                 }

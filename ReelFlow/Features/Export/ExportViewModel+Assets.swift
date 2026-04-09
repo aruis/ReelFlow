@@ -19,14 +19,14 @@ extension ExportViewModel {
         imageURLs = selected
         previewImage = nil
         previewSecond = 0
-        previewStatusMessage = "素材已更新，请生成预览"
+        previewStatusMessage = String(localized: "素材已更新，请生成预览")
         previewErrorMessage = nil
         preflightReport = nil
         ignoredPreflightIssueKeys = []
         preflightIssueFilter = .all
         skippedAssetNamesFromPreflight = []
         pendingRequestFromPreflight = nil
-        workflow.setIdleMessage("已选择 \(imageURLs.count) 张图片")
+        workflow.setIdleMessage(String(localized: "已选择 \(imageURLs.count) 张图片"))
 
         // Generate first preview frame automatically to avoid blank preview area after import.
         if !imageURLs.isEmpty, isSettingsValid {
@@ -43,12 +43,12 @@ extension ExportViewModel {
         panel.canChooseDirectories = true
 
         guard panel.runModal() == .OK else { return }
-        appendImages(panel.urls, source: "已新增")
+        appendImages(panel.urls, source: String(localized: "已新增"))
     }
 
     func importDroppedItems(_ urls: [URL]) {
         guard !isBusy else { return }
-        appendImages(urls, source: "已拖入")
+        appendImages(urls, source: String(localized: "已拖入"))
     }
 
     func removeImage(_ url: URL) {
@@ -66,17 +66,17 @@ extension ExportViewModel {
         if imageURLs.isEmpty {
             previewImage = nil
             previewSecond = 0
-            previewStatusMessage = "未生成预览"
+            previewStatusMessage = String(localized: "未生成预览")
             previewErrorMessage = nil
-            workflow.setIdleMessage("素材已清空")
+            workflow.setIdleMessage(String(localized: "素材已清空"))
             return
         }
 
         previewImage = nil
         previewSecond = min(previewSecond, previewMaxSecond)
-        previewStatusMessage = "素材已更新，请生成预览"
+        previewStatusMessage = String(localized: "素材已更新，请生成预览")
         previewErrorMessage = nil
-        workflow.setIdleMessage("已删除: \(url.lastPathComponent)")
+        workflow.setIdleMessage(String(localized: "已删除: \(url.lastPathComponent)"))
 
         if isSettingsValid {
             generatePreview()
@@ -103,17 +103,17 @@ extension ExportViewModel {
         if imageURLs.isEmpty {
             previewImage = nil
             previewSecond = 0
-            previewStatusMessage = "未生成预览"
+            previewStatusMessage = String(localized: "未生成预览")
             previewErrorMessage = nil
-            workflow.setIdleMessage("素材已清空")
+            workflow.setIdleMessage(String(localized: "素材已清空"))
             return
         }
 
         previewImage = nil
         previewSecond = min(previewSecond, previewMaxSecond)
-        previewStatusMessage = "素材已更新，请生成预览"
+        previewStatusMessage = String(localized: "素材已更新，请生成预览")
         previewErrorMessage = nil
-        workflow.setIdleMessage("已删除 \(removedNames.count) 张素材")
+        workflow.setIdleMessage(String(localized: "已删除 \(removedNames.count) 张素材"))
 
         if isSettingsValid {
             generatePreview()
@@ -138,16 +138,16 @@ extension ExportViewModel {
         skippedAssetNamesFromPreflight = []
         pendingRequestFromPreflight = nil
         previewImage = nil
-        previewStatusMessage = "素材顺序已更新，请生成预览"
+        previewStatusMessage = String(localized: "素材顺序已更新，请生成预览")
         previewErrorMessage = nil
-        workflow.setIdleMessage("已调整素材顺序")
+        workflow.setIdleMessage(String(localized: "已调整素材顺序"))
     }
 
 
     func appendImages(_ urls: [URL], source: String) {
         let incoming = normalizedImageURLs(from: urls)
         guard !incoming.isEmpty else {
-            workflow.setIdleMessage("未检测到可用图片")
+            workflow.setIdleMessage(String(localized: "未检测到可用图片"))
             return
         }
 
@@ -162,7 +162,7 @@ extension ExportViewModel {
         }
 
         guard !appended.isEmpty else {
-            workflow.setIdleMessage("未新增素材（已存在）")
+            workflow.setIdleMessage(String(localized: "未新增素材（已存在）"))
             return
         }
 
@@ -176,9 +176,9 @@ extension ExportViewModel {
         pendingRequestFromPreflight = nil
         previewImage = nil
         previewSecond = min(previewSecond, previewMaxSecond)
-        previewStatusMessage = "素材已更新，请生成预览"
+        previewStatusMessage = String(localized: "素材已更新，请生成预览")
         previewErrorMessage = nil
-        workflow.setIdleMessage("\(source) \(appended.count) 张，共 \(imageURLs.count) 张")
+        workflow.setIdleMessage(String(localized: "\(source) \(appended.count) 张，共 \(imageURLs.count) 张"))
 
         if isSettingsValid {
             generatePreview()

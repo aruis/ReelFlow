@@ -9,6 +9,10 @@ import XCTest
 
 final class ReelFlowUITests: XCTestCase {
     private let uiTimeout: TimeInterval = 3
+    private enum AppLanguage: String {
+        case english = "en"
+        case simplifiedChinese = "zh-Hans"
+    }
 
     private func button(_ app: XCUIApplication, id: String, title: String, timeout: TimeInterval? = nil) -> XCUIElement {
         let wait = timeout ?? uiTimeout
@@ -31,6 +35,12 @@ final class ReelFlowUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
+    private func makeApp(language: AppLanguage = .simplifiedChinese) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(\(language.rawValue))", "-AppleLocale", language.rawValue]
+        return app
+    }
+
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
 
@@ -46,7 +56,7 @@ final class ReelFlowUITests: XCTestCase {
 
     @MainActor
     func testPrimarySecondaryActionGroupsAndInitialButtonState() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launch()
 
         let primaryAction = elementByIdentifier(app, id: "toolbar_primary_action")
@@ -63,7 +73,7 @@ final class ReelFlowUITests: XCTestCase {
 
     @MainActor
     func testFailureScenarioShowsFailureCard() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "failure"]
         app.launch()
 
@@ -74,19 +84,19 @@ final class ReelFlowUITests: XCTestCase {
 
     @MainActor
     func testSuccessScenarioShowsSuccessSheet() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "success"]
         app.launch()
 
         XCTAssertTrue(elementByIdentifier(app, id: "success_sheet").waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(app.buttons["打开文件夹"].waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(app.buttons["查看日志"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(button(app, id: "success_sheet_open_directory", title: "打开文件夹").waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(button(app, id: "success_sheet_open_log", title: "查看日志").waitForExistence(timeout: uiTimeout))
         XCTAssertFalse(app.staticTexts["workflow_status_message"].exists)
     }
 
     @MainActor
     func testFailureRecoveryActionCanReachSuccessSheet() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "failure_then_success"]
         app.launch()
 
@@ -95,13 +105,13 @@ final class ReelFlowUITests: XCTestCase {
         retryButton.tap()
 
         XCTAssertTrue(elementByIdentifier(app, id: "success_sheet").waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(app.buttons["打开文件夹"].waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(app.buttons["查看日志"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(button(app, id: "success_sheet_open_directory", title: "打开文件夹").waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(button(app, id: "success_sheet_open_log", title: "查看日志").waitForExistence(timeout: uiTimeout))
     }
 
     @MainActor
     func testInvalidScenarioBlocksPrimaryActionAndShowsStatus() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "invalid"]
         app.launch()
 
@@ -117,7 +127,7 @@ final class ReelFlowUITests: XCTestCase {
 
     @MainActor
     func testFirstRunReadyScenarioAllowsExport() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "first_run_ready"]
         app.launch()
 
@@ -130,7 +140,7 @@ final class ReelFlowUITests: XCTestCase {
 
     @MainActor
     func testPreflightLocateSwitchesBackToAllAssetsAndFocusesTarget() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "preflight_navigation"]
         app.launch()
 
@@ -152,13 +162,13 @@ final class ReelFlowUITests: XCTestCase {
     func testLaunchPerformance() throws {
         // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+            makeApp().launch()
         }
     }
 
     @MainActor
     func testFreeTierScenarioShowsQuotaAndWatermarkNotices() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "disabled"]
         app.launch()
 
@@ -174,7 +184,7 @@ final class ReelFlowUITests: XCTestCase {
 
     @MainActor
     func testProScenarioHidesFreeTierNotices() throws {
-        let app = XCUIApplication()
+        let app = makeApp()
         app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "enabled"]
         app.launch()
 
@@ -183,5 +193,28 @@ final class ReelFlowUITests: XCTestCase {
         XCTAssertFalse(elementByIdentifier(app, id: "free_tier_export_notice").exists)
         XCTAssertFalse(elementByIdentifier(app, id: "plan_upgrade_button").exists)
         XCTAssertFalse(elementByIdentifier(app, id: "plan_restore_button").exists)
+    }
+
+    @MainActor
+    func testEnglishSuccessScenarioShowsEnglishLabels() throws {
+        let app = makeApp(language: .english)
+        app.launchArguments += ["-ui-test-scenario", "success"]
+        app.launch()
+
+        XCTAssertTrue(elementByIdentifier(app, id: "success_sheet").waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(app.buttons["Open Folder"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(app.buttons["View Log"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: uiTimeout))
+    }
+
+    @MainActor
+    func testEnglishFreeTierScenarioShowsEnglishQuotaCopy() throws {
+        let app = makeApp(language: .english)
+        app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "disabled"]
+        app.launch()
+
+        let upgradeButton = button(app, id: "plan_upgrade_button", title: "Upgrade to Pro")
+        XCTAssertTrue(upgradeButton.waitForExistence(timeout: uiTimeout))
+        XCTAssertEqual(upgradeButton.label, "Upgrade to Pro")
     }
 }

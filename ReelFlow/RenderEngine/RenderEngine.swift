@@ -29,17 +29,17 @@ enum RenderEngineError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .emptyInput:
-            return "请至少选择一张图片"
+            return String(localized: "请至少选择一张图片")
         case .cancelled:
-            return "导出已取消"
+            return String(localized: "导出已取消")
         case .imageLoadFailed(let message):
-            return "图片加载失败: \(message)"
+            return String(localized: "图片加载失败: \(message)")
         case .assetLoadFailed(let index, let message):
-            return "素材加载失败(index=\(index)): \(message)"
+            return String(localized: "素材加载失败(index=\(index)): \(message)")
         case .exportFailed(let message):
-            return "视频导出失败: \(message)"
+            return String(localized: "视频导出失败: \(message)")
         case .previewFailed(let message):
-            return "预览生成失败: \(message)"
+            return String(localized: "预览生成失败: \(message)")
         }
     }
 }
@@ -143,13 +143,13 @@ final class RenderEngine {
         if let audioTrack = settings.audioTrack {
             if let message = AudioTrackValidation.validate(url: audioTrack.sourceURL) {
                 await logger.log("audio validation failed: \(message)")
-                throw RenderEngineError.exportFailed("音频不可用: \(message)")
+                throw RenderEngineError.exportFailed(String(localized: "音频不可用: \(message)"))
             }
         }
         if let shutterTrack = settings.shutterSoundTrack {
             if let message = AudioTrackValidation.validate(url: shutterTrack.sourceURL) {
                 await logger.log("shutter validation failed: \(message)")
-                throw RenderEngineError.exportFailed("快门声不可用: \(message)")
+                throw RenderEngineError.exportFailed(String(localized: "快门声不可用: \(message)"))
             }
         }
 
@@ -244,7 +244,7 @@ final class RenderEngine {
 
             let image = composer.composeFrame(layerClips: layerClips)
             guard let cgImage = previewContext.createCGImage(image, from: CGRect(origin: .zero, size: settings.outputSize)) else {
-                throw RenderEngineError.previewFailed("无法创建预览图像")
+                throw RenderEngineError.previewFailed(String(localized: "无法创建预览图像"))
             }
             return cgImage
         } catch let error as RenderEngineError {

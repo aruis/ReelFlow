@@ -11,15 +11,15 @@ enum AudioMuxerError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingVideoTrack:
-            return "无法读取视频轨道"
+            return String(localized: "无法读取视频轨道")
         case .missingAudioTrack:
-            return "无法读取音频轨道"
+            return String(localized: "无法读取音频轨道")
         case .cannotCreateExportSession:
-            return "无法创建音视频混流会话"
+            return String(localized: "无法创建音视频混流会话")
         case .exportFailed(let message):
-            return "音频混流失败: \(message)"
+            return String(localized: "音频混流失败: \(message)")
         case .cancelled:
-            return "音频混流已取消"
+            return String(localized: "音频混流已取消")
         }
     }
 }

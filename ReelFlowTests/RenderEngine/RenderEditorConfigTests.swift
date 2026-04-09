@@ -199,9 +199,9 @@ struct RenderEditorConfigTests {
 
         config.applyPlatePrefixPreset(.chinese)
 
-        #expect(config.plateSimpleElements.first(where: { $0.key == .camera })?.prefix == "相机 ")
-        #expect(config.plateSimpleElements.first(where: { $0.key == .shutter })?.prefix == "快门 ")
-        #expect(config.plateSimpleElements.first(where: { $0.key == .date })?.prefix == "日期 ")
+        #expect(config.plateSimpleElements.first(where: { $0.key == .camera })?.prefix == "相机")
+        #expect(config.plateSimpleElements.first(where: { $0.key == .shutter })?.prefix == "快门")
+        #expect(config.plateSimpleElements.first(where: { $0.key == .date })?.prefix == "日期")
     }
 
     @Test
@@ -213,7 +213,7 @@ struct RenderEditorConfigTests {
             .init(key: .date, enabled: false, prefix: "")
         ]
 
-        #expect(config.simplePlateTemplateText == "{camera}   ISO {iso}")
+        #expect(config.simplePlateTemplateText == "{camera}   ISO {iso}   {lens}   S {shutter}   A {aperture}")
     }
 
     @Test
@@ -241,7 +241,7 @@ struct RenderEditorConfigTests {
         config.beginCustomPlateEditing()
 
         #expect(config.plateEditorMode == .custom)
-        #expect(config.plateTemplateText == "{camera}   S {shutter}")
+        #expect(config.plateTemplateText == "{camera}   S {shutter}   {lens}   A {aperture}   ISO {iso}")
     }
 
     @Test

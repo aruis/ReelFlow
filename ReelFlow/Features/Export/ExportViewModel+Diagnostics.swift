@@ -13,10 +13,10 @@ extension ExportViewModel {
                 configSnapshotLines: diagnosticsSnapshotLines()
             )
             let bundleURL = try DiagnosticsBundleBuilder.createBundle(input: input)
-            workflow.setIdleMessage("排障包已生成: \(bundleURL.path)")
+            workflow.setIdleMessage(String(localized: "排障包已生成: \(bundleURL.path)"))
             NSWorkspace.shared.open(bundleURL)
         } catch {
-            workflow.setIdleMessage("排障包生成失败: \(error.localizedDescription)")
+            workflow.setIdleMessage(String(localized: "排障包生成失败: \(error.localizedDescription)"))
         }
     }
 

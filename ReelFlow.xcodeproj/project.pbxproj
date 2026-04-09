@@ -187,7 +187,7 @@
 				};
 			};
 			buildConfigurationList = 833F5CC52F363B590074C27E /* Build configuration list for PBXProject "ReelFlow" */;
-			developmentRegion = en;
+			developmentRegion = "zh-Hans";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,

@@ -15,17 +15,17 @@ enum VideoExporterError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .cannotCreateWriter:
-            return "无法创建 AVAssetWriter"
+            return String(localized: "无法创建 AVAssetWriter")
         case .cannotCreatePixelBuffer:
-            return "无法创建像素缓冲区"
+            return String(localized: "无法创建像素缓冲区")
         case .missingPixelBufferPool:
-            return "无法获取像素缓冲区池"
+            return String(localized: "无法获取像素缓冲区池")
         case .cancelled:
-            return "导出已取消"
+            return String(localized: "导出已取消")
         case .writerFailed(let message):
-            return "视频导出失败: \(message)"
+            return String(localized: "视频导出失败: \(message)")
         case .assetLoadFailed(let index, let message):
-            return "素材加载失败(index=\(index)): \(message)"
+            return String(localized: "素材加载失败(index=\(index)): \(message)")
         }
     }
 }

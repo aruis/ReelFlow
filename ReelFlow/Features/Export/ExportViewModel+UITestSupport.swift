@@ -16,15 +16,15 @@ extension ExportViewModel {
                 """
             )
             failedAssetNames = ["broken-sample.jpg"]
-            recoveryAdvice = RecoveryAdvice(action: .retryExport, message: "测试场景：可直接重试导出。")
+            recoveryAdvice = RecoveryAdvice(action: .retryExport, message: String(localized: "测试场景：可直接重试导出。"))
             failureCardCopy = ExportStatusMessageBuilder.failureCardCopy(
                 stage: .export,
                 adviceActionTitle: RecoveryAction.retryExport.title,
-                adviceMessage: "测试场景：可直接重试导出。",
+                adviceMessage: String(localized: "测试场景：可直接重试导出。"),
                 failedAssetNames: failedAssetNames
             )
             workflow.finishExportFailure(
-                message: "导出失败，请查看下方详情。"
+                message: String(localized: "导出失败，请查看下方详情。")
             )
         case "failure_then_success":
             lastLogURL = URL(fileURLWithPath: "/tmp/phototime-ui-failure.render.log")
@@ -36,15 +36,15 @@ extension ExportViewModel {
                 """
             )
             failedAssetNames = ["broken-sample.jpg"]
-            recoveryAdvice = RecoveryAdvice(action: .retryExport, message: "测试场景：修复后可重试。")
+            recoveryAdvice = RecoveryAdvice(action: .retryExport, message: String(localized: "测试场景：修复后可重试。"))
             failureCardCopy = ExportStatusMessageBuilder.failureCardCopy(
                 stage: .export,
                 adviceActionTitle: RecoveryAction.retryExport.title,
-                adviceMessage: "测试场景：修复后可重试。",
+                adviceMessage: String(localized: "测试场景：修复后可重试。"),
                 failedAssetNames: failedAssetNames
             )
             workflow.finishExportFailure(
-                message: "导出失败，请查看下方详情。"
+                message: String(localized: "导出失败，请查看下方详情。")
             )
         case "success":
             lastLogURL = URL(fileURLWithPath: "/tmp/phototime-ui-success.render.log")
@@ -58,7 +58,7 @@ extension ExportViewModel {
             recoveryAdvice = nil
             failureCardCopy = nil
             workflow.finishExportSuccess(
-                message: "导出完成: ReelFlow-UI-Success.mp4\n日志: /tmp/reelflow-ui-success.render.log"
+                message: String(localized: "导出完成: ReelFlow-UI-Success.mp4\n日志: /tmp/reelflow-ui-success.render.log")
             )
         case "invalid":
             imageURLs = [
@@ -66,7 +66,7 @@ extension ExportViewModel {
             ]
             config.audioEnabled = true
             config.audioFilePath = ""
-            workflow.setIdleMessage("测试场景：参数无效")
+            workflow.setIdleMessage(String(localized: "测试场景：参数无效"))
         case "first_run_ready":
             imageURLs = [
                 URL(fileURLWithPath: "/tmp/first-run-a.jpg"),
@@ -74,8 +74,8 @@ extension ExportViewModel {
             ]
             outputURL = URL(fileURLWithPath: "/tmp/ReelFlow-FirstRun.mp4")
             previewImage = PlaceholderImageFactory.makeSolidImage(size: CGSize(width: 320, height: 180))
-            previewStatusMessage = "测试场景：预览已就绪"
-            workflow.setIdleMessage("测试场景：可直接导出")
+            previewStatusMessage = String(localized: "测试场景：预览已就绪")
+            workflow.setIdleMessage(String(localized: "测试场景：可直接导出"))
         case "preflight_navigation":
             imageURLs = [
                 URL(fileURLWithPath: "/tmp/plain-sample.jpg"),
@@ -87,13 +87,13 @@ extension ExportViewModel {
                     PreflightIssue(
                         index: 1,
                         fileName: "review-sample.jpg",
-                        message: "测试场景：建议关注问题",
+                        message: String(localized: "测试场景：建议关注问题"),
                         severity: .shouldReview
                     )
                 ]
             )
             fileListFilter = .mustFix
-            workflow.setIdleMessage("测试场景：验证预检定位与素材联动")
+            workflow.setIdleMessage(String(localized: "测试场景：验证预检定位与素材联动"))
         default:
             break
         }
@@ -114,7 +114,7 @@ extension ExportViewModel {
         recoveryAdvice = nil
         failureCardCopy = nil
         workflow.finishExportSuccess(
-            message: "导出完成: ReelFlow-UI-Recovered.mp4\n日志: /tmp/reelflow-ui-recovered.render.log"
+            message: String(localized: "导出完成: ReelFlow-UI-Recovered.mp4\n日志: /tmp/reelflow-ui-recovered.render.log")
         )
         return true
         #else
@@ -136,15 +136,15 @@ extension ExportViewModel {
         """
         try? debugLog.write(to: logURL, atomically: true, encoding: .utf8)
         failedAssetNames = ["simulated-broken.jpg"]
-        recoveryAdvice = RecoveryAdvice(action: .retryExport, message: "这是手动模拟的失败，用于验收测试。可点击重试。")
+        recoveryAdvice = RecoveryAdvice(action: .retryExport, message: String(localized: "这是手动模拟的失败，用于验收测试。可点击重试。"))
         failureCardCopy = ExportStatusMessageBuilder.failureCardCopy(
             stage: .export,
             adviceActionTitle: RecoveryAction.retryExport.title,
-            adviceMessage: "这是手动模拟的失败，用于验收测试。可点击重试。",
+            adviceMessage: String(localized: "这是手动模拟的失败，用于验收测试。可点击重试。"),
             failedAssetNames: failedAssetNames
         )
         workflow.finishExportFailure(
-            message: "导出失败，请查看下方详情。"
+            message: String(localized: "导出失败，请查看下方详情。")
         )
         #endif
     }

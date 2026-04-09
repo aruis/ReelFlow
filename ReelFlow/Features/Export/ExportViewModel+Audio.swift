@@ -13,7 +13,7 @@ extension ExportViewModel {
         panel.canChooseDirectories = false
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        applyShutterSoundTrack(url: url, sourceDescription: "已选择快门声")
+        applyShutterSoundTrack(url: url, sourceDescription: String(localized: "已选择快门声"))
     }
 
     func chooseAudioTrack() {
@@ -25,7 +25,7 @@ extension ExportViewModel {
         panel.canChooseDirectories = false
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        applyAudioTrack(url: url, sourceDescription: "已选择音频")
+        applyAudioTrack(url: url, sourceDescription: String(localized: "已选择音频"))
     }
 
     @discardableResult
@@ -34,17 +34,17 @@ extension ExportViewModel {
 
         for url in urls {
             if AudioTrackValidation.validate(url: url) == nil {
-                applyAudioTrack(url: url, sourceDescription: "已拖入音频")
+                applyAudioTrack(url: url, sourceDescription: String(localized: "已拖入音频"))
                 return true
             }
         }
 
-        let message = urls.first.flatMap { AudioTrackValidation.validate(url: $0) } ?? "未检测到可用音频文件"
+        let message = urls.first.flatMap { AudioTrackValidation.validate(url: $0) } ?? String(localized: "未检测到可用音频文件")
         audioStatusMessage = message
         config.audioEnabled = false
         config.audioFilePath = ""
         refreshSelectedAudioDuration(force: true)
-        workflow.setIdleMessage("音频导入失败: \(message)")
+        workflow.setIdleMessage(String(localized: "音频导入失败: \(message)"))
         return false
     }
 
@@ -58,9 +58,9 @@ extension ExportViewModel {
         audioStatusMessage = nil
         refreshSelectedAudioDuration(force: true)
         if let previous {
-            workflow.setIdleMessage("已清除音频: \(previous)")
+            workflow.setIdleMessage(String(localized: "已清除音频: \(previous)"))
         } else {
-            workflow.setIdleMessage("已清除音频")
+            workflow.setIdleMessage(String(localized: "已清除音频"))
         }
     }
 
@@ -73,9 +73,9 @@ extension ExportViewModel {
         config.shutterSoundVolume = 0.72
         shutterSoundStatusMessage = nil
         if let previous {
-            workflow.setIdleMessage("已清除快门声: \(previous)")
+            workflow.setIdleMessage(String(localized: "已清除快门声: \(previous)"))
         } else {
-            workflow.setIdleMessage("已清除快门声")
+            workflow.setIdleMessage(String(localized: "已清除快门声"))
         }
     }
 
@@ -85,7 +85,7 @@ extension ExportViewModel {
             audioStatusMessage = message
             config.audioEnabled = false
             config.audioFilePath = ""
-            workflow.setIdleMessage("音频导入失败: \(message)")
+            workflow.setIdleMessage(String(localized: "音频导入失败: \(message)"))
             return
         }
 
@@ -94,9 +94,9 @@ extension ExportViewModel {
         if config.audioVolume <= 0 {
             config.audioVolume = 1
         }
-        audioStatusMessage = "音频已就绪：\(url.lastPathComponent)。导出时将附加单轨背景音频。"
+        audioStatusMessage = String(localized: "音频已就绪：\(url.lastPathComponent)。导出时将附加单轨背景音频。")
         refreshSelectedAudioDuration(force: true)
-        workflow.setIdleMessage("\(sourceDescription): \(url.lastPathComponent)")
+        workflow.setIdleMessage(String(localized: "\(sourceDescription): \(url.lastPathComponent)"))
     }
 
     func applyShutterSoundTrack(url: URL, sourceDescription: String) {
@@ -105,7 +105,7 @@ extension ExportViewModel {
             shutterSoundStatusMessage = message
             config.shutterSoundEnabled = false
             config.shutterSoundCustomFilePath = ""
-            workflow.setIdleMessage("快门声音导入失败: \(message)")
+            workflow.setIdleMessage(String(localized: "快门声音导入失败: \(message)"))
             return
         }
 
@@ -115,21 +115,21 @@ extension ExportViewModel {
         if config.shutterSoundVolume <= 0 {
             config.shutterSoundVolume = 0.72
         }
-        shutterSoundStatusMessage = "快门声音已就绪：\(url.lastPathComponent)。导出时会在每张新照片开始时触发。"
-        workflow.setIdleMessage("\(sourceDescription): \(url.lastPathComponent)")
+        shutterSoundStatusMessage = String(localized: "快门声音已就绪：\(url.lastPathComponent)。导出时会在每张新照片开始时触发。")
+        workflow.setIdleMessage(String(localized: "\(sourceDescription): \(url.lastPathComponent)"))
     }
 
     @discardableResult
     func startShutterSoundPreview() -> Bool {
         guard config.shutterSoundEnabled else {
-            shutterSoundStatusMessage = "请先启用快门声。"
+            shutterSoundStatusMessage = String(localized: "请先启用快门声。")
             return false
         }
 
         guard let shutterTrack = config.resolvedShutterSoundTrack else {
             shutterSoundStatusMessage = config.shutterSoundSource == .preset
-                ? "当前型号快门声资源不可用。"
-                : "请先选择快门声音效文件。"
+                ? String(localized: "当前型号快门声资源不可用。")
+                : String(localized: "请先选择快门声音效文件。")
             return false
         }
 
@@ -146,15 +146,15 @@ extension ExportViewModel {
             player.numberOfLoops = 0
             player.prepareToPlay()
             guard player.play() else {
-                shutterSoundStatusMessage = "快门声试听播放失败。"
+                shutterSoundStatusMessage = String(localized: "快门声试听播放失败。")
                 return false
             }
             shutterSoundPreviewPlayer = player
             isShutterSoundPreviewPlaying = true
-            workflow.setIdleMessage("快门声试听中")
+            workflow.setIdleMessage(String(localized: "快门声试听中"))
             return true
         } catch {
-            shutterSoundStatusMessage = "快门声试听失败：\(error.localizedDescription)"
+            shutterSoundStatusMessage = String(localized: "快门声试听失败：\(error.localizedDescription)")
             return false
         }
     }
@@ -172,13 +172,13 @@ extension ExportViewModel {
     @discardableResult
     func startAudioPreview() -> Bool {
         guard config.audioEnabled else {
-            audioStatusMessage = "请先启用背景音频。"
+            audioStatusMessage = String(localized: "请先启用背景音频。")
             return false
         }
 
         let path = config.audioFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !path.isEmpty else {
-            audioStatusMessage = "请先选择音频文件。"
+            audioStatusMessage = String(localized: "请先选择音频文件。")
             return false
         }
 
@@ -198,15 +198,15 @@ extension ExportViewModel {
             let maxStart = max(0, player.duration - 0.01)
             player.currentTime = min(max(0, previewSecond), maxStart)
             guard player.play() else {
-                audioStatusMessage = "音频预览播放失败。"
+                audioStatusMessage = String(localized: "音频预览播放失败。")
                 return false
             }
             previewAudioPlayer = player
             isAudioPreviewPlaying = true
-            workflow.setIdleMessage("音频预览播放中")
+            workflow.setIdleMessage(String(localized: "音频预览播放中"))
             return true
         } catch {
-            audioStatusMessage = "音频预览失败：\(error.localizedDescription)"
+            audioStatusMessage = String(localized: "音频预览失败：\(error.localizedDescription)")
             return false
         }
     }
@@ -224,7 +224,7 @@ extension ExportViewModel {
         player.pause()
         previewSecond = player.currentTime
         isAudioPreviewPlaying = false
-        workflow.setIdleMessage("音频预览已暂停")
+        workflow.setIdleMessage(String(localized: "音频预览已暂停"))
     }
 
     func stopAudioPreview() {

@@ -7,5 +7,6 @@ cd "$ROOT_DIR"
 
 ./scripts/check-ci-consistency.sh
 ./scripts/check-maintainability.sh
+./scripts/check-localization.sh
 ./scripts/test-non-ui.sh
 ./scripts/test-ui-smoke.sh
