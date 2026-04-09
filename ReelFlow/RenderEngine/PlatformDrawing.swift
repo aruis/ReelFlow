@@ -20,4 +20,26 @@ enum PlatformDrawing {
         ] as CFDictionary)
         return CTFontCreateWithFontDescriptor(descriptor, size, nil)
     }
+
+    nonisolated static func serifFont(ofSize size: CGFloat) -> CTFont {
+        for fallbackName in ["NewYork-Regular", "TimesNewRomanPSMT", "Times New Roman", "Georgia"] {
+            let font = CTFontCreateWithName(fallbackName as CFString, size, nil)
+            if CTFontGetSize(font) > 0 {
+                return font
+            }
+        }
+
+        return systemFont(ofSize: size)
+    }
+
+    nonisolated static func plateFont(style: PlateFontStyle, ofSize size: CGFloat) -> CTFont {
+        switch style {
+        case .classicMono:
+            return monospacedFont(ofSize: size)
+        case .modernSans:
+            return systemFont(ofSize: size)
+        case .editorial:
+            return serifFont(ofSize: size)
+        }
+    }
 }

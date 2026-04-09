@@ -323,7 +323,7 @@ struct ContentView: View {
             if shouldUseFullHeightEmptyState {
                 VStack(alignment: .leading, spacing: 14) {
                     if let validationMessage = viewModel.validationMessage {
-                        Text("参数校验: \(validationMessage)")
+                        Text(String(localized: "参数校验: \(validationMessage)"))
                             .font(.caption)
                             .foregroundStyle(.red)
                             .accessibilityIdentifier("settings_validation_message")
@@ -338,7 +338,7 @@ struct ContentView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         if let validationMessage = viewModel.validationMessage {
-                            Text("参数校验: \(validationMessage)")
+                            Text(String(localized: "参数校验: \(validationMessage)"))
                                 .font(.caption)
                                 .foregroundStyle(.red)
                                 .accessibilityIdentifier("settings_validation_message")
@@ -1175,14 +1175,105 @@ struct ContentView: View {
                     }
                 )
             } else {
-                AdvancedSettingsPanel(
-                    viewModel: viewModel,
-                    isAudioDropTarget: $isAudioDropTarget,
-                    onAudioDrop: { providers in
-                        handleAudioDrop(providers: providers)
+                ZStack {
+                    AdvancedSettingsPanel(
+                        viewModel: viewModel,
+                        isAudioDropTarget: $isAudioDropTarget,
+                        onAudioDrop: { providers in
+                            handleAudioDrop(providers: providers)
+                        },
+                        isLocked: isAdvancedSettingsLocked
+                    )
+
+                    if isAdvancedSettingsLocked {
+                        advancedSettingsLockOverlay
                     }
-                )
+                }
             }
+        }
+    }
+
+    private var isAdvancedSettingsLocked: Bool {
+        purchaseStore.entitlementState != .pro
+    }
+
+    private var advancedSettingsLockOverlay: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color.black.opacity(0.72))
+                .allowsHitTesting(false)
+
+            VStack(alignment: .center, spacing: 12) {
+                Image(systemName: "lock.fill")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+
+                VStack(spacing: 6) {
+                    Text(advancedSettingsLockTitle)
+                        .font(.headline)
+                    Text(advancedSettingsLockMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 280)
+                }
+
+                if purchaseStore.entitlementState == .free {
+                    HStack(spacing: 10) {
+                        Button(purchaseStore.purchaseButtonTitle) {
+                            purchaseStore.purchasePro()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(purchaseStore.isBusy)
+
+                        Button("恢复购买") {
+                            purchaseStore.restorePurchases()
+                        }
+                        .disabled(purchaseStore.isBusy)
+                    }
+                } else {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("正在同步购买状态")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(nsColor: .windowBackgroundColor).opacity(0.9))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.12), radius: 18, y: 8)
+            .padding(.horizontal, 24)
+        }
+    }
+
+    private var advancedSettingsLockTitle: String {
+        switch purchaseStore.entitlementState {
+        case .loading:
+            return String(localized: "正在检查 Pro 状态")
+        case .free:
+            return String(localized: "解锁 Pro 后可使用高级设置")
+        case .pro:
+            return ""
+        }
+    }
+
+    private var advancedSettingsLockMessage: String {
+        switch purchaseStore.entitlementState {
+        case .loading:
+            return String(localized: "购买状态确认后，这里会自动更新。")
+        case .free:
+            return String(localized: "高级设置包含更细的布局、模板、背景音频和性能控制。升级后即可编辑。")
+        case .pro:
+            return ""
         }
     }
 

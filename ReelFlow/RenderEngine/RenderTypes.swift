@@ -17,6 +17,23 @@ enum PlatePlacement: String, Codable, Sendable {
     case canvasBottom
 }
 
+enum PlateFontStyle: String, Codable, CaseIterable, Sendable {
+    case classicMono
+    case modernSans
+    case editorial
+
+    var displayName: String {
+        switch self {
+        case .classicMono:
+            return String(localized: "经典等宽")
+        case .modernSans:
+            return String(localized: "现代无衬线")
+        case .editorial:
+            return String(localized: "说明文字")
+        }
+    }
+}
+
 enum ShutterSoundSource: String, Codable, CaseIterable, Sendable {
     case preset
     case custom
@@ -119,6 +136,7 @@ struct PlateSettings: Codable, Sendable {
     let height: Double
     let baselineOffset: Double
     let fontSize: Double
+    let fontStyle: PlateFontStyle
     let placement: PlatePlacement
     let templateText: String
 
@@ -127,6 +145,7 @@ struct PlateSettings: Codable, Sendable {
         height: 96,
         baselineOffset: 18,
         fontSize: 26,
+        fontStyle: .classicMono,
         placement: .frame,
         templateText: Self.defaultTemplateText
     )
@@ -136,6 +155,7 @@ struct PlateSettings: Codable, Sendable {
         height: Double,
         baselineOffset: Double,
         fontSize: Double,
+        fontStyle: PlateFontStyle = .classicMono,
         placement: PlatePlacement = .frame,
         templateText: String = PlateSettings.defaultTemplateText
     ) {
@@ -143,6 +163,7 @@ struct PlateSettings: Codable, Sendable {
         self.height = height
         self.baselineOffset = baselineOffset
         self.fontSize = fontSize
+        self.fontStyle = fontStyle
         self.placement = placement
         self.templateText = templateText
     }
@@ -309,6 +330,7 @@ struct RenderSettings {
                 height: template.plate.height,
                 baselineOffset: template.plate.baselineOffset,
                 fontSize: template.plate.fontSize,
+                fontStyle: template.plate.fontStyle,
                 placement: template.plate.placement,
                 templateText: template.plate.templateText
             ),
@@ -403,6 +425,7 @@ struct RenderSettings {
                 height: plate.height,
                 baselineOffset: plate.baselineOffset,
                 fontSize: plate.fontSize,
+                fontStyle: plate.fontStyle,
                 placement: plate.placement,
                 templateText: plate.templateText
             ),
@@ -434,7 +457,7 @@ struct RenderSettings {
 }
 
 struct RenderTemplate: Codable, Sendable {
-    nonisolated static let currentSchemaVersion = 5
+    nonisolated static let currentSchemaVersion = 6
 
     let schemaVersion: Int
     let output: Output
@@ -598,6 +621,7 @@ struct RenderTemplate: Codable, Sendable {
         let height: Double
         let baselineOffset: Double
         let fontSize: Double
+        let fontStyle: PlateFontStyle
         let placement: PlatePlacement
         let templateText: String
 
@@ -606,6 +630,7 @@ struct RenderTemplate: Codable, Sendable {
             height: 96,
             baselineOffset: 18,
             fontSize: 26,
+            fontStyle: .classicMono,
             placement: .frame,
             templateText: PlateSettings.defaultTemplateText
         )
@@ -615,6 +640,7 @@ struct RenderTemplate: Codable, Sendable {
             case height
             case baselineOffset
             case fontSize
+            case fontStyle
             case placement
             case templateText
         }
@@ -624,6 +650,7 @@ struct RenderTemplate: Codable, Sendable {
             height: Double,
             baselineOffset: Double,
             fontSize: Double,
+            fontStyle: PlateFontStyle = .classicMono,
             placement: PlatePlacement = .frame,
             templateText: String = PlateSettings.defaultTemplateText
         ) {
@@ -631,6 +658,7 @@ struct RenderTemplate: Codable, Sendable {
             self.height = height
             self.baselineOffset = baselineOffset
             self.fontSize = fontSize
+            self.fontStyle = fontStyle
             self.placement = placement
             self.templateText = templateText
         }
@@ -641,6 +669,7 @@ struct RenderTemplate: Codable, Sendable {
             height = try container.decodeIfPresent(Double.self, forKey: .height) ?? 96
             baselineOffset = try container.decodeIfPresent(Double.self, forKey: .baselineOffset) ?? 18
             fontSize = try container.decodeIfPresent(Double.self, forKey: .fontSize) ?? 26
+            fontStyle = try container.decodeIfPresent(PlateFontStyle.self, forKey: .fontStyle) ?? .classicMono
             placement = try container.decodeIfPresent(PlatePlacement.self, forKey: .placement) ?? .frame
             templateText = try container.decodeIfPresent(String.self, forKey: .templateText) ?? PlateSettings.defaultTemplateText
         }

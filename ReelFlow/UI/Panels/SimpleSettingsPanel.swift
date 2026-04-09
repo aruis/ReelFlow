@@ -4,6 +4,11 @@ struct SimpleSettingsPanel: View {
     @ObservedObject var viewModel: ExportViewModel
     @Binding var isAudioDropTarget: Bool
     let onAudioDrop: ([NSItemProvider]) -> Bool
+    @State private var plateSimplePrefixDrafts: [PlateSimpleElementKey: String] = [:]
+
+    private let optionCardCornerRadius: CGFloat = 10
+    private let optionCardMinHeight: CGFloat = 48
+    private let plateRowHeight: CGFloat = 40
 
     private enum ResolutionChoice: Int, CaseIterable, Identifiable {
         case hd720
@@ -168,30 +173,74 @@ struct SimpleSettingsPanel: View {
         }
     }
 
+    private enum FrameWidthChoice: Int, CaseIterable, Identifiable {
+        case none = 0
+        case thin = 16
+        case medium = 24
+        case wide = 36
+
+        var id: Int { rawValue }
+
+        var title: String {
+            switch self {
+            case .none: return String(localized: "无")
+            case .thin: return String(localized: "细")
+            case .medium: return String(localized: "中")
+            case .wide: return String(localized: "宽")
+            }
+        }
+    }
+
+    private enum PlatePlacementChoice: String, CaseIterable, Identifiable {
+        case none
+        case frame
+        case canvasBottom
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .none:
+                return String(localized: "无")
+            case .frame:
+                return String(localized: "相框内")
+            case .canvasBottom:
+                return String(localized: "相框外")
+            }
+        }
+    }
+
     var body: some View {
         Form {
-            Section("快速设置") {
+            Section("输出") {
                 if let settingsValidationMessage {
                     settingsValidationView(settingsValidationMessage)
                 }
 
-                Picker("分辨率", selection: resolutionBinding) {
-                    ForEach(ResolutionChoice.allCases) { choice in
-                        Text(choice.title).tag(choice)
-                    }
+                settingsGroup(title: "分辨率") {
+                    choiceGrid(
+                        ResolutionChoice.allCases,
+                        selection: resolutionBinding,
+                        title: \ResolutionChoice.title,
+                        subtitle: { choice in
+                            "\(choice.size.width) × \(choice.size.height)"
+                        }
+                    )
                 }
                 .disabled(viewModel.isBusy)
 
-                Picker(selection: $viewModel.config.fps) {
-                    ForEach([24, 30, 60], id: \.self) { fps in
-                        Text("\(fps)").tag(fps)
-                    }
-                } label: {
-                    Text(verbatim: "FPS")
+                settingsGroup(title: "帧率（FPS）") {
+                    choiceGrid(
+                        [24, 30, 60],
+                        selection: fpsBinding,
+                        title: { "\($0)" },
+                        subtitle: { _ in nil }
+                    )
                 }
-                .pickerStyle(.segmented)
                 .disabled(viewModel.isBusy)
+            }
 
+            Section("播放节奏") {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("展示节奏")
                         .font(.subheadline.weight(.medium))
@@ -205,38 +254,42 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("转场")
+                    Text("动效")
                         .font(.subheadline.weight(.medium))
-                    choiceGrid(
-                        TransitionChoice.allCases,
-                        selection: transitionBinding,
-                        title: \TransitionChoice.title,
-                        subtitle: \TransitionChoice.subtitle
-                    )
-                }
-                .disabled(viewModel.isBusy)
+                    Text("控制画面切换、空窗节奏与推拉动效。")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        settingsSubgroup(title: "转场") {
+                            choiceGrid(
+                                TransitionChoice.allCases,
+                                selection: transitionBinding,
+                                title: \TransitionChoice.title,
+                                subtitle: \TransitionChoice.subtitle
+                            )
+                        }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("背景空窗")
-                        .font(.subheadline.weight(.medium))
-                    choiceGrid(
-                        TransitionGapChoice.allCases,
-                        selection: transitionGapBinding,
-                        title: \TransitionGapChoice.title,
-                        subtitle: \TransitionGapChoice.subtitle
-                    )
-                    .disabled(viewModel.isBusy)
-                }
+                        settingsSubgroup(title: "背景空窗") {
+                            choiceGrid(
+                                TransitionGapChoice.allCases,
+                                selection: transitionGapBinding,
+                                title: \TransitionGapChoice.title,
+                                subtitle: \TransitionGapChoice.subtitle
+                            )
+                        }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(verbatim: "Ken Burns")
-                        .font(.subheadline.weight(.medium))
-                    choiceGrid(
-                        KenBurnsChoice.allCases,
-                        selection: kenBurnsBinding,
-                        title: \KenBurnsChoice.title,
-                        subtitle: \KenBurnsChoice.subtitle
-                    )
+                        settingsSubgroup(title: "推拉动效（Ken Burns）") {
+                            choiceGrid(
+                                KenBurnsChoice.allCases,
+                                selection: kenBurnsBinding,
+                                title: \KenBurnsChoice.title,
+                                subtitle: \KenBurnsChoice.subtitle
+                            )
+                        }
+                    }
+                    .padding(12)
+                    .background(optionContainerBackground)
+                    .overlay(optionContainerBorder)
                 }
                 .disabled(viewModel.isBusy)
             }
@@ -245,66 +298,98 @@ struct SimpleSettingsPanel: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("横竖图策略")
                         .font(.subheadline.weight(.medium))
-                    HStack(spacing: 8) {
-                        orientationChoiceButton(
-                            title: PhotoOrientationStrategy.followAsset.displayName,
-                            strategy: .followAsset
-                        )
-                        orientationChoiceButton(
-                            title: PhotoOrientationStrategy.forceLandscape.displayName,
-                            strategy: .forceLandscape
-                        )
-                        orientationChoiceButton(
-                            title: PhotoOrientationStrategy.forcePortrait.displayName,
-                            strategy: .forcePortrait
-                        )
-                    }
+                    choiceGrid(
+                        orientationChoices,
+                        selection: orientationBinding,
+                        title: \PhotoOrientationStrategy.displayName,
+                        subtitle: { _ in nil }
+                    )
                 }
                 .disabled(viewModel.isBusy)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("相框风格")
                         .font(.subheadline.weight(.medium))
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 8)], spacing: 8) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
                         ForEach(FrameStylePreset.allCases.filter { $0 != .custom }, id: \.self) { preset in
-                            frameStyleChoiceButton(
+                            optionCardButton(
                                 title: preset.displayName,
-                                preset: preset
-                            )
+                                subtitle: nil,
+                                isSelected: viewModel.config.frameStylePreset == preset
+                            ) {
+                                viewModel.config.frameStylePreset = preset
+                            }
                         }
                     }
                 }
                 .disabled(viewModel.isBusy)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("相框宽度")
+                        .font(.subheadline.weight(.medium))
+                    choiceGrid(
+                        FrameWidthChoice.allCases,
+                        selection: frameWidthChoiceBinding,
+                        title: \FrameWidthChoice.title,
+                        subtitle: { _ in nil }
+                    )
+                }
+                .disabled(viewModel.isBusy)
             }
 
-            Section("文字信息") {
-                Toggle("显示底部铭牌文字", isOn: $viewModel.config.plateEnabled)
+            Section("铭牌信息") {
+                settingsGroup(title: "位置") {
+                    choiceGrid(
+                        PlatePlacementChoice.allCases,
+                        selection: platePlacementChoiceBinding,
+                        title: \PlatePlacementChoice.title,
+                        subtitle: { _ in nil }
+                    )
+                }
+                .disabled(viewModel.isBusy)
+
+                if viewModel.config.plateEnabled {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("字段与标签")
+                            .font(.subheadline.weight(.medium))
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(viewModel.config.plateSimpleElements.indices, id: \.self) { index in
+                                simplePlateFieldRow(index: index)
+                            }
+                        }
+                    }
                     .disabled(viewModel.isBusy)
 
-                Picker("信息位置", selection: $viewModel.config.platePlacement) {
-                    Text("相框").tag(PlatePlacement.frame)
-                    Text("黑底下方").tag(PlatePlacement.canvasBottom)
-                }
-                .pickerStyle(.segmented)
-                .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("文字样式")
+                            .font(.subheadline.weight(.medium))
+                        settingsSubgroup(title: "字体风格") {
+                            choiceGrid(
+                                PlateFontStyle.allCases,
+                                selection: plateFontStyleBinding,
+                                title: \PlateFontStyle.displayName,
+                                subtitle: { _ in nil }
+                            )
+                        }
 
-                Picker("字号", selection: plateFontSizeChoiceBinding) {
-                    ForEach(PlateFontSizeChoice.allCases) { choice in
-                        Text(choice.title).tag(choice)
+                        settingsSubgroup(title: "字号") {
+                            choiceGrid(
+                                PlateFontSizeChoice.allCases,
+                                selection: plateFontSizeChoiceBinding,
+                                title: \PlateFontSizeChoice.title,
+                                subtitle: { _ in nil }
+                            )
+                        }
                     }
+                    .disabled(viewModel.isBusy)
                 }
-                .pickerStyle(.segmented)
-                .disabled(viewModel.isBusy || !viewModel.config.plateEnabled)
-
-                Text("前缀、字段排序和模板编辑请切到“高级”模式。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             AudioSettingsSection(
                 viewModel: viewModel,
                 isAudioDropTarget: $isAudioDropTarget,
-                onAudioDrop: onAudioDrop
+                onAudioDrop: onAudioDrop,
+                showsBackgroundAudio: false
             )
         }
         .formStyle(.grouped)
@@ -357,17 +442,99 @@ struct SimpleSettingsPanel: View {
         }
     }
 
+    private func choiceGrid<T: Hashable, S: Sequence>(
+        _ choices: S,
+        selection: Binding<T>,
+        title: @escaping (T) -> String,
+        subtitle: @escaping (T) -> String?
+    ) -> some View where S.Element == T {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+            ForEach(Array(choices), id: \.self) { choice in
+                optionCardButton(
+                    title: title(choice),
+                    subtitle: subtitle(choice),
+                    isSelected: selection.wrappedValue == choice
+                ) {
+                    selection.wrappedValue = choice
+                }
+            }
+        }
+    }
+
     private var plateFontSizeChoiceBinding: Binding<PlateFontSizeChoice> {
         Binding(
             get: {
-                let size = viewModel.config.plateFontSize
-                return PlateFontSizeChoice.allCases.min(by: {
-                    abs(Double($0.rawValue) - size) < abs(Double($1.rawValue) - size)
-                }) ?? .medium
+                currentPlateFontSizeChoice(for: viewModel.config.plateFontSize, outputHeight: viewModel.config.outputHeight)
             },
             set: { choice in
-                viewModel.config.plateFontSize = Double(choice.rawValue)
+                markSimplePlateEditing()
+                viewModel.config.plateFontSize = scaledPlateFontSize(for: choice, outputHeight: viewModel.config.outputHeight)
             }
+        )
+    }
+
+    private var frameWidthChoiceBinding: Binding<FrameWidthChoice> {
+        Binding(
+            get: {
+                currentFrameWidthChoice(for: viewModel.config.innerPadding, outputHeight: viewModel.config.outputHeight)
+            },
+            set: { choice in
+                viewModel.config.innerPadding = scaledFrameWidth(for: choice, outputHeight: viewModel.config.outputHeight)
+            }
+        )
+    }
+
+    private var plateFontStyleBinding: Binding<PlateFontStyle> {
+        Binding(
+            get: { viewModel.config.plateFontStyle },
+            set: { style in
+                markSimplePlateEditing()
+                viewModel.config.plateFontStyle = style
+            }
+        )
+    }
+
+    private var plateEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.config.plateEnabled },
+            set: { isEnabled in
+                viewModel.config.plateEnabled = isEnabled
+                viewModel.config.plateEditorMode = isEnabled ? .simple : .none
+            }
+        )
+    }
+
+    private var platePlacementChoiceBinding: Binding<PlatePlacementChoice> {
+        Binding(
+            get: {
+                guard viewModel.config.plateEnabled else { return .none }
+                switch viewModel.config.platePlacement {
+                case .frame:
+                    return .frame
+                case .canvasBottom:
+                    return .canvasBottom
+                }
+            },
+            set: { choice in
+                switch choice {
+                case .none:
+                    viewModel.config.plateEnabled = false
+                    viewModel.config.plateEditorMode = .none
+                case .frame:
+                    viewModel.config.beginSimplePlateEditing(enableIfNeeded: true)
+                    viewModel.config.platePlacement = .frame
+                case .canvasBottom:
+                    viewModel.config.beginSimplePlateEditing(enableIfNeeded: true)
+                    viewModel.config.platePlacement = .canvasBottom
+                }
+            }
+        )
+    }
+
+    private var fpsBinding: Binding<Int> {
+        Binding(
+            get: { viewModel.config.fps },
+            set: { viewModel.config.fps = $0 }
         )
     }
 
@@ -383,9 +550,18 @@ struct SimpleSettingsPanel: View {
                 }
             },
             set: { choice in
+                let previousHeight = viewModel.config.outputHeight
+                let previousChoice = currentPlateFontSizeChoice(for: viewModel.config.plateFontSize, outputHeight: previousHeight)
+                let previousFrameWidthChoice = currentFrameWidthChoice(for: viewModel.config.innerPadding, outputHeight: previousHeight)
                 let size = choice.size
                 viewModel.config.outputWidth = size.width
                 viewModel.config.outputHeight = size.height
+                if isUsingSimplePlateFontSizePreset(previousChoice, outputHeight: previousHeight) {
+                    viewModel.config.plateFontSize = scaledPlateFontSize(for: previousChoice, outputHeight: size.height)
+                }
+                if isUsingSimpleFrameWidthPreset(previousFrameWidthChoice, outputHeight: previousHeight) {
+                    viewModel.config.innerPadding = scaledFrameWidth(for: previousFrameWidthChoice, outputHeight: size.height)
+                }
             }
         )
     }
@@ -399,6 +575,46 @@ struct SimpleSettingsPanel: View {
             set: { choice in
                 viewModel.config.setImageDurationSafely(choice.seconds)
             }
+        )
+    }
+
+    private func currentPlateFontSizeChoice(for fontSize: Double, outputHeight: Int) -> PlateFontSizeChoice {
+        PlateFontSizeChoice.allCases.min(by: {
+            abs(scaledPlateFontSize(for: $0, outputHeight: outputHeight) - fontSize)
+                < abs(scaledPlateFontSize(for: $1, outputHeight: outputHeight) - fontSize)
+        }) ?? .medium
+    }
+
+    private func isUsingSimplePlateFontSizePreset(_ choice: PlateFontSizeChoice, outputHeight: Int) -> Bool {
+        abs(viewModel.config.plateFontSize - scaledPlateFontSize(for: choice, outputHeight: outputHeight)) <= 0.5
+    }
+
+    private func scaledPlateFontSize(for choice: PlateFontSizeChoice, outputHeight: Int) -> Double {
+        let scale = max(Double(outputHeight) / 1080.0, 0.75)
+        let rawSize = Double(choice.rawValue) * scale
+        return min(
+            max(rawSize, RenderEditorConfig.plateFontSizeRange.lowerBound),
+            RenderEditorConfig.plateFontSizeRange.upperBound
+        )
+    }
+
+    private func currentFrameWidthChoice(for innerPadding: Double, outputHeight: Int) -> FrameWidthChoice {
+        FrameWidthChoice.allCases.min(by: {
+            abs(scaledFrameWidth(for: $0, outputHeight: outputHeight) - innerPadding)
+                < abs(scaledFrameWidth(for: $1, outputHeight: outputHeight) - innerPadding)
+        }) ?? .medium
+    }
+
+    private func isUsingSimpleFrameWidthPreset(_ choice: FrameWidthChoice, outputHeight: Int) -> Bool {
+        abs(viewModel.config.innerPadding - scaledFrameWidth(for: choice, outputHeight: outputHeight)) <= 0.5
+    }
+
+    private func scaledFrameWidth(for choice: FrameWidthChoice, outputHeight: Int) -> Double {
+        let scale = max(Double(outputHeight) / 1080.0, 0.75)
+        let rawSize = Double(choice.rawValue) * scale
+        return min(
+            max(rawSize, RenderEditorConfig.innerPaddingRange.lowerBound),
+            RenderEditorConfig.innerPaddingRange.upperBound
         )
     }
 
@@ -462,51 +678,210 @@ struct SimpleSettingsPanel: View {
         )
     }
 
-    private func orientationChoiceButton(title: String, strategy: PhotoOrientationStrategy) -> some View {
-        let isSelected = viewModel.config.orientationStrategy == strategy
-        return Button {
-            viewModel.config.orientationStrategy = strategy
-        } label: {
-            ZStack {
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.secondary.opacity(0.08))
-                Text(title)
-                    .font(.caption)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+    private var orientationBinding: Binding<PhotoOrientationStrategy> {
+        Binding(
+            get: { viewModel.config.orientationStrategy },
+            set: { viewModel.config.orientationStrategy = $0 }
+        )
+    }
+
+    private var orientationChoices: [PhotoOrientationStrategy] {
+        [.followAsset, .forceLandscape, .forcePortrait]
+    }
+
+    private func plateSimpleEnabledBinding(index: Int) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.config.plateSimpleElements[index].enabled },
+            set: { isEnabled in
+                markSimplePlateEditing()
+                viewModel.config.plateSimpleElements[index].enabled = isEnabled
+                if !isEnabled {
+                    commitPrefixDraft(for: viewModel.config.plateSimpleElements[index].key)
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: 32)
-            .overlay(
-                RoundedRectangle(cornerRadius: 7)
-                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: isSelected ? 1.4 : 1)
-            )
-            .contentShape(Rectangle())
+        )
+    }
+
+    private func simplePlateFieldRow(index: Int) -> some View {
+        let key = viewModel.config.plateSimpleElements[index].key
+        let isEnabled = viewModel.config.plateSimpleElements[index].enabled
+
+        return HStack(spacing: 10) {
+            Text(key.displayName)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(isEnabled ? .primary : .secondary)
+                .frame(minWidth: 56, alignment: .leading)
+
+            prefixInput(text: prefixDraftBinding(index: index), key: key, isEnabled: isEnabled)
+
+            Toggle("", isOn: plateSimpleEnabledBinding(index: index))
+                .labelsHidden()
+        }
+        .padding(.horizontal, 10)
+        .frame(minHeight: plateRowHeight)
+        .background(rowBackground(isEnabled: isEnabled))
+        .overlay(rowBorder(isEnabled: isEnabled))
+    }
+
+    private func prefixDraftBinding(index: Int) -> Binding<String> {
+        let key = viewModel.config.plateSimpleElements[index].key
+        return Binding(
+            get: { plateSimplePrefixDrafts[key] ?? viewModel.config.plateSimpleElements[index].prefix },
+            set: {
+                markSimplePlateEditing()
+                plateSimplePrefixDrafts[key] = $0
+            }
+        )
+    }
+
+    private func commitPrefixDraft(for key: PlateSimpleElementKey) {
+        guard let draft = plateSimplePrefixDrafts[key] else { return }
+        guard let index = viewModel.config.plateSimpleElements.firstIndex(where: { $0.key == key }) else {
+            plateSimplePrefixDrafts.removeValue(forKey: key)
+            return
+        }
+        viewModel.config.plateSimpleElements[index].prefix = draft
+        plateSimplePrefixDrafts.removeValue(forKey: key)
+    }
+
+    private func commitAllPlateSimpleDrafts() {
+        for key in Array(plateSimplePrefixDrafts.keys) {
+            commitPrefixDraft(for: key)
+        }
+    }
+
+    private func markSimplePlateEditing() {
+        viewModel.config.beginSimplePlateEditing(enableIfNeeded: viewModel.config.plateEnabled)
+    }
+
+    private func orientationChoiceButton(title: String, strategy: PhotoOrientationStrategy) -> some View {
+        optionCardButton(
+            title: title,
+            subtitle: nil,
+            isSelected: viewModel.config.orientationStrategy == strategy
+        ) {
+            viewModel.config.orientationStrategy = strategy
+        }
+    }
+
+    private func frameStyleChoiceButton(title: String, preset: FrameStylePreset) -> some View {
+        optionCardButton(
+            title: title,
+            subtitle: nil,
+            isSelected: viewModel.config.frameStylePreset == preset
+        ) {
+            viewModel.config.frameStylePreset = preset
+        }
+    }
+
+    private func settingsGroup<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+            content()
+        }
+    }
+
+    private func settingsSubgroup<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            content()
+        }
+    }
+
+    private var optionContainerBackground: some View {
+        RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
+            .fill(Color.secondary.opacity(0.08))
+    }
+
+    private var optionContainerBorder: some View {
+        RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
+            .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+    }
+
+    private func optionCardButton(
+        title: String,
+        subtitle: String?,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: optionCardMinHeight)
+            .padding(.horizontal, 8)
+            .background(optionCardBackground(isSelected: isSelected))
+            .overlay(optionCardBorder(isSelected: isSelected))
         }
         .buttonStyle(.plain)
     }
 
-    private func frameStyleChoiceButton(title: String, preset: FrameStylePreset) -> some View {
-        let isSelected = viewModel.config.frameStylePreset == preset
-        return Button {
-            viewModel.config.frameStylePreset = preset
-        } label: {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.secondary.opacity(0.08))
-                Text(title)
-                    .font(.caption)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 8)
+    private func optionCardBackground(isSelected: Bool) -> some View {
+        RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
+            .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.secondary.opacity(0.08))
+    }
+
+    private func optionCardBorder(isSelected: Bool) -> some View {
+        RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
+            .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.22), lineWidth: isSelected ? 1.4 : 1)
+    }
+
+    private func prefixInput(text: Binding<String>, key: PlateSimpleElementKey, isEnabled: Bool) -> some View {
+        ZStack(alignment: .leading) {
+            if text.wrappedValue.isEmpty {
+                Text("前缀")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(Color.black.opacity(0.32))
+                    .padding(.horizontal, 10)
             }
-            .frame(maxWidth: .infinity, minHeight: 34)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: isSelected ? 1.4 : 1)
+
+            TextField(
+                "",
+                text: text,
+                onEditingChanged: { editing in
+                    if !editing {
+                        commitPrefixDraft(for: key)
+                    }
+                },
+                onCommit: {
+                    commitPrefixDraft(for: key)
+                }
             )
-            .contentShape(Rectangle())
+            .textFieldStyle(.plain)
+            .font(.system(.caption, design: .monospaced))
+            .foregroundStyle(Color.black.opacity(isEnabled ? 0.86 : 0.48))
+            .padding(.horizontal, 10)
         }
-        .buttonStyle(.plain)
+        .frame(height: 28)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isEnabled ? Color.white.opacity(0.90) : Color.white.opacity(0.62))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.white.opacity(isEnabled ? 0.08 : 0.04), lineWidth: 1)
+        )
+    }
+
+    private func rowBackground(isEnabled: Bool) -> some View {
+        RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
+            .fill(Color.secondary.opacity(isEnabled ? 0.08 : 0.05))
+    }
+
+    private func rowBorder(isEnabled: Bool) -> some View {
+        RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
+            .stroke(Color.secondary.opacity(isEnabled ? 0.18 : 0.10), lineWidth: 1)
     }
 }

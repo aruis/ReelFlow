@@ -272,7 +272,7 @@ final class FrameComposer {
     nonisolated private func drawPlateText(_ text: String, in rect: CGRect, context: CGContext) {
         guard !text.isEmpty, rect.width > 0, rect.height > 0 else { return }
 
-        var alignment = CTTextAlignment.left
+        var alignment: CTTextAlignment = settings.plate.placement == .canvasBottom ? .center : .left
         let paragraphStyle = withUnsafePointer(to: &alignment) { alignmentPointer in
             var setting = CTParagraphStyleSetting(
                 spec: .alignment,
@@ -283,7 +283,10 @@ final class FrameComposer {
         }
 
         let attributes: [NSAttributedString.Key: Any] = [
-            NSAttributedString.Key(kCTFontAttributeName as String): PlatformDrawing.monospacedFont(ofSize: CGFloat(settings.plate.fontSize)),
+            NSAttributedString.Key(kCTFontAttributeName as String): PlatformDrawing.plateFont(
+                style: settings.plate.fontStyle,
+                ofSize: CGFloat(settings.plate.fontSize)
+            ),
             NSAttributedString.Key(kCTForegroundColorAttributeName as String): textColor,
             NSAttributedString.Key(kCTParagraphStyleAttributeName as String): paragraphStyle
         ]
@@ -431,9 +434,9 @@ final class FrameComposer {
             )
         case .canvasBottom:
             let band = CGRect(
-                x: maxPaperRect.minX + frameMargin,
+                x: layout.canvas.minX + frameMargin,
                 y: 0,
-                width: max(0, maxPaperRect.width - frameMargin * 2),
+                width: max(0, layout.canvas.width - frameMargin * 2),
                 height: max(0, maxPaperRect.minY)
             )
             plateTextRect = CGRect(

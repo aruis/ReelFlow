@@ -185,6 +185,95 @@ struct RenderEngineSmokeTests {
         #expect(diff.max > 0.05)
     }
 
+    @Test
+    func plateFontStyleChangesPreviewPixels() async throws {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ReelFlowPlateFontStyle-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let imageURLs = try makeTestImages(in: tempDir, count: 1)
+        let baseLayout = LayoutSettings(horizontalMargin: 180, topMargin: 72, bottomMargin: 96, innerPadding: 24)
+        let baseCanvas = CanvasSettings.default
+
+        let mono = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false,
+            layout: baseLayout,
+            plate: PlateSettings(enabled: true, height: 96, baselineOffset: 18, fontSize: 26, fontStyle: .classicMono, placement: .frame),
+            canvas: baseCanvas
+        )
+        let sans = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false,
+            layout: baseLayout,
+            plate: PlateSettings(enabled: true, height: 96, baselineOffset: 18, fontSize: 26, fontStyle: .modernSans, placement: .frame),
+            canvas: baseCanvas
+        )
+
+        let monoPreview = try await RenderEngine(settings: mono).previewFrame(imageURLs: imageURLs, at: 0)
+        let sansPreview = try await RenderEngine(settings: sans).previewFrame(imageURLs: imageURLs, at: 0)
+        let diff = try Self.diffStats(lhs: monoPreview, rhs: sansPreview)
+
+        #expect(diff.mean > 0.0004)
+        #expect(diff.max > 0.02)
+    }
+
+    @Test
+    func platePrefixTemplateChangesPreviewPixels() async throws {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ReelFlowPlatePrefix-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let imageURLs = try makeTestImages(in: tempDir, count: 1)
+        let baseLayout = LayoutSettings.default
+
+        let prefixed = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false,
+            layout: baseLayout,
+            plate: PlateSettings(
+                enabled: true,
+                height: 96,
+                baselineOffset: 18,
+                fontSize: 26,
+                templateText: "ISO {iso}   S {shutter}"
+            )
+        )
+        let plain = RenderSettings(
+            outputSize: CGSize(width: 1280, height: 720),
+            fps: 15,
+            imageDuration: 0.6,
+            transitionDuration: 0.1,
+            enableKenBurns: false,
+            layout: baseLayout,
+            plate: PlateSettings(
+                enabled: true,
+                height: 96,
+                baselineOffset: 18,
+                fontSize: 26,
+                templateText: "{iso}   {shutter}"
+            )
+        )
+
+        let prefixedPreview = try await RenderEngine(settings: prefixed).previewFrame(imageURLs: imageURLs, at: 0)
+        let plainPreview = try await RenderEngine(settings: plain).previewFrame(imageURLs: imageURLs, at: 0)
+        let diff = try Self.diffStats(lhs: prefixedPreview, rhs: plainPreview)
+
+        #expect(diff.mean > 0.0004)
+        #expect(diff.max > 0.02)
+    }
+
     @Test(arguments: [false, true])
     func previewFramesMatchExportedFramesAtKeyTimes(enableKenBurns: Bool) async throws {
         let settings = RenderSettings(

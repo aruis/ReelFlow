@@ -22,6 +22,7 @@ struct RenderEditorConfigTests {
         config.plateHeight = 999
         config.plateBaselineOffset = -5
         config.plateFontSize = 100
+        config.plateFontStyle = .editorial
         config.prefetchRadius = -3
         config.prefetchMaxConcurrent = 0
         config.audioEnabled = true
@@ -80,6 +81,7 @@ struct RenderEditorConfigTests {
         config.plateHeight = 78
         config.plateBaselineOffset = 12
         config.plateFontSize = 22
+        config.plateFontStyle = .modernSans
         config.enableKenBurns = false
         config.kenBurnsIntensity = .large
         config.prefetchRadius = 3
@@ -117,6 +119,7 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.plateHeight == config.plateHeight)
         #expect(rebuilt.plateBaselineOffset == config.plateBaselineOffset)
         #expect(rebuilt.plateFontSize == config.plateFontSize)
+        #expect(rebuilt.plateFontStyle == config.plateFontStyle)
         #expect(rebuilt.enableKenBurns == config.enableKenBurns)
         #expect(rebuilt.kenBurnsIntensity == config.kenBurnsIntensity)
         #expect(rebuilt.prefetchRadius == config.prefetchRadius)
@@ -160,6 +163,7 @@ struct RenderEditorConfigTests {
         config.plateHeight = 72
         config.plateBaselineOffset = 10
         config.plateFontSize = 21
+        config.plateFontStyle = .editorial
 
         let settings = config.renderSettings
 
@@ -171,6 +175,73 @@ struct RenderEditorConfigTests {
         #expect(settings.plate.height == 72)
         #expect(settings.plate.baselineOffset == 10)
         #expect(settings.plate.fontSize == 21)
+        #expect(settings.plate.fontStyle == .editorial)
+    }
+
+    @Test
+    func simplePlateDefaultsIncludeDateButKeepItDisabled() {
+        let config = RenderEditorConfig()
+
+        let keys = config.plateSimpleElements.map(\.key)
+
+        #expect(keys.contains(.date))
+        #expect(config.plateSimpleElements.first(where: { $0.key == .date })?.enabled == false)
+        #expect(config.plateSimpleElements.first(where: { $0.key == .focal })?.enabled == false)
+    }
+
+    @Test
+    func applyingPlatePrefixPresetUpdatesPrefixes() {
+        var config = RenderEditorConfig()
+
+        config.applyPlatePrefixPreset(.minimal)
+
+        #expect(config.plateSimpleElements.allSatisfy { $0.prefix.isEmpty })
+
+        config.applyPlatePrefixPreset(.chinese)
+
+        #expect(config.plateSimpleElements.first(where: { $0.key == .camera })?.prefix == "相机 ")
+        #expect(config.plateSimpleElements.first(where: { $0.key == .shutter })?.prefix == "快门 ")
+        #expect(config.plateSimpleElements.first(where: { $0.key == .date })?.prefix == "日期 ")
+    }
+
+    @Test
+    func simplePlateTemplateReflectsFieldVisibility() {
+        var config = RenderEditorConfig()
+        config.plateSimpleElements = [
+            .init(key: .camera, enabled: true, prefix: ""),
+            .init(key: .iso, enabled: true, prefix: "ISO "),
+            .init(key: .date, enabled: false, prefix: "")
+        ]
+
+        #expect(config.simplePlateTemplateText == "{camera}   ISO {iso}")
+    }
+
+    @Test
+    func beginSimplePlateEditingSetsInternalModeToSimple() {
+        var config = RenderEditorConfig()
+        config.plateEnabled = true
+        config.plateEditorMode = .custom
+
+        config.beginSimplePlateEditing()
+
+        #expect(config.plateEditorMode == .simple)
+    }
+
+    @Test
+    func beginCustomPlateEditingSeedsTemplateFromSimpleMode() {
+        var config = RenderEditorConfig()
+        config.plateEnabled = true
+        config.plateEditorMode = .simple
+        config.plateSimpleElements = [
+            .init(key: .camera, enabled: true, prefix: ""),
+            .init(key: .shutter, enabled: true, prefix: "S ")
+        ]
+        config.plateTemplateText = "legacy template"
+
+        config.beginCustomPlateEditing()
+
+        #expect(config.plateEditorMode == .custom)
+        #expect(config.plateTemplateText == "{camera}   S {shutter}")
     }
 
     @Test

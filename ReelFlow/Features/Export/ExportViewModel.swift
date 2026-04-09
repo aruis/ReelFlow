@@ -462,6 +462,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             String(format: "%.2f", config.plateHeight),
             String(format: "%.2f", config.plateBaselineOffset),
             String(format: "%.2f", config.plateFontSize),
+            config.plateFontStyle.rawValue,
             config.platePlacement.rawValue,
             config.plateEditorMode.rawValue,
             config.plateSimpleElements.map {

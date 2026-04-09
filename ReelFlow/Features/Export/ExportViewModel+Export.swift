@@ -432,7 +432,9 @@ extension ExportViewModel {
             height: max(1, settings.plate.height * scaleFactor),
             baselineOffset: max(1, settings.plate.baselineOffset * scaleFactor),
             fontSize: max(8, settings.plate.fontSize * scaleFactor),
-            placement: settings.plate.placement
+            fontStyle: settings.plate.fontStyle,
+            placement: settings.plate.placement,
+            templateText: settings.plate.templateText
         )
 
         return RenderSettings(

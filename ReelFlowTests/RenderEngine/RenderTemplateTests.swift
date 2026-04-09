@@ -21,7 +21,7 @@ struct RenderTemplateTests {
             prefetchRadius: 2,
             prefetchMaxConcurrent: 3,
             layout: LayoutSettings(horizontalMargin: 160, topMargin: 60, bottomMargin: 84, innerPadding: 20),
-            plate: PlateSettings(enabled: true, height: 88, baselineOffset: 16, fontSize: 24, placement: .frame),
+            plate: PlateSettings(enabled: true, height: 88, baselineOffset: 16, fontSize: 24, fontStyle: .editorial, placement: .frame),
             canvas: CanvasSettings(backgroundGray: 0.12, paperWhite: 0.97, strokeGray: 0.8, textGray: 0.2),
             audioTrack: AudioTrackSettings(
                 sourceURL: URL(fileURLWithPath: "/tmp/roundtrip-audio.m4a"),
@@ -58,6 +58,7 @@ struct RenderTemplateTests {
         #expect(rebuilt.plate.height == 88)
         #expect(rebuilt.plate.baselineOffset == 16)
         #expect(rebuilt.plate.fontSize == 24)
+        #expect(rebuilt.plate.fontStyle == .editorial)
         #expect(rebuilt.plate.placement == .frame)
         #expect(rebuilt.canvas.backgroundGray == 0.12)
         #expect(rebuilt.canvas.paperWhite == 0.97)
@@ -111,6 +112,7 @@ struct RenderTemplateTests {
         #expect(settings.plate.height == PlateSettings.default.height)
         #expect(settings.plate.baselineOffset == PlateSettings.default.baselineOffset)
         #expect(settings.plate.fontSize == PlateSettings.default.fontSize)
+        #expect(settings.plate.fontStyle == PlateSettings.default.fontStyle)
         #expect(settings.plate.placement == PlateSettings.default.placement)
         #expect(settings.canvas.backgroundGray == CanvasSettings.default.backgroundGray)
         #expect(settings.canvas.paperWhite == CanvasSettings.default.paperWhite)
@@ -178,5 +180,43 @@ struct RenderTemplateTests {
 
         let config = RenderEditorConfig(template: settings.template)
         #expect(config.frameStylePreset == .soft)
+    }
+
+    @Test
+    func templateDecodePlateFontStyleMissingDefaultsToClassicMono() throws {
+        let json = """
+        {
+          "schemaVersion": 5,
+          "output": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 30
+          },
+          "timeline": {
+            "imageDuration": 3,
+            "transitionDuration": 0.6
+          },
+          "motion": {
+            "enableKenBurns": false
+          },
+          "performance": {
+            "prefetchRadius": 1,
+            "prefetchMaxConcurrent": 2
+          },
+          "plate": {
+            "enabled": true,
+            "height": 96,
+            "baselineOffset": 18,
+            "fontSize": 26,
+            "placement": "frame",
+            "templateText": "ISO {iso}"
+          }
+        }
+        """
+
+        let decoded = try JSONDecoder().decode(RenderTemplate.self, from: Data(json.utf8))
+        let settings = RenderSettings(template: decoded)
+
+        #expect(settings.plate.fontStyle == .classicMono)
     }
 }

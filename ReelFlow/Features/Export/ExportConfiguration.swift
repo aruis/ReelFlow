@@ -84,6 +84,7 @@ enum PlateSimpleElementKey: String, CaseIterable, Codable, Sendable {
     case aperture
     case iso
     case focal
+    case date
 
     var displayName: String {
         switch self {
@@ -99,6 +100,8 @@ enum PlateSimpleElementKey: String, CaseIterable, Codable, Sendable {
             return "ISO"
         case .focal:
             return String(localized: "焦距")
+        case .date:
+            return String(localized: "日期")
         }
     }
 
@@ -116,6 +119,8 @@ enum PlateSimpleElementKey: String, CaseIterable, Codable, Sendable {
             return "{iso}"
         case .focal:
             return "{focal}"
+        case .date:
+            return "{date}"
         }
     }
 
@@ -123,21 +128,22 @@ enum PlateSimpleElementKey: String, CaseIterable, Codable, Sendable {
 
     var defaultPrefix: String {
         switch self {
-        case .camera, .lens:
+        case .camera, .lens, .date:
             return ""
         case .shutter:
-            return "S "
+            return "S"
         case .aperture:
-            return "A "
+            return "A"
         case .iso:
-            return "ISO "
+            return "ISO"
         case .focal:
-            return "F "
+            return "F"
         }
     }
 
     var defaultTemplatePart: String {
-        defaultPrefix + token
+        let affix = defaultPrefix.normalizedPlateAffix
+        return affix.isEmpty ? token : "\(affix) \(token)"
     }
 }
 
@@ -155,7 +161,8 @@ struct PlateSimpleElement: Codable, Sendable, Identifiable, Equatable {
     var id: String { key.rawValue }
 
     var resolvedTemplatePart: String {
-        prefix.sanitizedPlateAffix + key.token
+        let affix = prefix.normalizedPlateAffix
+        return affix.isEmpty ? key.token : "\(affix) \(key.token)"
     }
 
     static let `default`: [PlateSimpleElement] = [
@@ -164,7 +171,8 @@ struct PlateSimpleElement: Codable, Sendable, Identifiable, Equatable {
         .init(key: .shutter, enabled: true),
         .init(key: .aperture, enabled: true),
         .init(key: .iso, enabled: true),
-        .init(key: .focal, enabled: true)
+        .init(key: .focal, enabled: false),
+        .init(key: .date, enabled: false)
     ]
 
     init(
@@ -204,6 +212,7 @@ struct RenderEditorConfig: Sendable {
     var plateHeight: Double = PlateSettings.default.height
     var plateBaselineOffset: Double = PlateSettings.default.baselineOffset
     var plateFontSize: Double = PlateSettings.default.fontSize
+    var plateFontStyle: PlateFontStyle = PlateSettings.default.fontStyle
     var platePlacement: PlatePlacement = PlateSettings.default.placement
     var plateEditorMode: PlateEditorMode = .simple
     var plateSimpleElements: [PlateSimpleElement] = PlateSimpleElement.default
@@ -275,6 +284,7 @@ struct RenderEditorConfig: Sendable {
         plateHeight = settings.plate.height
         plateBaselineOffset = settings.plate.baselineOffset
         plateFontSize = settings.plate.fontSize
+        plateFontStyle = settings.plate.fontStyle
         platePlacement = settings.plate.placement
         plateTemplateText = settings.plate.templateText
         plateSimpleElements = PlateSimpleElement.default
@@ -390,6 +400,7 @@ struct RenderEditorConfig: Sendable {
                 height: plateHeight,
                 baselineOffset: plateBaselineOffset,
                 fontSize: plateFontSize,
+                fontStyle: plateFontStyle,
                 placement: platePlacement,
                 templateText: plateEditorMode == .simple ? resolvedSimpleTemplateText : plateTemplateText
             ),
@@ -448,6 +459,29 @@ struct RenderEditorConfig: Sendable {
         plateSimpleElements = PlateSimpleElement.default
     }
 
+    mutating func beginSimplePlateEditing(enableIfNeeded: Bool = true) {
+        if enableIfNeeded {
+            plateEnabled = true
+        }
+        plateEditorMode = plateEnabled ? .simple : .none
+    }
+
+    mutating func beginCustomPlateEditing(seedFromSimpleIfNeeded: Bool = true) {
+        if plateEditorMode == .simple && seedFromSimpleIfNeeded {
+            plateTemplateText = resolvedSimpleTemplateText
+        }
+        plateEnabled = true
+        plateEditorMode = .custom
+    }
+
+    mutating func applyPlatePrefixPreset(_ preset: PlatePrefixPreset) {
+        plateSimpleElements = normalizedSimpleElements(from: plateSimpleElements).map { element in
+            var updated = element
+            updated.prefix = preset.prefix(for: element.key).sanitizedPlateAffix
+            return updated
+        }
+    }
+
     mutating func moveSimplePlateElements(from source: IndexSet, to destination: Int) {
         var items = plateSimpleElements
         let sortedSource = source.sorted()
@@ -461,6 +495,10 @@ struct RenderEditorConfig: Sendable {
         items.insert(contentsOf: moving, at: target)
         plateSimpleElements = items
         plateSimpleElements = normalizedSimpleElements(from: plateSimpleElements)
+    }
+
+    var simplePlateTemplateText: String {
+        resolvedSimpleTemplateText
     }
 
     private var resolvedSimpleTemplateText: String {
@@ -537,9 +575,67 @@ struct RenderEditorConfig: Sendable {
     }
 }
 
+enum PlatePrefixPreset: String, CaseIterable, Sendable {
+    case photography
+    case minimal
+    case chinese
+
+    var displayName: String {
+        switch self {
+        case .photography:
+            return String(localized: "摄影参数")
+        case .minimal:
+            return String(localized: "极简")
+        case .chinese:
+            return String(localized: "中文说明")
+        }
+    }
+
+    func prefix(for key: PlateSimpleElementKey) -> String {
+        switch self {
+        case .photography:
+            switch key {
+            case .camera, .lens, .date:
+                return ""
+            case .shutter:
+                return "S"
+            case .aperture:
+                return "A"
+            case .iso:
+                return "ISO"
+            case .focal:
+                return "F"
+            }
+        case .minimal:
+            return ""
+        case .chinese:
+            switch key {
+            case .camera:
+                return "相机"
+            case .lens:
+                return "镜头"
+            case .shutter:
+                return "快门"
+            case .aperture:
+                return "光圈"
+            case .iso:
+                return "ISO"
+            case .focal:
+                return "焦距"
+            case .date:
+                return "日期"
+            }
+        }
+    }
+}
+
 private extension String {
     var sanitizedPlateAffix: String {
         replacingOccurrences(of: "\n", with: " ")
             .replacingOccurrences(of: "\r", with: " ")
+    }
+
+    var normalizedPlateAffix: String {
+        sanitizedPlateAffix.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
