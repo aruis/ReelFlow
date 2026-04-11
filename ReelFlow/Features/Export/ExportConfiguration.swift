@@ -192,7 +192,7 @@ struct RenderEditorConfig: Sendable {
     var outputWidth: Int = 1920
     var outputHeight: Int = 1080
     var fps: Int = 30
-    var imageDuration: Double = 3.0
+    var imageDuration: Double = 2.5
     var transitionDuration: Double = 0.6
     var enableCrossfade: Bool = true
     var transitionDipDuration: Double = 0.18
@@ -227,7 +227,8 @@ struct RenderEditorConfig: Sendable {
     var shutterSoundSource: ShutterSoundSource = .preset
     var shutterSoundPreset: ShutterSoundPreset = .canonEOS
     var shutterSoundCustomFilePath: String = ""
-    var shutterSoundVolume: Double = 0.72
+    var shutterSoundVolume: Double = 1
+    var shutterSoundDelay: Double = 0
 
     static let outputWidthRange = 640...3840
     static let outputHeightRange = 360...2160
@@ -235,6 +236,7 @@ struct RenderEditorConfig: Sendable {
     static let imageDurationRange = 0.2...10.0
     static let transitionDurationRange = 0.0...2.0
     static let transitionDipDurationRange = 0.0...1.0
+    static let shutterSoundDelayRange = 0.0...1.0
     static let grayRange = 0.0...1.0
     static let horizontalMarginRange = 0.0...360.0
     static let topMarginRange = 0.0...220.0
@@ -257,6 +259,7 @@ struct RenderEditorConfig: Sendable {
         shutterSoundPreset = template.shutterSound.preset
         shutterSoundCustomFilePath = template.shutterSound.customFilePath
         shutterSoundVolume = template.shutterSound.volume
+        shutterSoundDelay = template.shutterSound.delay
         clampToSafeRange()
     }
 
@@ -298,7 +301,8 @@ struct RenderEditorConfig: Sendable {
         shutterSoundEnabled = settings.shutterSoundTrack != nil
         shutterSoundSource = .custom
         shutterSoundCustomFilePath = settings.shutterSoundTrack?.sourceURL.path ?? ""
-        shutterSoundVolume = settings.shutterSoundTrack?.volume ?? 0.72
+        shutterSoundVolume = settings.shutterSoundTrack?.volume ?? 1
+        shutterSoundDelay = settings.shutterSoundTrack?.delay ?? 0
         clampToSafeRange()
     }
 
@@ -323,13 +327,13 @@ struct RenderEditorConfig: Sendable {
         plateHeight = min(max(plateHeight, Self.plateHeightRange.lowerBound), Self.plateHeightRange.upperBound)
         plateBaselineOffset = min(max(plateBaselineOffset, Self.plateBaselineOffsetRange.lowerBound), Self.plateBaselineOffsetRange.upperBound)
         plateFontSize = min(max(plateFontSize, Self.plateFontSizeRange.lowerBound), Self.plateFontSizeRange.upperBound)
-        let trimmedTemplate = plateTemplateText.trimmingCharacters(in: .whitespacesAndNewlines)
-        plateTemplateText = trimmedTemplate.isEmpty ? PlateSettings.defaultTemplateText : trimmedTemplate
+        plateTemplateText = plateTemplateText.trimmingCharacters(in: .whitespacesAndNewlines)
         plateSimpleElements = normalizedSimpleElements(from: plateSimpleElements)
         prefetchRadius = min(max(prefetchRadius, Self.prefetchRadiusRange.lowerBound), Self.prefetchRadiusRange.upperBound)
         prefetchMaxConcurrent = min(max(prefetchMaxConcurrent, Self.prefetchMaxConcurrentRange.lowerBound), Self.prefetchMaxConcurrentRange.upperBound)
         audioVolume = min(max(audioVolume, Self.audioVolumeRange.lowerBound), Self.audioVolumeRange.upperBound)
         shutterSoundVolume = min(max(shutterSoundVolume, Self.audioVolumeRange.lowerBound), Self.audioVolumeRange.upperBound)
+        shutterSoundDelay = min(max(shutterSoundDelay, Self.shutterSoundDelayRange.lowerBound), Self.shutterSoundDelayRange.upperBound)
         if !audioEnabled {
             audioFilePath = ""
             audioLoopEnabled = false
@@ -428,7 +432,8 @@ struct RenderEditorConfig: Sendable {
                 source: shutterSoundSource,
                 preset: shutterSoundPreset,
                 customFilePath: shutterSoundCustomFilePath,
-                volume: shutterSoundVolume
+                volume: shutterSoundVolume,
+                delay: shutterSoundDelay
             )
         )
     }
@@ -570,7 +575,8 @@ struct RenderEditorConfig: Sendable {
         guard let url else { return nil }
         return ShutterSoundTrackSettings(
             sourceURL: url,
-            volume: shutterSoundVolume
+            volume: shutterSoundVolume,
+            delay: shutterSoundDelay
         )
     }
 }

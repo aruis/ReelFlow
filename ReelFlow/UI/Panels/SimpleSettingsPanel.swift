@@ -8,7 +8,7 @@ struct SimpleSettingsPanel: View {
 
     private let optionCardCornerRadius: CGFloat = 10
     private let optionCardMinHeight: CGFloat = 48
-    private let plateRowHeight: CGFloat = 40
+    private let plateRowHeight: CGFloat = 42
 
     private enum ResolutionChoice: Int, CaseIterable, Identifiable {
         case hd720
@@ -212,12 +212,12 @@ struct SimpleSettingsPanel: View {
 
     var body: some View {
         Form {
-            Section("输出") {
+            Section(String(localized: "输出")) {
                 if let settingsValidationMessage {
                     settingsValidationView(settingsValidationMessage)
                 }
 
-                settingsGroup(title: "分辨率") {
+                settingsGroup(title: String(localized: "分辨率")) {
                     choiceGrid(
                         ResolutionChoice.allCases,
                         selection: resolutionBinding,
@@ -229,7 +229,7 @@ struct SimpleSettingsPanel: View {
                 }
                 .disabled(viewModel.isBusy)
 
-                settingsGroup(title: "帧率（FPS）") {
+                settingsGroup(title: String(localized: "帧率（FPS）")) {
                     choiceGrid(
                         [24, 30, 60],
                         selection: fpsBinding,
@@ -240,9 +240,9 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
             }
 
-            Section("播放节奏") {
+            Section(String(localized: "播放节奏")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("展示节奏")
+                    Text(String(localized: "展示节奏"))
                         .font(.subheadline.weight(.medium))
                     choiceGrid(
                         DurationChoice.allCases,
@@ -254,13 +254,13 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("动效")
+                    Text(String(localized: "动效"))
                         .font(.subheadline.weight(.medium))
-                    Text("控制画面切换、空窗节奏与推拉动效。")
+                    Text(String(localized: "控制画面切换、空窗节奏与推拉动效。"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 8) {
-                        settingsSubgroup(title: "转场") {
+                        settingsSubgroup(title: String(localized: "转场")) {
                             choiceGrid(
                                 TransitionChoice.allCases,
                                 selection: transitionBinding,
@@ -269,7 +269,7 @@ struct SimpleSettingsPanel: View {
                             )
                         }
 
-                        settingsSubgroup(title: "背景空窗") {
+                        settingsSubgroup(title: String(localized: "背景空窗")) {
                             choiceGrid(
                                 TransitionGapChoice.allCases,
                                 selection: transitionGapBinding,
@@ -278,7 +278,7 @@ struct SimpleSettingsPanel: View {
                             )
                         }
 
-                        settingsSubgroup(title: "推拉动效（Ken Burns）") {
+                        settingsSubgroup(title: String(localized: "推拉动效（Ken Burns）")) {
                             choiceGrid(
                                 KenBurnsChoice.allCases,
                                 selection: kenBurnsBinding,
@@ -294,9 +294,9 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
             }
 
-            Section("画面风格") {
+            Section(String(localized: "画面风格")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("横竖图策略")
+                    Text(String(localized: "横竖图策略"))
                         .font(.subheadline.weight(.medium))
                     choiceGrid(
                         orientationChoices,
@@ -308,7 +308,7 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("相框风格")
+                    Text(String(localized: "相框风格"))
                         .font(.subheadline.weight(.medium))
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
                         ForEach(FrameStylePreset.allCases.filter { $0 != .custom }, id: \.self) { preset in
@@ -325,7 +325,7 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("相框宽度")
+                    Text(String(localized: "相框宽度"))
                         .font(.subheadline.weight(.medium))
                     choiceGrid(
                         FrameWidthChoice.allCases,
@@ -337,8 +337,8 @@ struct SimpleSettingsPanel: View {
                 .disabled(viewModel.isBusy)
             }
 
-            Section("铭牌信息") {
-                settingsGroup(title: "位置") {
+            Section(String(localized: "铭牌信息")) {
+                settingsGroup(title: String(localized: "位置")) {
                     choiceGrid(
                         PlatePlacementChoice.allCases,
                         selection: platePlacementChoiceBinding,
@@ -350,7 +350,7 @@ struct SimpleSettingsPanel: View {
 
                 if viewModel.config.plateEnabled {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("字段与标签")
+                        Text(String(localized: "字段与标签"))
                             .font(.subheadline.weight(.medium))
                         VStack(alignment: .leading, spacing: 8) {
                             ForEach(viewModel.config.plateSimpleElements.indices, id: \.self) { index in
@@ -361,9 +361,9 @@ struct SimpleSettingsPanel: View {
                     .disabled(viewModel.isBusy)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("文字样式")
+                        Text(String(localized: "文字样式"))
                             .font(.subheadline.weight(.medium))
-                        settingsSubgroup(title: "字体风格") {
+                        settingsSubgroup(title: String(localized: "字体风格")) {
                             choiceGrid(
                                 PlateFontStyle.allCases,
                                 selection: plateFontStyleBinding,
@@ -372,7 +372,7 @@ struct SimpleSettingsPanel: View {
                             )
                         }
 
-                        settingsSubgroup(title: "字号") {
+                        settingsSubgroup(title: String(localized: "字号")) {
                             choiceGrid(
                                 PlateFontSizeChoice.allCases,
                                 selection: plateFontSizeChoiceBinding,
@@ -710,7 +710,7 @@ struct SimpleSettingsPanel: View {
             Text(key.displayName)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(isEnabled ? .primary : .secondary)
-                .frame(minWidth: 56, alignment: .leading)
+                .frame(width: 42, alignment: .leading)
 
             prefixInput(text: prefixDraftBinding(index: index), key: key, isEnabled: isEnabled)
 
@@ -841,9 +841,9 @@ struct SimpleSettingsPanel: View {
     private func prefixInput(text: Binding<String>, key: PlateSimpleElementKey, isEnabled: Bool) -> some View {
         ZStack(alignment: .leading) {
             if text.wrappedValue.isEmpty {
-                Text("前缀")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(Color.black.opacity(0.32))
+                Text(isEnabled ? String(localized: "留空") : String(localized: "未启用"))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
                     .padding(.horizontal, 10)
             }
 
@@ -861,17 +861,18 @@ struct SimpleSettingsPanel: View {
             )
             .textFieldStyle(.plain)
             .font(.system(.caption, design: .monospaced))
-            .foregroundStyle(Color.black.opacity(isEnabled ? 0.86 : 0.48))
+            .foregroundStyle(isEnabled ? .primary : .secondary)
             .padding(.horizontal, 10)
+            .disabled(!isEnabled)
         }
         .frame(height: 28)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(isEnabled ? Color.white.opacity(0.90) : Color.white.opacity(0.62))
+                .fill(Color.secondary.opacity(isEnabled ? 0.10 : 0.06))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(Color.white.opacity(isEnabled ? 0.08 : 0.04), lineWidth: 1)
+                .stroke(Color.secondary.opacity(isEnabled ? 0.18 : 0.10), lineWidth: 1)
         )
     }
 

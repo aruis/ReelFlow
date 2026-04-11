@@ -29,7 +29,7 @@ enum PlateFontStyle: String, Codable, CaseIterable, Sendable {
         case .modernSans:
             return String(localized: "现代无衬线")
         case .editorial:
-            return String(localized: "说明文字")
+            return String(localized: "编辑衬线")
         }
     }
 }
@@ -198,10 +198,12 @@ struct AudioTrackSettings: Sendable {
 struct ShutterSoundTrackSettings: Sendable {
     let sourceURL: URL
     let volume: Double
+    let delay: TimeInterval
 
-    nonisolated init(sourceURL: URL, volume: Double = 1) {
+    nonisolated init(sourceURL: URL, volume: Double = 1, delay: TimeInterval = 0) {
         self.sourceURL = sourceURL
         self.volume = max(0, min(volume, 1))
+        self.delay = max(0, delay)
     }
 }
 
@@ -359,7 +361,8 @@ struct RenderSettings {
                 guard let resolvedURL else { return nil }
                 return .init(
                     sourceURL: resolvedURL,
-                    volume: template.shutterSound.volume
+                    volume: template.shutterSound.volume,
+                    delay: template.shutterSound.delay
                 )
             }(),
             watermark: nil
@@ -446,7 +449,8 @@ struct RenderSettings {
                 source: .custom,
                 preset: .canonEOS,
                 customFilePath: shutterSoundTrack?.sourceURL.path ?? "",
-                volume: shutterSoundTrack?.volume ?? 1
+                volume: shutterSoundTrack?.volume ?? 1,
+                delay: shutterSoundTrack?.delay ?? 0
             )
         )
     }
@@ -727,13 +731,15 @@ struct RenderTemplate: Codable, Sendable {
         let preset: ShutterSoundPreset
         let customFilePath: String
         let volume: Double
+        let delay: Double
 
         nonisolated static let `default` = ShutterSound(
             enabled: false,
             source: .preset,
             preset: .canonEOS,
             customFilePath: "",
-            volume: 0.72
+            volume: 1,
+            delay: 0
         )
 
         private enum CodingKeys: String, CodingKey {
@@ -742,6 +748,7 @@ struct RenderTemplate: Codable, Sendable {
             case preset
             case customFilePath
             case volume
+            case delay
         }
 
         nonisolated init(
@@ -749,13 +756,15 @@ struct RenderTemplate: Codable, Sendable {
             source: ShutterSoundSource,
             preset: ShutterSoundPreset,
             customFilePath: String = "",
-            volume: Double = 0.72
+            volume: Double = 1,
+            delay: Double = 0
         ) {
             self.enabled = enabled
             self.source = source
             self.preset = preset
             self.customFilePath = customFilePath
             self.volume = max(0, min(volume, 1))
+            self.delay = max(0, delay)
         }
 
         nonisolated init(from decoder: Decoder) throws {
@@ -764,13 +773,15 @@ struct RenderTemplate: Codable, Sendable {
             let source = try container.decodeIfPresent(ShutterSoundSource.self, forKey: .source) ?? .preset
             let preset = try container.decodeIfPresent(ShutterSoundPreset.self, forKey: .preset) ?? .canonEOS
             let customFilePath = try container.decodeIfPresent(String.self, forKey: .customFilePath) ?? ""
-            let volume = try container.decodeIfPresent(Double.self, forKey: .volume) ?? 0.72
+            let volume = try container.decodeIfPresent(Double.self, forKey: .volume) ?? 1
+            let delay = try container.decodeIfPresent(Double.self, forKey: .delay) ?? 0
             self.init(
                 enabled: enabled,
                 source: source,
                 preset: preset,
                 customFilePath: customFilePath,
-                volume: volume
+                volume: volume,
+                delay: delay
             )
         }
     }
@@ -791,7 +802,8 @@ struct ExifInfo: Sendable {
 
     nonisolated func resolvedPlateText(template: String) -> String {
         let normalized = template.trimmingCharacters(in: .whitespacesAndNewlines)
-        let source = normalized.isEmpty ? PlateSettings.defaultTemplateText : normalized
+        guard !normalized.isEmpty else { return "" }
+        let source = normalized
         return source
             .replacingOccurrences(of: "{shutter}", with: shutter ?? "--")
             .replacingOccurrences(of: "{aperture}", with: aperture ?? "--")
