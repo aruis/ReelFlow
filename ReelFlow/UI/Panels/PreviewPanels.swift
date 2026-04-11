@@ -36,59 +36,6 @@ struct VideoTimelinePreviewPanel: View {
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 12) {
-                if viewModel.config.audioEnabled {
-                    VStack(alignment: .leading, spacing: 6) {
-                        let videoDuration = max(viewModel.previewMaxSecond, 0)
-                        let audioDuration = viewModel.selectedAudioDuration
-                        let audioName = viewModel.selectedAudioFilename ?? String(localized: "未选择音频")
-
-                        Text(String(localized: "音轨: \(audioName)"))
-                            .font(.caption)
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.secondary.opacity(0.12))
-                            GeometryReader { proxy in
-                                let width = proxy.size.width
-                                ForEach(Array(audioSegments.enumerated()), id: \.offset) { _, segment in
-                                    let start = segment.start
-                                    let end = segment.end
-                                    let x = videoDuration > 0 ? CGFloat(start / videoDuration) * width : 0
-                                    let segmentWidth = videoDuration > 0 ? max(2, CGFloat((end - start) / videoDuration) * width) : 0
-                                    RoundedRectangle(cornerRadius: 3)
-                                        .fill(Color.accentColor.opacity(0.75))
-                                        .frame(width: segmentWidth, height: 10)
-                                        .offset(x: x, y: 4)
-                                }
-                            }
-                        }
-                        .frame(height: 18)
-
-                        if let audioDuration {
-                            let loopState = viewModel.config.audioLoopEnabled ? String(localized: "自动循环开启") : String(localized: "自动循环关闭")
-                            Text(String(localized: "视频 \(videoDuration, specifier: "%.2f")s · 音频 \(audioDuration, specifier: "%.2f")s · \(loopState)"))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        } else {
-                            Text("未读取到音频时长，导出前会再次校验。")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        HStack(spacing: 8) {
-                            Button(viewModel.isAudioPreviewPlaying ? String(localized: "暂停试听") : String(localized: "试听当前时间点")) {
-                                viewModel.toggleAudioPreview()
-                            }
-                            .disabled(!viewModel.canPreviewAudio)
-
-                            Button("停止") {
-                                viewModel.stopAudioPreview()
-                            }
-                            .disabled(!viewModel.isAudioPreviewPlaying)
-                        }
-                        .controlSize(.small)
-                    }
-                }
-
                 previewSurface(
                     image: viewModel.previewImage,
                     placeholderSystemImage: "film",
@@ -144,17 +91,16 @@ private struct TimelineScrubber: View {
         static let labelBandHeight: CGFloat = 10
         static let topPadding: CGFloat = 4
         static let labelToTrackGap: CGFloat = 0
-        static let waveformHeight: CGFloat = 18
-        static let waveformTopInset: CGFloat = 4
-        static let railHeight: CGFloat = 28
-        static let bottomPadding: CGFloat = 6
+        static let waveformHeight: CGFloat = 16
+        static let baselineGapToLabels: CGFloat = 12
+        static let bottomPadding: CGFloat = 12
         static let labelWidth: CGFloat = 18
 
         static let totalHeight: CGFloat =
-            topPadding + labelBandHeight + labelToTrackGap + railHeight + bottomPadding
+            topPadding + labelBandHeight + labelToTrackGap + waveformHeight + baselineGapToLabels + bottomPadding
 
-        static let trackCenterY: CGFloat =
-            topPadding + labelBandHeight + labelToTrackGap + railHeight / 2
+        static let baselineY: CGFloat =
+            topPadding + labelBandHeight + labelToTrackGap + waveformHeight + baselineGapToLabels
 
         static let labelCenterY: CGFloat =
             topPadding + labelBandHeight / 2
@@ -194,15 +140,23 @@ private struct TimelineScrubber: View {
     }
 
     private func markerLabelColor(for index: Int) -> Color {
-        isActiveMarker(index) ? Color.accentColor.opacity(0.95) : .secondary.opacity(0.78)
+        isActiveMarker(index) ? Color.accentColor.opacity(0.96) : Color.white.opacity(0.60)
     }
 
     private func markerTickColor(for index: Int) -> Color {
-        isActiveMarker(index) ? Color.accentColor.opacity(0.72) : Color.white.opacity(0.14)
+        isActiveMarker(index) ? Color.accentColor.opacity(0.78) : Color.white.opacity(0.22)
     }
 
     private func markerTickHeight(for index: Int) -> CGFloat {
-        isActiveMarker(index) ? 16 : 11
+        markerTickTopExtension(for: index) + markerTickBottomExtension(for: index)
+    }
+
+    private func markerTickTopExtension(for index: Int) -> CGFloat {
+        isActiveMarker(index) ? 16 : 12
+    }
+
+    private func markerTickBottomExtension(for index: Int) -> CGFloat {
+        isActiveMarker(index) ? 3 : 2
     }
 
     var body: some View {
@@ -212,14 +166,14 @@ private struct TimelineScrubber: View {
             let knobOffset = CGFloat(progress) * availableWidth
             let labelIndices = visibleLabelIndices(for: width)
 
-            ZStack(alignment: .leading) {
+            ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(Color.white.opacity(0.04))
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .stroke(Color.white.opacity(0.04), lineWidth: 1)
                     }
-                    .frame(height: Metrics.totalHeight)
+                    .frame(width: width, height: Metrics.totalHeight)
 
                 if hasAudioWaveform {
                     GeometryReader { waveformProxy in
@@ -232,17 +186,21 @@ private struct TimelineScrubber: View {
                                 segment: segment,
                                 availableWidth: waveformWidth,
                                 height: Metrics.waveformHeight,
-                                tint: index.isMultiple(of: 2)
-                                    ? Color.accentColor.opacity(isEnabled ? 0.30 : 0.18)
-                                    : Color.accentColor.opacity(isEnabled ? 0.22 : 0.14)
+                                playedProgress: progress,
+                                activeTint: index.isMultiple(of: 2)
+                                    ? Color(red: 0.50, green: 0.64, blue: 0.78).opacity(isEnabled ? 0.44 : 0.24)
+                                    : Color(red: 0.46, green: 0.60, blue: 0.74).opacity(isEnabled ? 0.40 : 0.22),
+                                inactiveTint: index.isMultiple(of: 2)
+                                    ? Color(red: 0.53, green: 0.57, blue: 0.63).opacity(isEnabled ? 0.16 : 0.10)
+                                    : Color(red: 0.48, green: 0.53, blue: 0.60).opacity(isEnabled ? 0.14 : 0.09)
                             )
                             .offset(
                                 x: Metrics.knobSize / 2,
-                                y: Metrics.topPadding + Metrics.labelBandHeight + Metrics.waveformTopInset
+                                y: Metrics.baselineY - Metrics.waveformHeight
                             )
                         }
                     }
-                    .frame(height: Metrics.totalHeight)
+                    .frame(width: width, height: Metrics.totalHeight)
                 }
 
                 ForEach(Array(normalizedMarkers.enumerated()), id: \.offset) { index, marker in
@@ -260,14 +218,14 @@ private struct TimelineScrubber: View {
                 }
 
                 Capsule()
-                    .fill(Color.white.opacity(0.12))
+                    .fill(Color.white.opacity(0.10))
                     .frame(height: Metrics.trackHeight)
-                    .offset(y: Metrics.trackCenterY - Metrics.trackHeight / 2)
+                    .offset(x: 0, y: Metrics.baselineY - Metrics.trackHeight / 2)
 
                 Capsule()
-                    .fill(Color.accentColor.opacity(isEnabled ? 0.95 : 0.45))
+                    .fill(Color.accentColor.opacity(isEnabled ? 0.9 : 0.42))
                     .frame(width: knobOffset + Metrics.knobSize / 2, height: Metrics.trackHeight)
-                    .offset(y: Metrics.trackCenterY - Metrics.trackHeight / 2)
+                    .offset(x: 0, y: Metrics.baselineY - Metrics.trackHeight / 2)
 
                 ForEach(Array(normalizedMarkers.enumerated()), id: \.offset) { index, marker in
                     Capsule()
@@ -275,7 +233,7 @@ private struct TimelineScrubber: View {
                         .frame(width: 1, height: markerTickHeight(for: index))
                         .offset(
                             x: CGFloat(marker) * availableWidth + Metrics.knobSize / 2,
-                            y: Metrics.trackCenterY - markerTickHeight(for: index) / 2
+                            y: Metrics.baselineY - markerTickTopExtension(for: index)
                         )
                 }
 
@@ -284,7 +242,7 @@ private struct TimelineScrubber: View {
                     .frame(width: 2, height: 20)
                     .offset(
                         x: knobOffset + Metrics.knobSize / 2 - 1,
-                        y: Metrics.trackCenterY - 10
+                        y: Metrics.baselineY - 10
                     )
 
                 Circle()
@@ -297,7 +255,7 @@ private struct TimelineScrubber: View {
                     }
                     .offset(
                         x: knobOffset,
-                        y: Metrics.trackCenterY - Metrics.knobSize / 2
+                        y: Metrics.baselineY - Metrics.knobSize / 2
                     )
             }
             .frame(height: Metrics.totalHeight)
@@ -341,7 +299,9 @@ private struct AudioWaveformOverlay: View {
     let segment: (start: Double, end: Double)
     let availableWidth: CGFloat
     let height: CGFloat
-    let tint: Color
+    let playedProgress: Double
+    let activeTint: Color
+    let inactiveTint: Color
 
     private var span: Double {
         max(range.upperBound - range.lowerBound, 0.001)
@@ -355,18 +315,49 @@ private struct AudioWaveformOverlay: View {
         CGFloat((segment.start - range.lowerBound) / span) * availableWidth
     }
 
+    private var playedFraction: CGFloat {
+        let segmentStart = CGFloat((segment.start - range.lowerBound) / span)
+        let segmentEnd = CGFloat((segment.end - range.lowerBound) / span)
+        let played = CGFloat(playedProgress)
+        guard segmentEnd > segmentStart else { return 0 }
+        let clamped = min(max((played - segmentStart) / (segmentEnd - segmentStart), 0), 1)
+        return clamped
+    }
+
     var body: some View {
-        HStack(alignment: .center, spacing: 1) {
-            ForEach(Array(samples.enumerated()), id: \.offset) { _, sample in
-                Capsule(style: .continuous)
-                    .fill(tint)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: max(2, sample * height))
-            }
+        ZStack(alignment: .leading) {
+            waveformBars(tint: inactiveTint)
+
+            waveformBars(tint: activeTint)
+                .mask(alignment: .leading) {
+                    Rectangle()
+                        .frame(width: max(0, segmentWidth * playedFraction))
+                }
         }
-        .frame(width: segmentWidth, height: height, alignment: .center)
+        .frame(width: segmentWidth, height: height, alignment: .bottom)
         .offset(x: offsetX)
         .clipped()
+    }
+
+    @ViewBuilder
+    private func waveformBars(tint: Color) -> some View {
+        HStack(alignment: .bottom, spacing: 1) {
+            ForEach(Array(samples.enumerated()), id: \.offset) { _, sample in
+                let emphasizedSample = max(sample - 0.06, 0)
+                let peakHeight = max(2, pow(emphasizedSample, 1.35) * height * 1.28)
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 2,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 2,
+                    style: .continuous
+                )
+                    .fill(tint)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: peakHeight)
+            }
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
     }
 }
 
