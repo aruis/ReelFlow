@@ -259,7 +259,7 @@ struct ContentView: View {
                             .disabled(!viewModel.hasSelectedImages || viewModel.isBusy)
                         #if DEBUG
                         Divider()
-                        Button("模拟导出失败") { viewModel.simulateExportFailure() }
+                        Button(String(localized: "模拟导出失败")) { viewModel.simulateExportFailure() }
                             .disabled(viewModel.isBusy)
                         #endif
                     }
