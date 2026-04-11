@@ -46,8 +46,8 @@ extension ContentView {
     }
 
     var centerPreviewColumn: some View {
-        Group {
-            if shouldUseFullHeightEmptyState {
+        GeometryReader { geometry in
+            ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     if let validationMessage = viewModel.validationMessage {
                         Text(String(localized: "参数校验: \(validationMessage)"))
@@ -56,52 +56,48 @@ extension ContentView {
                             .accessibilityIdentifier("settings_validation_message")
                     }
 
-                    emptyPreviewPanel
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        if let validationMessage = viewModel.validationMessage {
-                            Text(String(localized: "参数校验: \(validationMessage)"))
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                                .accessibilityIdentifier("settings_validation_message")
-                        }
-
-                        if viewModel.hasSelectedImages {
-                            HStack(alignment: .top, spacing: 16) {
-                                contentSummaryHeader
-                                Spacer(minLength: 0)
-                                Picker("", selection: $centerPreviewTab) {
-                                    ForEach(CenterPreviewTab.allCases) { tab in
-                                        Text(tab.title).tag(tab)
-                                    }
+                    if viewModel.hasSelectedImages {
+                        HStack(alignment: .top, spacing: 16) {
+                            contentSummaryHeader
+                            Spacer(minLength: 0)
+                            Picker("", selection: $centerPreviewTab) {
+                                ForEach(CenterPreviewTab.allCases) { tab in
+                                    Text(tab.title).tag(tab)
                                 }
-                                .labelsHidden()
-                                .pickerStyle(.segmented)
-                                .frame(maxWidth: 220)
                             }
-
-                            if centerPreviewTab == .singleFrame {
-                                previewPanel
-                            } else {
-                                videoPreviewPanel
-                            }
-
-                            previewOutputBar
-                        } else {
-                            emptyPreviewPanel
+                            .labelsHidden()
+                            .pickerStyle(.segmented)
+                            .frame(maxWidth: 220)
                         }
 
+                        if centerPreviewTab == .singleFrame {
+                            previewPanel
+                        } else {
+                            videoPreviewPanel
+                        }
+
+                        previewOutputBar
+                    } else {
+                        emptyPreviewPanel
+                            .frame(
+                                minHeight: shouldUseFullHeightEmptyState
+                                    ? max(geometry.size.height - 32, 320)
+                                    : 320
+                            )
+                    }
+
+                    if !shouldUseFullHeightEmptyState {
                         workflowPanel
                     }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .padding(16)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: shouldUseFullHeightEmptyState ? geometry.size.height : nil,
+                    alignment: .topLeading
+                )
             }
+            .scrollIndicators(.automatic)
         }
     }
 
