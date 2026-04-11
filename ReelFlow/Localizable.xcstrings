@@ -62,6 +62,26 @@
         }
       }
     },
+    "%@ · %@ · %@ pt" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@ pt"
+          }
+        }
+      }
+    },
+    "%@ · %@ pt" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ pt"
+          }
+        }
+      }
+    },
     "%@ %lld 张，共 %lld 张" : {
       "localizations" : {
         "en" : {
@@ -120,6 +140,16 @@
         }
       }
     },
+    "%lld × %lld · %lld FPS · 单图 %@s · %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld × %2$lld · %3$lld FPS · 单图 %4$@s · %5$@"
+          }
+        }
+      }
+    },
     "%lld 张" : {
       "localizations" : {
         "en" : {
@@ -166,6 +196,9 @@
         }
       }
     },
+    "%lld%%" : {
+
+    },
     "0.4 秒" : {
       "localizations" : {
         "en" : {
@@ -205,6 +238,15 @@
           }
         }
       }
+    },
+    "1.5 秒/张" : {
+
+    },
+    "2.5 秒/张" : {
+
+    },
+    "4.0 秒/张" : {
+
     },
     "App Store 返回了未验证交易，当前不会解锁 Pro。" : {
       "localizations" : {
@@ -286,7 +328,11 @@
         }
       }
     },
+    "上留白" : {
+
+    },
     "上留白: %.0f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -326,7 +372,11 @@
         }
       }
     },
+    "下留白" : {
+
+    },
     "下留白: %.0f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -345,6 +395,9 @@
           }
         }
       }
+    },
+    "不显示铭牌" : {
+
     },
     "严重优先" : {
       "localizations" : {
@@ -376,6 +429,9 @@
         }
       }
     },
+    "交接长度" : {
+
+    },
     "交易仍在处理中，确认完成后会自动解锁 Pro。" : {
       "localizations" : {
         "en" : {
@@ -395,6 +451,9 @@
           }
         }
       }
+    },
+    "仅影响预览，不影响导出" : {
+
     },
     "仅必须修复" : {
       "localizations" : {
@@ -486,6 +545,9 @@
         }
       }
     },
+    "位置" : {
+
+    },
     "保存模板" : {
       "localizations" : {
         "en" : {
@@ -497,6 +559,7 @@
       }
     },
     "信息位置" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -507,6 +570,7 @@
       }
     },
     "停止" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -517,7 +581,6 @@
       }
     },
     "停止试听" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -687,7 +750,11 @@
         }
       }
     },
+    "关闭快门声" : {
+
+    },
     "内置型号" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -698,6 +765,7 @@
       }
     },
     "内边距: %.0f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -727,6 +795,9 @@
         }
       }
     },
+    "分辨率" : {
+
+    },
     "分辨率较低，导出画质可能受影响" : {
       "localizations" : {
         "en" : {
@@ -748,6 +819,7 @@
       }
     },
     "切换新照片时播放快门声" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -768,6 +840,7 @@
       }
     },
     "前缀" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -817,7 +890,11 @@
         }
       }
     },
+    "单图时长" : {
+
+    },
     "单图时长: %.2fs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -847,6 +924,9 @@
         }
       }
     },
+    "占位符" : {
+
+    },
     "参数已变更，预览将自动刷新" : {
       "localizations" : {
         "en" : {
@@ -866,6 +946,9 @@
           }
         }
       }
+    },
+    "参数更完整" : {
+
     },
     "参数校验: %@" : {
       "localizations" : {
@@ -906,6 +989,9 @@
           }
         }
       }
+    },
+    "只保留设备" : {
+
     },
     "可以沿用当前设置再次导出。" : {
       "localizations" : {
@@ -948,6 +1034,7 @@
       }
     },
     "可用占位符：{camera} {lens} {shutter} {aperture} {iso} {focal} {date}" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -956,6 +1043,9 @@
           }
         }
       }
+    },
+    "可调灰度" : {
+
     },
     "可选：点击“生成预览”确认画面；也可直接导出 MP4。" : {
       "localizations" : {
@@ -978,6 +1068,7 @@
       }
     },
     "启用背景音频" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1014,6 +1105,7 @@
       }
     },
     "声音来源" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1154,6 +1246,7 @@
       }
     },
     "宽: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1162,6 +1255,12 @@
           }
         }
       }
+    },
+    "宽度" : {
+
+    },
+    "宽松" : {
+
     },
     "导入后，这里会显示预览与导出状态。" : {
       "localizations" : {
@@ -1390,6 +1489,7 @@
       }
     },
     "导出时会把这条音频加入视频。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1520,6 +1620,7 @@
       }
     },
     "尚未选择快门声音效" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1529,7 +1630,11 @@
         }
       }
     },
+    "尚未选择音频" : {
+
+    },
     "尚未选择音频文件" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1538,6 +1643,9 @@
           }
         }
       }
+    },
+    "尺寸细调" : {
+
     },
     "展开全部" : {
       "localizations" : {
@@ -1559,7 +1667,21 @@
         }
       }
     },
+    "左右 %@ · 上 %@ · 下 %@ · 内边距 %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "左右 %1$@ · 上 %2$@ · 下 %3$@ · 内边距 %4$@"
+          }
+        }
+      }
+    },
+    "左右留白" : {
+
+    },
     "左右留白: %.0f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1569,7 +1691,11 @@
         }
       }
     },
+    "已关闭" : {
+
+    },
     "已关闭铭牌文字" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1692,6 +1818,7 @@
       }
     },
     "已启用背景音频，但还没有选择音频文件。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1743,6 +1870,9 @@
           }
         }
       }
+    },
+    "已开启" : {
+
     },
     "已忽略" : {
       "localizations" : {
@@ -1936,12 +2066,12 @@
         }
       }
     },
-    "已解锁无限图片导入与无水印导出" : {
+    "已解锁高级设置、无限图片导入与无水印导出" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlimited imports and watermark-free export unlocked"
+            "value" : "Advanced settings, unlimited imports, and watermark-free export unlocked"
           }
         }
       }
@@ -1993,6 +2123,7 @@
       }
     },
     "已选: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2049,6 +2180,18 @@
           }
         }
       }
+    },
+    "帧率" : {
+
+    },
+    "帧率（FPS）" : {
+
+    },
+    "平衡" : {
+
+    },
+    "延迟播放: %.2fs" : {
+
     },
     "建议先做：%@" : {
       "localizations" : {
@@ -2197,6 +2340,7 @@
       }
     },
     "当前构建未包含该型号快门声资源，请改用“自定义文件”或补充资源。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2205,6 +2349,9 @@
           }
         }
       }
+    },
+    "当前构建未包含该型号快门声资源，请改用自定义文件或补充资源。" : {
+
     },
     "当前没有问题素材。" : {
       "localizations" : {
@@ -2282,6 +2429,12 @@
         }
       }
     },
+    "当前输出" : {
+
+    },
+    "当前铭牌效果" : {
+
+    },
     "当前预览与导出都会显示较轻的 Made with ReelFlow 标记。升级 Pro 后会自动移除。" : {
       "localizations" : {
         "en" : {
@@ -2331,6 +2484,9 @@
           }
         }
       }
+    },
+    "快门声" : {
+
     },
     "快门声不可用: %@" : {
       "localizations" : {
@@ -2459,6 +2615,7 @@
       }
     },
     "性能设置" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2467,6 +2624,9 @@
           }
         }
       }
+    },
+    "性能说明" : {
+
     },
     "恢复" : {
       "localizations" : {
@@ -2528,6 +2688,12 @@
         }
       }
     },
+    "手动宽高" : {
+
+    },
+    "手动微调" : {
+
+    },
     "打开导出文件夹" : {
       "localizations" : {
         "en" : {
@@ -2559,6 +2725,7 @@
       }
     },
     "拖拽音频到此处" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2610,6 +2777,21 @@
         }
       }
     },
+    "控制位置、模板与字体" : {
+
+    },
+    "控制取向与相框风格" : {
+
+    },
+    "控制同时预加载多少个素材任务。值越高，预取速度更快，但可能增加系统负担。" : {
+
+    },
+    "控制播放流畅度" : {
+
+    },
+    "控制时长、转场与动效" : {
+
+    },
     "控制画面切换、空窗节奏与推拉动效。" : {
       "localizations" : {
         "en" : {
@@ -2619,6 +2801,21 @@
           }
         }
       }
+    },
+    "控制留白与边距" : {
+
+    },
+    "控制输出尺寸" : {
+
+    },
+    "控制预览时会提前载入当前片段前后的素材范围。值越大，切换更顺滑，但会占用更多内存。" : {
+
+    },
+    "推拉动效（Ken Burns）" : {
+
+    },
+    "推荐" : {
+
     },
     "搜索已忽略文件名" : {
       "localizations" : {
@@ -2651,6 +2848,7 @@
       }
     },
     "支持拖入 1 条音频文件。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2671,6 +2869,7 @@
       }
     },
     "支持选择一条短音效，导出时会在每张新照片开始时触发。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2750,7 +2949,11 @@
         }
       }
     },
+    "文字灰度" : {
+
+    },
     "文字灰度: %.2f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2972,6 +3175,9 @@
         }
       }
     },
+    "无转场" : {
+
+    },
     "无限图片导入 · 无水印导出" : {
       "localizations" : {
         "en" : {
@@ -3012,6 +3218,15 @@
         }
       }
     },
+    "日期优先" : {
+
+    },
+    "时长细调" : {
+
+    },
+    "时间与节奏" : {
+
+    },
     "时间轴预览" : {
       "localizations" : {
         "en" : {
@@ -3049,6 +3264,7 @@
       }
     },
     "显示底部铭牌文字" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3059,6 +3275,7 @@
       }
     },
     "暂停试听" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3108,6 +3325,12 @@
         }
       }
     },
+    "曝光优先" : {
+
+    },
+    "更像胶片铭牌" : {
+
+    },
     "更克制" : {
       "localizations" : {
         "en" : {
@@ -3138,6 +3361,18 @@
         }
       }
     },
+    "更换" : {
+
+    },
+    "更有留白" : {
+
+    },
+    "更满版" : {
+
+    },
+    "更靠近画面" : {
+
+    },
     "有一些建议先看一下" : {
       "localizations" : {
         "en" : {
@@ -3157,6 +3392,9 @@
           }
         }
       }
+    },
+    "未启用" : {
+
     },
     "未找到 ReelFlow Pro 商品，请检查 App Store Connect 配置。" : {
       "localizations" : {
@@ -3267,6 +3505,7 @@
       }
     },
     "未读取到音频时长，导出前会再次校验。" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3277,6 +3516,7 @@
       }
     },
     "未选择音频" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3367,6 +3607,7 @@
       }
     },
     "模式" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3377,6 +3618,7 @@
       }
     },
     "模板（可直接编辑，占位符可用按钮插入）" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3425,6 +3667,12 @@
           }
         }
       }
+    },
+    "模板编辑" : {
+
+    },
+    "模板预设" : {
+
     },
     "横竖图策略" : {
       "localizations" : {
@@ -3716,6 +3964,7 @@
       }
     },
     "清除快门声" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3736,6 +3985,7 @@
       }
     },
     "点" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3754,6 +4004,12 @@
           }
         }
       }
+    },
+    "照片切换时播放的快门声" : {
+
+    },
+    "版式密度" : {
+
     },
     "现代无衬线" : {
       "localizations" : {
@@ -3795,6 +4051,12 @@
         }
       }
     },
+    "画面尺寸" : {
+
+    },
+    "画面策略" : {
+
+    },
     "画面风格" : {
       "localizations" : {
         "en" : {
@@ -3804,6 +4066,9 @@
           }
         }
       }
+    },
+    "留空" : {
+
     },
     "目前没有需要处理的问题" : {
       "localizations" : {
@@ -3826,6 +4091,7 @@
       }
     },
     "相机型号" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3836,6 +4102,7 @@
       }
     },
     "相框" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3885,7 +4152,11 @@
         }
       }
     },
+    "相纸亮度" : {
+
+    },
     "相纸亮度: %.2f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3936,6 +4207,7 @@
       }
     },
     "视频 %.2fs · 音频 %.2fs · %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3997,6 +4269,15 @@
         }
       }
     },
+    "空窗 %@s" : {
+
+    },
+    "空窗长度" : {
+
+    },
+    "突出拍摄日期" : {
+
+    },
     "简单" : {
       "localizations" : {
         "en" : {
@@ -4016,6 +4297,9 @@
           }
         }
       }
+    },
+    "精细调整" : {
+
     },
     "约 1.5 秒/张" : {
       "localizations" : {
@@ -4111,6 +4395,9 @@
         }
       }
     },
+    "紧凑" : {
+
+    },
     "细" : {
       "localizations" : {
         "en" : {
@@ -4120,6 +4407,9 @@
           }
         }
       }
+    },
+    "经典" : {
+
     },
     "经典暗底" : {
       "localizations" : {
@@ -4151,7 +4441,27 @@
         }
       }
     },
+    "编辑衬线" : {
+
+    },
+    "背景 %lld%% · 相纸 %lld%% · 边框 %lld%%" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "背景 %1$lld%% · 相纸 %2$lld%% · 边框 %3$lld%%"
+          }
+        }
+      }
+    },
+    "背景声音" : {
+
+    },
+    "背景灰度" : {
+
+    },
     "背景灰度: %.2f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4161,7 +4471,11 @@
         }
       }
     },
+    "背景空窗" : {
+
+    },
     "背景空窗时长: %.2fs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4171,7 +4485,11 @@
         }
       }
     },
+    "背景音乐" : {
+
+    },
     "自动循环关闭" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4182,6 +4500,7 @@
       }
     },
     "自动循环开启" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4211,6 +4530,9 @@
         }
       }
     },
+    "自定义：%@" : {
+
+    },
     "自定义文件" : {
       "localizations" : {
         "en" : {
@@ -4220,6 +4542,9 @@
           }
         }
       }
+    },
+    "自定义色调" : {
+
     },
     "舒缓" : {
       "localizations" : {
@@ -4240,6 +4565,9 @@
           }
         }
       }
+    },
+    "色调细调" : {
+
     },
     "解锁 Pro 后可使用高级设置" : {
       "localizations" : {
@@ -4262,6 +4590,7 @@
       }
     },
     "试听中…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4272,6 +4601,7 @@
       }
     },
     "试听当前时间点" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4292,6 +4622,7 @@
       }
     },
     "说明文字" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4561,7 +4892,20 @@
         }
       }
     },
+    "转场" : {
+
+    },
+    "转场 %@s" : {
+
+    },
+    "转场与空窗细调" : {
+
+    },
+    "转场时长" : {
+
+    },
     "转场时长: %.2fs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4601,6 +4945,9 @@
         }
       }
     },
+    "输入铭牌模板，或从下方插入占位符" : {
+
+    },
     "输出" : {
       "localizations" : {
         "en" : {
@@ -4621,7 +4968,11 @@
         }
       }
     },
+    "边框灰度" : {
+
+    },
     "边框灰度: %.2f" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4658,6 +5009,9 @@
         }
       }
     },
+    "选择" : {
+
+    },
     "选择图片" : {
       "localizations" : {
         "en" : {
@@ -4669,6 +5023,7 @@
       }
     },
     "选择快门声" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4679,6 +5034,7 @@
       }
     },
     "选择音频" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4819,6 +5175,7 @@
       }
     },
     "音轨: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4828,7 +5185,11 @@
         }
       }
     },
+    "音量" : {
+
+    },
     "音量: %lld%%" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5090,7 +5451,11 @@
         }
       }
     },
+    "预取半径" : {
+
+    },
     "预取半径: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5100,7 +5465,11 @@
         }
       }
     },
+    "预取并发" : {
+
+    },
     "预取并发: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5119,6 +5488,9 @@
           }
         }
       }
+    },
+    "预览与缓存" : {
+
     },
     "预览已更新" : {
       "localizations" : {
@@ -5216,6 +5588,7 @@
       }
     },
     "高: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5234,6 +5607,9 @@
           }
         }
       }
+    },
+    "高度" : {
+
     },
     "高级" : {
       "localizations" : {
@@ -5266,6 +5642,7 @@
       }
     },
     "黑底下方" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5294,6 +5671,9 @@
           }
         }
       }
+    },
+    "默认模板" : {
+
     }
   },
   "version" : "1.0"

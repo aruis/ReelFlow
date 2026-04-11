@@ -114,15 +114,7 @@ extension ContentView {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Spacer(minLength: 0)
-                    Picker("模式", selection: $settingsTab) {
-                        ForEach(SettingsTab.allCases) { tab in
-                            Text(tab.title).tag(tab)
-                        }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: 140)
-                    .disabled(viewModel.isBusy)
+                    settingsModeControl
                     Spacer(minLength: 0)
                 }
             }
@@ -143,6 +135,69 @@ extension ContentView {
                 endPoint: .bottom
             )
         )
+    }
+
+    var settingsModeControl: some View {
+        HStack(spacing: 0) {
+            ForEach(SettingsTab.allCases) { tab in
+                let isSelected = settingsTab == tab
+                let isHovered = hoveredSettingsTab == tab
+                Button {
+                    guard !viewModel.isBusy else { return }
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.86)) {
+                        settingsTab = tab
+                    }
+                } label: {
+                    Text(tab.title)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(isSelected ? .primary : .secondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 24)
+                        .background(
+                            ZStack {
+                                if isSelected {
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(Color.white.opacity(0.14))
+                                        .matchedGeometryEffect(id: "settings-mode-pill", in: settingsModeAnimation)
+                                } else if isHovered {
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(Color.white.opacity(0.06))
+                                }
+                            }
+                        )
+                }
+                .buttonStyle(SettingsModeSegmentButtonStyle())
+                .focusable(false)
+                .disabled(viewModel.isBusy)
+                .onHover { isInside in
+                    hoveredSettingsTab = isInside ? tab : nil
+                }
+                .accessibilityElement()
+                .accessibilityLabel(tab.title)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+                .animation(.easeOut(duration: 0.12), value: isHovered)
+            }
+        }
+        .padding(3)
+        .frame(width: 142)
+        .opacity(viewModel.isBusy ? 0.6 : 1)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    private struct SettingsModeSegmentButtonStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(configuration.isPressed ? 0.985 : 1)
+                .opacity(configuration.isPressed ? 0.9 : 1)
+                .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
+        }
     }
 
     var planStatusBanner: some View {
@@ -189,7 +244,7 @@ extension ContentView {
                         .foregroundStyle(.secondary)
                 }
             } else if purchaseStore.entitlementState == .pro {
-                Label("已解锁无限图片导入与无水印导出", systemImage: "checkmark.circle.fill")
+                Label("已解锁高级设置、无限图片导入与无水印导出", systemImage: "checkmark.circle.fill")
                     .font(.caption)
                     .foregroundStyle(.green)
             } else {

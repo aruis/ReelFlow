@@ -65,6 +65,8 @@ struct ContentView: View {
     @State var splitColumnVisibility: NavigationSplitViewVisibility = .all
     @State var successSheetContext: SuccessSheetContext?
     @State var feedbackDismissTask: Task<Void, Never>?
+    @Namespace var settingsModeAnimation
+    @State var hoveredSettingsTab: SettingsTab?
 
     @MainActor
     init() {
