@@ -60,7 +60,7 @@ enum FrameStylePreset: String, CaseIterable, Sendable {
     }
 }
 
-enum PlateEditorMode: String, CaseIterable, Sendable {
+enum PlateEditorMode: String, CaseIterable, Codable, Sendable {
     case none
     case simple
     case custom
@@ -260,6 +260,19 @@ struct RenderEditorConfig: Sendable {
         shutterSoundCustomFilePath = template.shutterSound.customFilePath
         shutterSoundVolume = template.shutterSound.volume
         shutterSoundDelay = template.shutterSound.delay
+        if plateEnabled {
+            if let editorMode = template.plateEditorMode {
+                plateEditorMode = editorMode
+                if editorMode == .simple, let simpleElements = template.plateSimpleElements {
+                    plateSimpleElements = simpleElements
+                }
+            } else {
+                // Legacy templates only stored the flattened template text. Preserve it as custom editing.
+                plateEditorMode = .custom
+            }
+        } else {
+            plateEditorMode = .none
+        }
         clampToSafeRange()
     }
 
@@ -434,7 +447,9 @@ struct RenderEditorConfig: Sendable {
                 customFilePath: shutterSoundCustomFilePath,
                 volume: shutterSoundVolume,
                 delay: shutterSoundDelay
-            )
+            ),
+            plateEditorMode: plateEditorMode,
+            plateSimpleElements: plateSimpleElements
         )
     }
 

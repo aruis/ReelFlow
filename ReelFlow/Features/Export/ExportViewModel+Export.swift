@@ -64,7 +64,7 @@ extension ExportViewModel {
 
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "ReelFlow-Template-v\(RenderTemplate.currentSchemaVersion).json"
+        panel.nameFieldStringValue = "ReelFlow-Template.json"
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -591,6 +591,24 @@ extension ExportViewModel {
 
         if !imageURLs.isEmpty, isSettingsValid {
             generatePreview()
+        }
+    }
+
+    func resetSettingsToDefaults() {
+        guard !isBusy else { return }
+
+        stopAudioPreview()
+        stopShutterSoundPreview()
+        config = RenderEditorConfig()
+        audioStatusMessage = nil
+        shutterSoundStatusMessage = nil
+        previewSecond = min(previewSecond, previewMaxSecond)
+        refreshSelectedAudioDuration(force: true)
+
+        if !imageURLs.isEmpty, isSettingsValid {
+            generatePreview()
+        } else {
+            workflow.setIdleMessage(String(localized: "已恢复默认设置"))
         }
     }
 

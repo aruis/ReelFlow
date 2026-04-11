@@ -451,7 +451,9 @@ struct RenderSettings {
                 customFilePath: shutterSoundTrack?.sourceURL.path ?? "",
                 volume: shutterSoundTrack?.volume ?? 1,
                 delay: shutterSoundTrack?.delay ?? 0
-            )
+            ),
+            plateEditorMode: nil,
+            plateSimpleElements: nil
         )
     }
 
@@ -461,7 +463,7 @@ struct RenderSettings {
 }
 
 struct RenderTemplate: Codable, Sendable {
-    nonisolated static let currentSchemaVersion = 6
+    nonisolated static let currentSchemaVersion = 7
 
     let schemaVersion: Int
     let output: Output
@@ -474,6 +476,8 @@ struct RenderTemplate: Codable, Sendable {
     let canvas: Canvas
     let audio: Audio
     let shutterSound: ShutterSound
+    let plateEditorMode: PlateEditorMode?
+    let plateSimpleElements: [PlateSimpleElement]?
 
     nonisolated init(
         schemaVersion: Int = RenderTemplate.currentSchemaVersion,
@@ -486,7 +490,9 @@ struct RenderTemplate: Codable, Sendable {
         plate: Plate,
         canvas: Canvas,
         audio: Audio = .default,
-        shutterSound: ShutterSound = .default
+        shutterSound: ShutterSound = .default,
+        plateEditorMode: PlateEditorMode? = nil,
+        plateSimpleElements: [PlateSimpleElement]? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.output = output
@@ -499,6 +505,8 @@ struct RenderTemplate: Codable, Sendable {
         self.canvas = canvas
         self.audio = audio
         self.shutterSound = shutterSound
+        self.plateEditorMode = plateEditorMode
+        self.plateSimpleElements = plateSimpleElements
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -513,6 +521,8 @@ struct RenderTemplate: Codable, Sendable {
         case canvas
         case audio
         case shutterSound
+        case plateEditorMode
+        case plateSimpleElements
     }
 
     init(from decoder: Decoder) throws {
@@ -528,6 +538,8 @@ struct RenderTemplate: Codable, Sendable {
         canvas = try container.decodeIfPresent(Canvas.self, forKey: .canvas) ?? .default
         audio = try container.decodeIfPresent(Audio.self, forKey: .audio) ?? .default
         shutterSound = try container.decodeIfPresent(ShutterSound.self, forKey: .shutterSound) ?? .default
+        plateEditorMode = try container.decodeIfPresent(PlateEditorMode.self, forKey: .plateEditorMode)
+        plateSimpleElements = try container.decodeIfPresent([PlateSimpleElement].self, forKey: .plateSimpleElements)
     }
 
     struct Output: Codable, Sendable {

@@ -82,6 +82,9 @@ struct RenderEditorConfigTests {
         config.plateBaselineOffset = 12
         config.plateFontSize = 22
         config.plateFontStyle = .modernSans
+        config.platePlacement = .canvasBottom
+        config.plateEditorMode = .custom
+        config.plateTemplateText = "{date}   {camera}   ISO {iso}"
         config.enableKenBurns = false
         config.kenBurnsIntensity = .large
         config.prefetchRadius = 3
@@ -95,6 +98,7 @@ struct RenderEditorConfigTests {
         config.shutterSoundPreset = .sonyAlpha
         config.shutterSoundCustomFilePath = "/tmp/shutter.m4a"
         config.shutterSoundVolume = 0.64
+        config.shutterSoundDelay = 0.35
 
         let rebuilt = RenderEditorConfig(template: config.template)
 
@@ -120,6 +124,9 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.plateBaselineOffset == config.plateBaselineOffset)
         #expect(rebuilt.plateFontSize == config.plateFontSize)
         #expect(rebuilt.plateFontStyle == config.plateFontStyle)
+        #expect(rebuilt.platePlacement == config.platePlacement)
+        #expect(rebuilt.plateEditorMode == config.plateEditorMode)
+        #expect(rebuilt.plateTemplateText == config.plateTemplateText)
         #expect(rebuilt.enableKenBurns == config.enableKenBurns)
         #expect(rebuilt.kenBurnsIntensity == config.kenBurnsIntensity)
         #expect(rebuilt.prefetchRadius == config.prefetchRadius)
@@ -133,6 +140,55 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.shutterSoundPreset == config.shutterSoundPreset)
         #expect(rebuilt.shutterSoundCustomFilePath == config.shutterSoundCustomFilePath)
         #expect(rebuilt.shutterSoundVolume == config.shutterSoundVolume)
+        #expect(rebuilt.shutterSoundDelay == config.shutterSoundDelay)
+    }
+
+    @Test
+    func simplePlateEditorStateRoundTripsInTemplate() {
+        var config = RenderEditorConfig()
+        config.plateEnabled = true
+        config.plateEditorMode = .simple
+        config.plateSimpleElements = [
+            .init(key: .date, enabled: true, prefix: "日期"),
+            .init(key: .camera, enabled: true, prefix: ""),
+            .init(key: .iso, enabled: false, prefix: "ISO ")
+        ]
+
+        let rebuilt = RenderEditorConfig(template: config.template)
+
+        #expect(rebuilt.plateEditorMode == .simple)
+        #expect(rebuilt.plateSimpleElements.map(\.key) == config.plateSimpleElements.map(\.key))
+        #expect(rebuilt.plateSimpleElements.map(\.enabled) == config.plateSimpleElements.map(\.enabled))
+        #expect(rebuilt.plateSimpleElements.map(\.prefix) == config.plateSimpleElements.map(\.prefix))
+        #expect(rebuilt.simplePlateTemplateText == "日期 {date}   {camera}")
+    }
+
+    @Test
+    func legacyTemplateImportPreservesPlateTemplateAsCustomEditing() {
+        let legacyTemplate = RenderTemplate(
+            schemaVersion: 6,
+            output: .init(width: 1920, height: 1080, fps: 30),
+            timeline: .init(imageDuration: 2.5, transitionDuration: 0.6),
+            transition: .default,
+            motion: .init(enableKenBurns: false, intensity: .medium, orientationStrategy: .followAsset),
+            performance: .init(prefetchRadius: 1, prefetchMaxConcurrent: 2),
+            layout: .default,
+            plate: .init(
+                enabled: true,
+                height: 96,
+                baselineOffset: 18,
+                fontSize: 26,
+                fontStyle: .classicMono,
+                placement: .frame,
+                templateText: "{camera}   {date}"
+            ),
+            canvas: .default
+        )
+
+        let rebuilt = RenderEditorConfig(template: legacyTemplate)
+
+        #expect(rebuilt.plateEditorMode == .custom)
+        #expect(rebuilt.plateTemplateText == "{camera}   {date}")
     }
 
     @Test

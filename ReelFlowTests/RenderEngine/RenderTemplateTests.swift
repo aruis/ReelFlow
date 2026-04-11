@@ -21,7 +21,15 @@ struct RenderTemplateTests {
             prefetchRadius: 2,
             prefetchMaxConcurrent: 3,
             layout: LayoutSettings(horizontalMargin: 160, topMargin: 60, bottomMargin: 84, innerPadding: 20),
-            plate: PlateSettings(enabled: true, height: 88, baselineOffset: 16, fontSize: 24, fontStyle: .editorial, placement: .frame),
+            plate: PlateSettings(
+                enabled: true,
+                height: 88,
+                baselineOffset: 16,
+                fontSize: 24,
+                fontStyle: .editorial,
+                placement: .canvasBottom,
+                templateText: "{date}   {camera}"
+            ),
             canvas: CanvasSettings(backgroundGray: 0.12, paperWhite: 0.97, strokeGray: 0.8, textGray: 0.2),
             audioTrack: AudioTrackSettings(
                 sourceURL: URL(fileURLWithPath: "/tmp/roundtrip-audio.m4a"),
@@ -59,7 +67,8 @@ struct RenderTemplateTests {
         #expect(rebuilt.plate.baselineOffset == 16)
         #expect(rebuilt.plate.fontSize == 24)
         #expect(rebuilt.plate.fontStyle == .editorial)
-        #expect(rebuilt.plate.placement == .frame)
+        #expect(rebuilt.plate.placement == .canvasBottom)
+        #expect(rebuilt.plate.templateText == "{date}   {camera}")
         #expect(rebuilt.canvas.backgroundGray == 0.12)
         #expect(rebuilt.canvas.paperWhite == 0.97)
         #expect(rebuilt.canvas.strokeGray == 0.8)

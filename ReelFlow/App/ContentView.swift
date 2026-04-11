@@ -246,7 +246,10 @@ struct ContentView: View {
                             .disabled(!viewModel.actionAvailability.canImportTemplate)
                         Button("保存模板") { viewModel.exportTemplate() }
                             .accessibilityIdentifier("secondary_export_template")
-                            .disabled(!viewModel.hasSelectedImages || !viewModel.actionAvailability.canSaveTemplate)
+                            .disabled(!viewModel.actionAvailability.canSaveTemplate)
+                        Button("恢复设置") { viewModel.resetSettingsToDefaults() }
+                            .accessibilityIdentifier("secondary_reset_settings")
+                            .disabled(viewModel.isBusy)
                         Divider()
                         Button("重试上次导出") { viewModel.retryLastExport() }
                             .accessibilityIdentifier("secondary_retry_export")
