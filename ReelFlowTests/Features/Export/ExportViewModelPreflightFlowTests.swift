@@ -193,6 +193,27 @@ struct ExportViewModelPreflightFlowTests {
     }
 
     @Test
+    func clearingShutterSoundResetsVolumeAndDelay() async throws {
+        let viewModel = ExportViewModel()
+        let tempDir = try Self.makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let audioURL = tempDir.appendingPathComponent("shutter.caf")
+        try Self.writeToneAudio(to: audioURL, duration: 0.12)
+
+        viewModel.applyShutterSoundTrack(url: audioURL, sourceDescription: "test")
+        viewModel.config.shutterSoundVolume = 0.42
+        viewModel.config.shutterSoundDelay = 0.31
+
+        viewModel.clearShutterSoundTrack()
+
+        #expect(viewModel.config.shutterSoundEnabled == false)
+        #expect(viewModel.config.shutterSoundCustomFilePath.isEmpty)
+        #expect(viewModel.config.shutterSoundVolume == 1)
+        #expect(viewModel.config.shutterSoundDelay == 0)
+    }
+
+    @Test
     func startShutterSoundPreviewFailsWhenDisabled() async throws {
         let viewModel = ExportViewModel()
         viewModel.config.shutterSoundEnabled = false

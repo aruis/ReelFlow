@@ -357,10 +357,6 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
-    var canPreviewAudio: Bool {
-        config.audioEnabled && selectedAudioFilename != nil && !isBusy
-    }
-
     var nextActionHint: String {
         if !hasSelectedImages {
             return String(localized: "下一步：点击左侧“导入图片”或直接拖入素材。")

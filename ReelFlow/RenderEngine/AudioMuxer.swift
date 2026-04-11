@@ -129,7 +129,8 @@ enum AudioMuxer {
             }
 
             for shutterTime in shutterTimes {
-                let atTime = CMTime(seconds: shutterTime, preferredTimescale: 600)
+                let delayedTime = shutterTime + shutterTrack.delay
+                let atTime = CMTime(seconds: delayedTime, preferredTimescale: 600)
                 guard atTime < videoDuration else { continue }
                 let remaining = videoDuration - atTime
                 let segmentDuration = CMTimeMinimum(shutterDuration, remaining)

@@ -19,6 +19,7 @@ extension ExportViewModel {
 
     func chooseAudioTrack() {
         guard !isBusy else { return }
+        stopAudioPreview()
 
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.audio]
@@ -71,7 +72,8 @@ extension ExportViewModel {
         let previous = selectedShutterSoundFilename
         config.shutterSoundEnabled = false
         config.shutterSoundCustomFilePath = ""
-        config.shutterSoundVolume = 0.72
+        config.shutterSoundVolume = 1
+        config.shutterSoundDelay = 0
         shutterSoundStatusMessage = nil
         if let previous {
             workflow.setIdleMessage(String(localized: "已清除快门声: \(previous)"))
@@ -114,7 +116,7 @@ extension ExportViewModel {
         config.shutterSoundSource = .custom
         config.shutterSoundCustomFilePath = url.path
         if config.shutterSoundVolume <= 0 {
-            config.shutterSoundVolume = 0.72
+            config.shutterSoundVolume = 1
         }
         shutterSoundStatusMessage = String(localized: "快门声音已就绪：\(url.lastPathComponent)。导出时会在每张新照片开始时触发。")
         workflow.setIdleMessage(String(localized: "\(sourceDescription): \(url.lastPathComponent)"))

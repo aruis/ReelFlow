@@ -326,11 +326,13 @@ struct RenderEditorConfigTests {
         config.shutterSoundSource = .custom
         config.shutterSoundCustomFilePath = "/tmp/shutter.m4a"
         config.shutterSoundVolume = 0.58
+        config.shutterSoundDelay = 0.27
 
         let settings = config.renderSettings
 
         #expect(settings.shutterSoundTrack?.sourceURL.path == "/tmp/shutter.m4a")
         #expect(settings.shutterSoundTrack?.volume == 0.58)
+        #expect(settings.shutterSoundTrack?.delay == 0.27)
     }
 
     @Test

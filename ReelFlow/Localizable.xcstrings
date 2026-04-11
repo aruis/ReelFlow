@@ -1944,6 +1944,16 @@
         }
       }
     },
+    "已恢复默认设置" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default settings restored"
+          }
+        }
+      }
+    },
     "已拖入" : {
       "localizations" : {
         "en" : {
@@ -2644,6 +2654,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restore All"
+          }
+        }
+      }
+    },
+    "恢复设置" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset Settings"
           }
         }
       }
