@@ -1,0 +1,108 @@
+{
+  "fill" : {
+    "automatic-gradient" : "srgb:0.10330,0.12705,0.15204,1.00000",
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "srgb:0.76546,0.86887,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "srgb:0.35904,1.00000,0.82815,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "play-triangle-rounded.svg",
+          "name" : "play-triangle-rounded",
+          "opacity" : 1,
+          "position" : {
+            "scale" : 1.4,
+            "translation-in-points" : [
+              -6.647509289183063,
+              36.95999999999998
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : {
+            "solid" : "extended-gray:1.00000,1.00000"
+          },
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "filmstage-flat-v1.svg",
+          "name" : "filmstage-flat-v1",
+          "opacity" : 0.1,
+          "position" : {
+            "scale" : 2.3,
+            "translation-in-points" : [
+              1.1368683772161603e-13,
+              0
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "extended-gray:1.00000,1.00000"
+          },
+          "image-name" : "未命名.svg",
+          "name" : "未命名",
+          "opacity" : 0.9,
+          "position" : {
+            "scale" : 0.34,
+            "translation-in-points" : [
+              42.03016963013994,
+              386.8401812912799
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
