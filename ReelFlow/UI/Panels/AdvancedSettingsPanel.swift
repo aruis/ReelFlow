@@ -15,6 +15,7 @@ private struct InlineHelpButton: View {
                 .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
+        .focusable(false)
         .help(text)
         .popover(isPresented: $showsPopover, arrowEdge: .bottom) {
             Text(text)
@@ -1100,6 +1101,7 @@ struct AdvancedSettingsPanel: View {
         }
         .buttonStyle(.bordered)
         .controlSize(.small)
+        .focusable(false)
         .disabled(isControlDisabled)
     }
 
@@ -1306,26 +1308,18 @@ struct AdvancedSettingsPanel: View {
         isSelected: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                }
-            }
-            .frame(maxWidth: .infinity, minHeight: optionCardMinHeight)
-            .padding(.horizontal, 8)
-            .background(optionCardBackground(isSelected: isSelected))
-            .overlay(optionCardBorder(isSelected: isSelected))
-        }
-        .buttonStyle(.plain)
+        FocuslessOptionCardButton(
+            title: title,
+            subtitle: subtitle,
+            isSelected: isSelected,
+            isEnabled: !isControlDisabled,
+            cornerRadius: optionCardCornerRadius,
+            minHeight: optionCardMinHeight,
+            multilineSubtitle: true,
+            action: action
+        )
+        .accessibilityLabel(title)
+        .accessibilityValue(isSelected ? String(localized: "已选中") : String(localized: "未选中"))
         .disabled(isControlDisabled)
     }
 

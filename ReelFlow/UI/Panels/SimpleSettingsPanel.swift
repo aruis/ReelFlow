@@ -807,25 +807,18 @@ struct SimpleSettingsPanel: View {
         isSelected: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
-            .frame(maxWidth: .infinity, minHeight: optionCardMinHeight)
-            .padding(.horizontal, 8)
-            .background(optionCardBackground(isSelected: isSelected))
-            .overlay(optionCardBorder(isSelected: isSelected))
-        }
-        .buttonStyle(.plain)
+        FocuslessOptionCardButton(
+            title: title,
+            subtitle: subtitle,
+            isSelected: isSelected,
+            isEnabled: !viewModel.isBusy,
+            cornerRadius: optionCardCornerRadius,
+            minHeight: optionCardMinHeight,
+            multilineSubtitle: false,
+            action: action
+        )
+        .accessibilityLabel(title)
+        .accessibilityValue(isSelected ? String(localized: "已选中") : String(localized: "未选中"))
     }
 
     private func optionCardBackground(isSelected: Bool) -> some View {

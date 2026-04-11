@@ -26,6 +26,7 @@ struct AudioSettingsSection: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .focusable(false)
         .background(
             Circle()
                 .fill(Color.accentColor.opacity(viewModel.isBusy ? 0.18 : (viewModel.isShutterSoundPreviewPlaying ? 0.35 : 0.9)))
@@ -156,6 +157,7 @@ struct AudioSettingsSection: View {
                         Button(hasSelectedAudio ? "更换" : "选择") {
                             viewModel.chooseAudioTrack()
                         }
+                        .focusable(false)
                         .disabled(viewModel.isBusy)
 
                         if hasSelectedAudio {
@@ -167,6 +169,7 @@ struct AudioSettingsSection: View {
                                     .foregroundStyle(.secondary)
                             }
                             .buttonStyle(.plain)
+                            .focusable(false)
                             .disabled(viewModel.isBusy)
                             .help("清除音频")
                         }
@@ -238,6 +241,7 @@ struct AudioSettingsSection: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .focusable(false)
                     .disabled(viewModel.isBusy)
 
                     if viewModel.config.shutterSoundSource == .custom, viewModel.selectedShutterSoundFilename != nil, viewModel.config.shutterSoundEnabled {
@@ -249,6 +253,7 @@ struct AudioSettingsSection: View {
                                 .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
+                        .focusable(false)
                         .disabled(viewModel.isBusy)
                         .help("关闭快门声")
                     }

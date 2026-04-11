@@ -73,7 +73,9 @@ struct AssetSidebarPanel: View {
         .onAppear(perform: installKeyMonitor)
         .onDisappear(perform: removeKeyMonitor)
         .safeAreaInset(edge: .bottom) {
-            assetBottomBar
+            if shouldShowAssetBottomBar {
+                assetBottomBar
+            }
         }
     }
 
@@ -114,6 +116,10 @@ struct AssetSidebarPanel: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(.bar)
+    }
+
+    private var shouldShowAssetBottomBar: Bool {
+        !viewModel.imageURLs.isEmpty
     }
 
     private var assetBottomBarRegular: some View {
@@ -161,18 +167,22 @@ struct AssetSidebarPanel: View {
     }
 
     private func assetSummaryLabels(showProblemCount: Bool) -> some View {
-        HStack(spacing: 4) {
-            Text(assetSelectionSummaryText)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+        Group {
+            if !viewModel.imageURLs.isEmpty {
+                HStack(spacing: 4) {
+                    Text(assetSelectionSummaryText)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
 
-            if showProblemCount, viewModel.problematicAssetNameSet.count > 0 {
-                Text(String(localized: "\(viewModel.problematicAssetNameSet.count) 问题"))
-                    .font(.caption2)
-                    .foregroundStyle(.orange)
+                    if showProblemCount, viewModel.problematicAssetNameSet.count > 0 {
+                        Text(String(localized: "\(viewModel.problematicAssetNameSet.count) 问题"))
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
+                }
+                .lineLimit(1)
             }
         }
-        .lineLimit(1)
     }
 
     private var quotaStatusStrip: some View {
@@ -437,6 +447,7 @@ struct AssetSidebarPanel: View {
         }
         .buttonStyle(.bordered)
         .controlSize(.small)
+        .focusable(false)
         .tint(isActive ? .accentColor : .gray.opacity(0.35))
         .help(help)
     }
