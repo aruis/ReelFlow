@@ -73,21 +73,6 @@
             ]
           }
         },
-        {
-          "fill" : {
-            "solid" : "extended-gray:1.00000,1.00000"
-          },
-          "image-name" : "wordmark.svg",
-          "name" : "wordmark",
-          "opacity" : 0.9,
-          "position" : {
-            "scale" : 0.34,
-            "translation-in-points" : [
-              42.03016963013994,
-              386.8401812912799
-            ]
-          }
-        }
       ],
       "shadow" : {
         "kind" : "neutral",
