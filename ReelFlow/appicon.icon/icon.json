@@ -1,18 +1,115 @@
 {
   "fill" : {
-    "automatic-gradient" : "srgb:0.10330,0.12705,0.15204,1.00000",
-    "orientation" : {
-      "start" : {
-        "x" : 0.5,
-        "y" : 0
-      },
-      "stop" : {
-        "x" : 0.5,
-        "y" : 0.7
-      }
-    }
+    "solid" : "srgb:0.22394,0.24124,0.25885,1.00000"
   },
   "groups" : [
+    {
+      "blend-mode" : "normal",
+      "blur-material" : null,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
+          },
+          "image-name" : "28.svg",
+          "name" : "28",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              649.1500000000001,
+              386
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
+          },
+          "image-name" : "125.svg",
+          "name" : "125",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              652,
+              57
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
+          },
+          "image-name" : "400.svg",
+          "name" : "400",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              1038,
+              708
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
+          },
+          "image-name" : "a.svg",
+          "name" : "a",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              397.7835,
+              382.1999999999996
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
+          },
+          "image-name" : "iso 2.svg",
+          "name" : "iso 2",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              401.7368387990184,
+              708
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
+          },
+          "image-name" : "s.svg",
+          "name" : "s",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              400,
+              57
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "position" : {
+        "scale" : 0.66,
+        "translation-in-points" : [
+          0,
+          0
+        ]
+      },
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    },
     {
       "layers" : [
         {
@@ -20,7 +117,7 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "srgb:0.76546,0.86887,1.00000,1.00000"
+                "solid" : "srgb:0.38130,0.60332,0.84365,1.00000"
               }
             },
             {
@@ -36,10 +133,10 @@
           "name" : "play-triangle-rounded",
           "opacity" : 1,
           "position" : {
-            "scale" : 1.4,
+            "scale" : 0.7,
             "translation-in-points" : [
-              -6.647509289183063,
-              36.95999999999998
+              310.7230034342453,
+              10.21910999999983
             ]
           }
         }
@@ -54,45 +151,33 @@
       }
     },
     {
+      "blur-material" : null,
       "layers" : [
         {
           "blend-mode" : "normal",
           "fill" : {
-            "solid" : "extended-gray:1.00000,1.00000"
+            "solid" : "srgb:0.10263,0.10288,0.10668,1.00000"
           },
           "glass" : false,
           "hidden" : false,
           "image-name" : "filmstage-flat-v1.svg",
           "name" : "filmstage-flat-v1",
-          "opacity" : 0.1,
+          "opacity" : 0.66,
           "position" : {
-            "scale" : 2.3,
+            "scale" : 3.75,
             "translation-in-points" : [
-              1.1368683772161603e-13,
+              0,
               0
-            ]
-          }
-        },
-        {
-          "fill" : {
-            "solid" : "extended-gray:1.00000,1.00000"
-          },
-          "image-name" : "未命名.svg",
-          "name" : "未命名",
-          "opacity" : 0.9,
-          "position" : {
-            "scale" : 0.34,
-            "translation-in-points" : [
-              42.03016963013994,
-              386.8401812912799
             ]
           }
         }
       ],
+      "lighting" : "individual",
       "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+        "kind" : "layer-color",
+        "opacity" : 0.13
       },
+      "specular" : true,
       "translucency" : {
         "enabled" : true,
         "value" : 0.5
