@@ -94,7 +94,7 @@ final class PurchaseStore: ObservableObject {
         if entitlementState == .pro {
             return String(localized: "ReelFlow Pro 已解锁：无限图片导入，导出无水印。")
         }
-        return String(localized: "免费版最多导入 20 张照片，导出会带 Made with ReelFlow 水印。")
+        return String(localized: "免费版最多导入 \(PlanLimits.freePhotoLimit) 张照片，导出会带 Made with ReelFlow 水印。")
     }
 
     func purchasePro() {

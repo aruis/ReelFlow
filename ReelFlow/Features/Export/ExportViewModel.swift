@@ -37,8 +37,6 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         case pro
     }
 
-    static let freePhotoLimit = 20
-
     enum FileListFilter: String, CaseIterable, Identifiable {
         case all
         case problematic
@@ -280,7 +278,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     var photoImportLimit: Int? {
-        entitlementState == .free ? Self.freePhotoLimit : nil
+        entitlementState == .free ? PlanLimits.freePhotoLimit : nil
     }
 
     var photoImportSummary: String {
@@ -313,12 +311,12 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             return String(localized: "Pro 已解锁：可继续导入更多照片。")
         }
         if isAtPhotoImportLimit {
-            return String(localized: "已到免费版 20 张上限，升级 Pro 可继续添加。")
+            return String(localized: "已到免费版 \(PlanLimits.freePhotoLimit) 张上限，升级 Pro 可继续添加。")
         }
         if isNearPhotoImportLimit {
             return String(localized: "还可再导入 \(remainingPhotoImportSlots) 张，升级 Pro 可解锁无限图片导入。")
         }
-        return String(localized: "免费版当前最多支持 20 张照片。")
+        return String(localized: "免费版当前最多支持 \(PlanLimits.freePhotoLimit) 张照片。")
     }
 
     var planStatusMessage: String {
@@ -328,7 +326,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         case .pro:
             return String(localized: "ReelFlow Pro 已解锁：无限图片导入，导出无水印。")
         case .free:
-            return String(localized: "免费版支持最多 20 张照片，导出会带 Made with ReelFlow 水印。")
+            return String(localized: "免费版支持最多 \(PlanLimits.freePhotoLimit) 张照片，导出会带 Made with ReelFlow 水印。")
         }
     }
 
@@ -483,10 +481,10 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     func presentFreeTierImportLimitAlert(incomingCount: Int, resultingCount: Int, replacingExisting: Bool) {
         let actionText = replacingExisting ? String(localized: "导入这批素材") : String(localized: "继续添加这些素材")
-        let title = String(localized: "免费版最多支持 20 张照片")
+        let title = String(localized: "免费版最多支持 \(PlanLimits.freePhotoLimit) 张照片")
         let message = String(localized: "\(actionText)后会达到 \(resultingCount) 张，因此本次不会导入任何新素材。升级 ReelFlow Pro 可解锁无限图片导入，并移除导出水印。")
         entitlementAlert = EntitlementAlert(title: title, message: message)
-        workflow.setIdleMessage(String(localized: "免费版最多支持 20 张照片；本次有 \(incomingCount) 张未导入。"))
+        workflow.setIdleMessage(String(localized: "免费版最多支持 \(PlanLimits.freePhotoLimit) 张照片；本次有 \(incomingCount) 张未导入。"))
     }
 
 }

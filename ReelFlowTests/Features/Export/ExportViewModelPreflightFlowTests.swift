@@ -65,12 +65,12 @@ struct ExportViewModelPreflightFlowTests {
     }
 
     @Test
-    func freeTierRejectsImportsBeyondTwentyPhotos() async throws {
+    func freeTierRejectsImportsBeyondPhotoLimit() async throws {
         let viewModel = ExportViewModel(hasProAccess: { false })
         let tempDir = try Self.makeTempDirectory()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
-        let urls = try (0..<21).map { index -> URL in
+        let urls = try (0..<(PlanLimits.freePhotoLimit + 1)).map { index -> URL in
             let url = tempDir.appendingPathComponent("img-\(index).png")
             try Self.writeImage(to: url, width: 1200, height: 800)
             return url
@@ -79,14 +79,15 @@ struct ExportViewModelPreflightFlowTests {
         viewModel.appendImages(urls, source: "测试导入")
 
         #expect(viewModel.imageURLs.isEmpty)
-        #expect(viewModel.entitlementAlert?.title.contains("20 张照片") == true)
+        #expect(viewModel.entitlementAlert?.title.contains("\(PlanLimits.freePhotoLimit) 张照片") == true)
         #expect(viewModel.entitlementAlert?.message.contains("本次不会导入任何新素材") == true)
     }
 
     @Test
     func freeTierNearLimitShowsRemainingSlotsMessage() async throws {
         let viewModel = ExportViewModel(hasProAccess: { false })
-        viewModel.imageURLs = (0..<18).map { index in
+        let importedCount = max(PlanLimits.freePhotoLimit - 2, 0)
+        viewModel.imageURLs = (0..<importedCount).map { index in
             URL(fileURLWithPath: "/tmp/\(index).jpg")
         }
 

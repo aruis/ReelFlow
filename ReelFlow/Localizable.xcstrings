@@ -681,42 +681,42 @@
         }
       }
     },
-    "免费版最多导入 20 张，升级 Pro 可解锁无限图片导入": {
+    "免费版最多导入 30 张，升级 Pro 可解锁无限图片导入": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The free plan allows up to 20 photos. Upgrade to Pro for unlimited imports."
+            "value": "The free plan allows up to 30 photos. Upgrade to Pro for unlimited imports."
           }
         }
       }
     },
-    "免费版最多导入 20 张照片，导出会带 Made with ReelFlow 水印。": {
+    "免费版最多导入 30 张照片，导出会带 Made with ReelFlow 水印。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The free plan allows up to 20 imported photos, and exports include a Made with ReelFlow watermark."
+            "value": "The free plan allows up to 30 imported photos, and exports include a Made with ReelFlow watermark."
           }
         }
       }
     },
-    "免费版最多支持 20 张照片": {
+    "免费版最多支持 30 张照片": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The free plan supports up to 20 photos"
+            "value": "The free plan supports up to 30 photos"
           }
         }
       }
     },
-    "免费版最多支持 20 张照片；本次有 %lld 张未导入。": {
+    "免费版最多支持 30 张照片；本次有 %lld 张未导入。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The free plan supports up to 20 photos; %lld photos were not imported this time."
+            "value": "The free plan supports up to 30 photos; %lld photos were not imported this time."
           }
         }
       }
@@ -731,22 +731,22 @@
         }
       }
     },
-    "免费版当前最多支持 20 张照片。": {
+    "免费版当前最多支持 30 张照片。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free plan: up to 20 photos."
+            "value": "Free plan: up to 30 photos."
           }
         }
       }
     },
-    "免费版支持最多 20 张照片，导出会带 Made with ReelFlow 水印。": {
+    "免费版支持最多 30 张照片，导出会带 Made with ReelFlow 水印。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The free plan supports up to 20 photos, and exports include a Made with ReelFlow watermark."
+            "value": "The free plan supports up to 30 photos, and exports include a Made with ReelFlow watermark."
           }
         }
       }
@@ -801,12 +801,12 @@
         }
       }
     },
-    "最多 20 张照片 · 导出带水印": {
+    "最多 30 张照片 · 导出带水印": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Up to 20 photos · Watermarked exports"
+            "value": "Up to 30 photos · Watermarked exports"
           }
         }
       }
@@ -1727,12 +1727,12 @@
         }
       }
     },
-    "已到免费版 20 张上限，升级 Pro 可继续添加。": {
+    "已到免费版 30 张上限，升级 Pro 可继续添加。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "20-photo limit reached. Upgrade to Pro."
+            "value": "30-photo limit reached. Upgrade to Pro."
           }
         }
       }

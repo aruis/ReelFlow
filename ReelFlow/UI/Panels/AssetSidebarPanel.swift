@@ -91,7 +91,7 @@ struct AssetSidebarPanel: View {
             VStack(spacing: 4) {
                 Text("支持拖入图片或文件夹")
                 if planPresentationState == .free {
-                    Text("免费版最多导入 20 张，升级 Pro 可解锁无限图片导入")
+                    Text("免费版最多导入 \(PlanLimits.freePhotoLimit) 张，升级 Pro 可解锁无限图片导入")
                 }
             }
             .font(.caption2)

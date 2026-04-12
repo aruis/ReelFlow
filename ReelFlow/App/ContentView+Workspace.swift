@@ -275,7 +275,7 @@ extension ContentView {
         case .pro:
             return String(localized: "无限图片导入 · 无水印导出")
         case .free:
-            return String(localized: "最多 20 张照片 · 导出带水印")
+            return String(localized: "最多 \(PlanLimits.freePhotoLimit) 张照片 · 导出带水印")
         }
     }
 
