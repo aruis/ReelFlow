@@ -1639,7 +1639,20 @@
       }
     },
     "左侧控制显示字段，中间可自定义前缀标签。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the left side to control visible fields, and customize prefix labels in the middle."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "左侧控制显示字段，中间可自定义前缀标签。"
+          }
+        }
+      }
     },
     "左右 %@ · 上 %@ · 下 %@ · 内边距 %@" : {
       "localizations" : {
