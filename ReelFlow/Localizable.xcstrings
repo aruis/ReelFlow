@@ -62,6 +62,12 @@
     },
     "%@ · %@ · %@ pt": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@ · %3$@ pt"
+          }
+        },
         "zh-Hans": {
           "stringUnit": {
             "state": "new",
@@ -72,6 +78,12 @@
     },
     "%@ · %@ pt": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@ pt"
+          }
+        },
         "zh-Hans": {
           "stringUnit": {
             "state": "new",
@@ -200,7 +212,16 @@
         }
       }
     },
-    "%lld%%": {},
+    "%lld%%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
     "0.4 秒": {
       "localizations": {
         "en": {
@@ -361,17 +382,6 @@
         }
       }
     },
-    "上留白: %.0f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Top margin: %.0f"
-          }
-        }
-      }
-    },
     "下一步": {
       "localizations": {
         "en": {
@@ -412,17 +422,6 @@
         }
       }
     },
-    "下留白: %.0f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bottom margin: %.0f"
-          }
-        }
-      }
-    },
     "不使用转场": {
       "localizations": {
         "en": {
@@ -438,7 +437,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hide Plate"
+            "value": "Hide Caption"
           }
         }
       }
@@ -448,7 +447,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prioritize critical issues"
+            "value": "Prioritize must-fix issues"
           }
         }
       }
@@ -463,22 +462,12 @@
         }
       }
     },
-    "中文说明": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chinese Notes"
-          }
-        }
-      }
-    },
     "交接长度": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Crossfade Length"
+            "value": "Transition Duration"
           }
         }
       }
@@ -558,7 +547,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pending only"
+            "value": "Unresolved only"
           }
         }
       }
@@ -619,28 +608,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save Template"
-          }
-        }
-      }
-    },
-    "信息位置": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Caption placement"
-          }
-        }
-      }
-    },
-    "停止": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stop"
           }
         }
       }
@@ -820,29 +787,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Turn Off Shutter Sound"
-          }
-        }
-      }
-    },
-    "内置型号": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Built-in presets"
-          }
-        }
-      }
-    },
-    "内边距: %.0f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inner padding: %.0f"
+            "value": "Clear Shutter Sound"
           }
         }
       }
@@ -897,34 +842,12 @@
         }
       }
     },
-    "切换新照片时播放快门声": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Play shutter sound when switching to a new photo"
-          }
-        }
-      }
-    },
     "删除": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Delete"
-          }
-        }
-      }
-    },
-    "前缀": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prefix"
           }
         }
       }
@@ -975,17 +898,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Image Duration"
-          }
-        }
-      }
-    },
-    "单图时长: %.2fs": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Photo duration: %.2fs"
           }
         }
       }
@@ -1140,17 +1052,6 @@
         }
       }
     },
-    "可用占位符：{camera} {lens} {shutter} {aperture} {iso} {focal} {date}": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Available placeholders: {camera} {lens} {shutter} {aperture} {iso} {focal} {date}"
-          }
-        }
-      }
-    },
     "可调灰度": {
       "localizations": {
         "en": {
@@ -1181,17 +1082,6 @@
         }
       }
     },
-    "启用背景音频": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enable background audio"
-          }
-        }
-      }
-    },
     "图片加载失败: %@": {
       "localizations": {
         "en": {
@@ -1214,17 +1104,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The image source cannot be read and may be corrupted"
-          }
-        }
-      }
-    },
-    "声音来源": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Source"
           }
         }
       }
@@ -1344,7 +1223,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Go to First Issue"
+            "value": "Locate First Issue"
           }
         }
       }
@@ -1355,17 +1234,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wide"
-          }
-        }
-      }
-    },
-    "宽: %lld": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Width: %lld"
           }
         }
       }
@@ -1612,28 +1480,6 @@
         }
       }
     },
-    "导出时会在每张新照片开始时插入 %@ 风格快门声。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A %@-style shutter sound will play at the start of each new photo during export."
-          }
-        }
-      }
-    },
-    "导出时会把这条音频加入视频。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This audio track will be included in the exported video."
-          }
-        }
-      }
-    },
     "导出期间预览与输出设置暂时锁定。": {
       "localizations": {
         "en": {
@@ -1754,34 +1600,12 @@
         }
       }
     },
-    "尚未选择快门声音效": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No shutter sound selected yet"
-          }
-        }
-      }
-    },
     "尚未选择音频": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No audio selected"
-          }
-        }
-      }
-    },
-    "尚未选择音频文件": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No audio file selected yet"
           }
         }
       }
@@ -1811,7 +1635,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Photo pacing"
+            "value": "Photo Pacing"
           }
         }
       }
@@ -1842,34 +1666,12 @@
         }
       }
     },
-    "左右留白: %.0f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Side margins: %.0f"
-          }
-        }
-      }
-    },
     "已关闭": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Off"
-          }
-        }
-      }
-    },
-    "已关闭铭牌文字": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Caption text is turned off"
           }
         }
       }
@@ -1982,17 +1784,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shutter sound is enabled. Choose a sound file first."
-          }
-        }
-      }
-    },
-    "已启用背景音频，但还没有选择音频文件。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Background audio is enabled, but no audio file has been selected yet."
           }
         }
       }
@@ -2315,17 +2106,6 @@
         }
       }
     },
-    "已选: %@": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selected: %@"
-          }
-        }
-      }
-    },
     "已选中": {
       "localizations": {
         "en": {
@@ -2570,17 +2350,6 @@
         }
       }
     },
-    "当前构建未包含该型号快门声资源，请改用“自定义文件”或补充资源。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This build does not include that shutter preset. Choose Custom file or add the missing asset."
-          }
-        }
-      }
-    },
     "当前构建未包含该型号快门声资源，请改用自定义文件或补充资源。": {
       "localizations": {
         "en": {
@@ -2682,7 +2451,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Current Plate Preview"
+            "value": "Current Caption Preview"
           }
         }
       }
@@ -2873,17 +2642,6 @@
         }
       }
     },
-    "性能设置": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Performance"
-          }
-        }
-      }
-    },
     "性能说明": {
       "localizations": {
         "en": {
@@ -3010,17 +2768,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open Folder"
-          }
-        }
-      }
-    },
-    "拖拽音频到此处": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Drag audio here"
           }
         }
       }
@@ -3182,17 +2929,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search ignored file names"
-          }
-        }
-      }
-    },
-    "摄影参数": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Photography Specs"
+            "value": "Search ignored files"
           }
         }
       }
@@ -3202,18 +2939,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Playback rhythm"
-          }
-        }
-      }
-    },
-    "支持拖入 1 条音频文件。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Drag in one audio file."
+            "value": "Pacing"
           }
         }
       }
@@ -3224,17 +2950,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drag in images or folders."
-          }
-        }
-      }
-    },
-    "支持选择一条短音效，导出时会在每张新照片开始时触发。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose a short sound effect to play at the start of each new photo during export."
           }
         }
       }
@@ -3315,17 +3030,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Text Tone"
-          }
-        }
-      }
-    },
-    "文字灰度: %.2f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Text gray: %.2f"
           }
         }
       }
@@ -3658,28 +3362,6 @@
         }
       }
     },
-    "显示底部铭牌文字": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show bottom caption"
-          }
-        }
-      }
-    },
-    "暂停试听": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pause Preview"
-          }
-        }
-      }
-    },
     "暂无可打开的输出文件": {
       "localizations": {
         "en": {
@@ -3775,7 +3457,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Replace"
+            "value": "Change"
           }
         }
       }
@@ -3948,34 +3630,12 @@
         }
       }
     },
-    "未读取到音频时长，导出前会再次校验。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Audio duration is not available yet. It will be checked again before export."
-          }
-        }
-      }
-    },
     "未选中": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Not selected"
-          }
-        }
-      }
-    },
-    "未选择音频": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No audio selected"
           }
         }
       }
@@ -4056,39 +3716,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "View Log"
-          }
-        }
-      }
-    },
-    "模式": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mode"
-          }
-        }
-      }
-    },
-    "模拟导出失败": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Simulate Export Failure"
-          }
-        }
-      }
-    },
-    "模板（可直接编辑，占位符可用按钮插入）": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Template (editable directly, placeholders can be inserted with buttons)"
           }
         }
       }
@@ -4293,131 +3920,12 @@
         }
       }
     },
-    "测试场景：修复后可重试。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: retry after fixing the issue."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：修复后可重试。"
-          }
-        }
-      }
-    },
     "测试场景：免费版": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Test scenario: Free plan"
-          }
-        }
-      }
-    },
-    "测试场景：参数无效": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: invalid settings"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：参数无效"
-          }
-        }
-      }
-    },
-    "测试场景：可直接导出": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: ready to export"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：可直接导出"
-          }
-        }
-      }
-    },
-    "测试场景：可直接重试导出。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: retry export directly."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：可直接重试导出。"
-          }
-        }
-      }
-    },
-    "测试场景：建议关注问题": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: review issue"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：建议关注问题"
-          }
-        }
-      }
-    },
-    "测试场景：预览已就绪": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: preview ready"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：预览已就绪"
-          }
-        }
-      }
-    },
-    "测试场景：验证预检定位与素材联动": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test scenario: validate preflight locate and asset sync"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试场景：验证预检定位与素材联动"
           }
         }
       }
@@ -4442,34 +3950,12 @@
         }
       }
     },
-    "清除快门声": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear Shutter Sound"
-          }
-        }
-      }
-    },
     "清除音频": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Clear Audio"
-          }
-        }
-      }
-    },
-    "点": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "pt"
           }
         }
       }
@@ -4489,7 +3975,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shutter sound played on photo changes"
+            "value": "Play a shutter sound when photos change"
           }
         }
       }
@@ -4604,28 +4090,6 @@
         }
       }
     },
-    "相机型号": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Camera model"
-          }
-        }
-      }
-    },
-    "相框": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Frame"
-          }
-        }
-      }
-    },
     "相框内": {
       "localizations": {
         "en": {
@@ -4676,17 +4140,6 @@
         }
       }
     },
-    "相纸亮度: %.2f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Paper white: %.2f"
-          }
-        }
-      }
-    },
     "知道了": {
       "localizations": {
         "en": {
@@ -4723,23 +4176,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preview Example"
-          }
-        }
-      }
-    },
-    "视频 %.2fs · 音频 %.2fs · %@": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Video %.2fs · Audio %.2fs · %@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "new",
-            "value": "视频 %1$.2fs · 音频 %2$.2fs · %3$@"
           }
         }
       }
@@ -5035,7 +4471,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Background Audio"
+            "value": "Audio Track"
           }
         }
       }
@@ -5050,34 +4486,12 @@
         }
       }
     },
-    "背景灰度: %.2f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Background gray level: %.2f"
-          }
-        }
-      }
-    },
     "背景空窗": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Background Gap"
-          }
-        }
-      }
-    },
-    "背景空窗时长: %.2fs": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dip duration: %.2fs"
+            "value": "Gap Between Photos"
           }
         }
       }
@@ -5088,28 +4502,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Background Music"
-          }
-        }
-      }
-    },
-    "自动循环关闭": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loop off"
-          }
-        }
-      }
-    },
-    "自动循环开启": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loop on"
           }
         }
       }
@@ -5214,45 +4606,12 @@
         }
       }
     },
-    "试听中…": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Previewing…"
-          }
-        }
-      }
-    },
-    "试听当前时间点": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preview at current time"
-          }
-        }
-      }
-    },
     "试听快门声": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Preview Shutter Sound"
-          }
-        }
-      }
-    },
-    "说明文字": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Caption"
           }
         }
       }
@@ -5557,17 +4916,6 @@
         }
       }
     },
-    "转场时长: %.2fs": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transition duration: %.2fs"
-          }
-        }
-      }
-    },
     "转场时长必须小于单图时长，请缩短转场或延长单图时长。": {
       "localizations": {
         "en": {
@@ -5633,18 +4981,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Border Tone"
-          }
-        }
-      }
-    },
-    "边框灰度: %.2f": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Border gray level: %.2f"
+            "value": "Border Gray Level"
           }
         }
       }
@@ -5659,29 +4996,12 @@
         }
       }
     },
-    "这是手动模拟的失败，用于验收测试。可点击重试。": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This is a manually simulated failure for acceptance testing. Click Retry to continue."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这是手动模拟的失败，用于验收测试。可点击重试。"
-          }
-        }
-      }
-    },
     "选择": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose"
+            "value": "Select"
           }
         }
       }
@@ -5692,28 +5012,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose Photos"
-          }
-        }
-      }
-    },
-    "选择快门声": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose Shutter Sound"
-          }
-        }
-      }
-    },
-    "选择音频": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose Audio"
           }
         }
       }
@@ -5773,7 +5071,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Caption Info"
+            "value": "Caption"
           }
         }
       }
@@ -5848,34 +5146,12 @@
         }
       }
     },
-    "音轨: %@": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Audio track: %@"
-          }
-        }
-      }
-    },
     "音量": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Volume"
-          }
-        }
-      }
-    },
-    "音量: %lld%%": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Volume: %lld%%"
           }
         }
       }
@@ -6142,34 +5418,12 @@
         }
       }
     },
-    "预取半径: %lld": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prefetch range: %lld"
-          }
-        }
-      }
-    },
     "预取并发": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Prefetch Concurrency"
-          }
-        }
-      }
-    },
-    "预取并发: %lld": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prefetch concurrency: %lld"
           }
         }
       }
@@ -6296,17 +5550,6 @@
         }
       }
     },
-    "高: %lld": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Height: %lld"
-          }
-        }
-      }
-    },
     "高对比": {
       "localizations": {
         "en": {
@@ -6353,17 +5596,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Advanced settings unlock finer layout controls, templates, background audio, and performance tuning. Upgrade to edit them."
-          }
-        }
-      }
-    },
-    "黑底下方": {
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Below the black background"
           }
         }
       }

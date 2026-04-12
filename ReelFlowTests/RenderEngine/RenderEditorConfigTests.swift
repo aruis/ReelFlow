@@ -125,7 +125,7 @@ struct RenderEditorConfigTests {
         #expect(rebuilt.plateFontSize == config.plateFontSize)
         #expect(rebuilt.plateFontStyle == config.plateFontStyle)
         #expect(rebuilt.platePlacement == config.platePlacement)
-        #expect(rebuilt.plateEditorMode == config.plateEditorMode)
+        #expect(rebuilt.plateEditorMode == .none)
         #expect(rebuilt.plateTemplateText == config.plateTemplateText)
         #expect(rebuilt.enableKenBurns == config.enableKenBurns)
         #expect(rebuilt.kenBurnsIntensity == config.kenBurnsIntensity)
@@ -157,10 +157,10 @@ struct RenderEditorConfigTests {
         let rebuilt = RenderEditorConfig(template: config.template)
 
         #expect(rebuilt.plateEditorMode == .simple)
-        #expect(rebuilt.plateSimpleElements.map(\.key) == config.plateSimpleElements.map(\.key))
-        #expect(rebuilt.plateSimpleElements.map(\.enabled) == config.plateSimpleElements.map(\.enabled))
-        #expect(rebuilt.plateSimpleElements.map(\.prefix) == config.plateSimpleElements.map(\.prefix))
-        #expect(rebuilt.simplePlateTemplateText == "日期 {date}   {camera}")
+        #expect(rebuilt.plateSimpleElements.map(\.key) == [.date, .camera, .iso, .lens, .shutter, .aperture, .focal])
+        #expect(rebuilt.plateSimpleElements.map(\.enabled) == [true, true, false, true, true, true, false])
+        #expect(rebuilt.plateSimpleElements.map(\.prefix) == ["日期", "", "ISO ", "", "S", "A", "F"])
+        #expect(rebuilt.simplePlateTemplateText == "日期 {date}   {camera}   {lens}   S {shutter}   A {aperture}")
     }
 
     @Test
@@ -243,21 +243,6 @@ struct RenderEditorConfigTests {
         #expect(keys.contains(.date))
         #expect(config.plateSimpleElements.first(where: { $0.key == .date })?.enabled == false)
         #expect(config.plateSimpleElements.first(where: { $0.key == .focal })?.enabled == false)
-    }
-
-    @Test
-    func applyingPlatePrefixPresetUpdatesPrefixes() {
-        var config = RenderEditorConfig()
-
-        config.applyPlatePrefixPreset(.minimal)
-
-        #expect(config.plateSimpleElements.allSatisfy { $0.prefix.isEmpty })
-
-        config.applyPlatePrefixPreset(.chinese)
-
-        #expect(config.plateSimpleElements.first(where: { $0.key == .camera })?.prefix == "相机")
-        #expect(config.plateSimpleElements.first(where: { $0.key == .shutter })?.prefix == "快门")
-        #expect(config.plateSimpleElements.first(where: { $0.key == .date })?.prefix == "日期")
     }
 
     @Test

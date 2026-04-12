@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import AppKit
 
 final class ReelFlowUITests: XCTestCase {
     private let uiTimeout: TimeInterval = 3
@@ -46,6 +47,14 @@ final class ReelFlowUITests: XCTestCase {
 
         // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
+
+        NSRunningApplication
+            .runningApplications(withBundleIdentifier: "net.ximatai.ReelFlow")
+            .forEach { app in
+                if !app.terminate() {
+                    _ = app.forceTerminate()
+                }
+            }
 
         // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }

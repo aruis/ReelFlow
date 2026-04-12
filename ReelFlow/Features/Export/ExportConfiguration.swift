@@ -494,14 +494,6 @@ struct RenderEditorConfig: Sendable {
         plateEditorMode = .custom
     }
 
-    mutating func applyPlatePrefixPreset(_ preset: PlatePrefixPreset) {
-        plateSimpleElements = normalizedSimpleElements(from: plateSimpleElements).map { element in
-            var updated = element
-            updated.prefix = preset.prefix(for: element.key).sanitizedPlateAffix
-            return updated
-        }
-    }
-
     mutating func moveSimplePlateElements(from source: IndexSet, to destination: Int) {
         var items = plateSimpleElements
         let sortedSource = source.sorted()
@@ -593,60 +585,6 @@ struct RenderEditorConfig: Sendable {
             volume: shutterSoundVolume,
             delay: shutterSoundDelay
         )
-    }
-}
-
-enum PlatePrefixPreset: String, CaseIterable, Sendable {
-    case photography
-    case minimal
-    case chinese
-
-    var displayName: String {
-        switch self {
-        case .photography:
-            return String(localized: "摄影参数")
-        case .minimal:
-            return String(localized: "极简")
-        case .chinese:
-            return String(localized: "中文说明")
-        }
-    }
-
-    func prefix(for key: PlateSimpleElementKey) -> String {
-        switch self {
-        case .photography:
-            switch key {
-            case .camera, .lens, .date:
-                return ""
-            case .shutter:
-                return "S"
-            case .aperture:
-                return "A"
-            case .iso:
-                return "ISO"
-            case .focal:
-                return "F"
-            }
-        case .minimal:
-            return ""
-        case .chinese:
-            switch key {
-            case .camera:
-                return "相机"
-            case .lens:
-                return "镜头"
-            case .shutter:
-                return "快门"
-            case .aperture:
-                return "光圈"
-            case .iso:
-                return "ISO"
-            case .focal:
-                return "焦距"
-            case .date:
-                return "日期"
-            }
-        }
     }
 }
 

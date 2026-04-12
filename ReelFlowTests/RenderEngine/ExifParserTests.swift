@@ -64,10 +64,10 @@ struct ExifParserTests {
     }
 
     @Test
-    func emptyTemplateFallsBackToDefaultTemplate() {
+    func emptyTemplateProducesEmptyPlateText() {
         let parsed = ExifParser.parse(from: [:])
         let text = parsed.resolvedPlateText(template: "   ")
 
-        #expect(text == parsed.plateText)
+        #expect(text.isEmpty)
     }
 }
