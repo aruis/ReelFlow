@@ -8,7 +8,9 @@ struct SimpleSettingsPanel: View {
 
     private let optionCardCornerRadius: CGFloat = 10
     private let optionCardMinHeight: CGFloat = 48
-    private let plateRowHeight: CGFloat = 42
+    private let plateRowHeight: CGFloat = 46
+    private let plateFieldLabelWidth: CGFloat = 58
+    private let plateToggleColumnWidth: CGFloat = 44
 
     private enum ResolutionChoice: Int, CaseIterable, Identifiable {
         case hd720
@@ -352,11 +354,17 @@ struct SimpleSettingsPanel: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(String(localized: "字段与标签"))
                             .font(.subheadline.weight(.medium))
-                        VStack(alignment: .leading, spacing: 8) {
+                        Text(String(localized: "左侧控制显示字段，中间可自定义前缀标签。"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 10) {
                             ForEach(viewModel.config.plateSimpleElements.indices, id: \.self) { index in
                                 simplePlateFieldRow(index: index)
                             }
                         }
+                        .padding(10)
+                        .background(optionContainerBackground)
+                        .overlay(optionContainerBorder)
                     }
                     .disabled(viewModel.isBusy)
 
@@ -706,18 +714,20 @@ struct SimpleSettingsPanel: View {
         let key = viewModel.config.plateSimpleElements[index].key
         let isEnabled = viewModel.config.plateSimpleElements[index].enabled
 
-        return HStack(spacing: 10) {
+        return HStack(spacing: 12) {
             Text(key.displayName)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(isEnabled ? .primary : .secondary)
-                .frame(width: 42, alignment: .leading)
+                .foregroundStyle(isEnabled ? .secondary : .tertiary)
+                .frame(width: plateFieldLabelWidth, alignment: .leading)
 
             prefixInput(text: prefixDraftBinding(index: index), key: key, isEnabled: isEnabled)
 
             Toggle("", isOn: plateSimpleEnabledBinding(index: index))
                 .labelsHidden()
+                .frame(width: plateToggleColumnWidth, alignment: .trailing)
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .frame(minHeight: plateRowHeight)
         .background(rowBackground(isEnabled: isEnabled))
         .overlay(rowBorder(isEnabled: isEnabled))
@@ -793,12 +803,12 @@ struct SimpleSettingsPanel: View {
 
     private var optionContainerBackground: some View {
         RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
-            .fill(Color.secondary.opacity(0.08))
+            .fill(Color.white.opacity(0.035))
     }
 
     private var optionContainerBorder: some View {
         RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
-            .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+            .stroke(Color.white.opacity(0.08), lineWidth: 1)
     }
 
     private func optionCardButton(
@@ -837,7 +847,7 @@ struct SimpleSettingsPanel: View {
                 Text(isEnabled ? String(localized: "留空") : String(localized: "未启用"))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 12)
             }
 
             TextField(
@@ -855,27 +865,27 @@ struct SimpleSettingsPanel: View {
             .textFieldStyle(.plain)
             .font(.system(.caption, design: .monospaced))
             .foregroundStyle(isEnabled ? .primary : .secondary)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 12)
             .disabled(!isEnabled)
         }
-        .frame(height: 28)
+        .frame(height: 32)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.secondary.opacity(isEnabled ? 0.10 : 0.06))
+                .fill(Color.white.opacity(isEnabled ? 0.055 : 0.03))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(Color.secondary.opacity(isEnabled ? 0.18 : 0.10), lineWidth: 1)
+                .stroke(Color.white.opacity(isEnabled ? 0.10 : 0.05), lineWidth: 1)
         )
     }
 
     private func rowBackground(isEnabled: Bool) -> some View {
         RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
-            .fill(Color.secondary.opacity(isEnabled ? 0.08 : 0.05))
+            .fill(Color.white.opacity(isEnabled ? 0.04 : 0.02))
     }
 
     private func rowBorder(isEnabled: Bool) -> some View {
         RoundedRectangle(cornerRadius: optionCardCornerRadius, style: .continuous)
-            .stroke(Color.secondary.opacity(isEnabled ? 0.18 : 0.10), lineWidth: 1)
+            .stroke(Color.white.opacity(isEnabled ? 0.08 : 0.04), lineWidth: 1)
     }
 }
