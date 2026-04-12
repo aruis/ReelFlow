@@ -20,7 +20,7 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "srgb:0.76546,0.86887,1.00000,1.00000"
+                "solid" : "srgb:0.38042,0.83079,1.00000,1.00000"
               }
             },
             {
@@ -36,7 +36,7 @@
           "name" : "play-triangle-rounded",
           "opacity" : 1,
           "position" : {
-            "scale" : 1.4,
+            "scale" : 1.96,
             "translation-in-points" : [
               -6.647509289183063,
               36.95999999999998
@@ -66,9 +66,9 @@
           "name" : "filmstage-flat-v1",
           "opacity" : 0.1,
           "position" : {
-            "scale" : 2.3,
+            "scale" : 3.8,
             "translation-in-points" : [
-              1.1368683772161603e-13,
+              0,
               0
             ]
           }
