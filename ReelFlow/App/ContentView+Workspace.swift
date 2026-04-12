@@ -169,6 +169,7 @@ extension ContentView {
                     hoveredSettingsTab = isInside ? tab : nil
                 }
                 .accessibilityElement()
+                .accessibilityIdentifier("settings_tab_\(tab.rawValue)")
                 .accessibilityLabel(tab.title)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
                 .animation(.easeOut(duration: 0.12), value: isHovered)

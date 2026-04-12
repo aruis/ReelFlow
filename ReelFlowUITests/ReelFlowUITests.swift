@@ -226,4 +226,19 @@ final class ReelFlowUITests: XCTestCase {
         XCTAssertTrue(upgradeButton.waitForExistence(timeout: uiTimeout))
         XCTAssertEqual(upgradeButton.label, "Upgrade to Pro")
     }
+
+    @MainActor
+    func testEnglishAdvancedSettingsShowReviewedCopy() throws {
+        let app = makeApp(language: .english)
+        app.launchArguments += ["-ui-test-scenario", "first_run_ready", "-ui-test-pro-access", "enabled"]
+        app.launch()
+
+        let advancedTab = elementByIdentifier(app, id: "settings_tab_advanced")
+        XCTAssertTrue(advancedTab.waitForExistence(timeout: uiTimeout))
+        advancedTab.tap()
+
+        XCTAssertTrue(app.staticTexts["Transition Duration"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(app.staticTexts["Border Gray Level"].waitForExistence(timeout: uiTimeout))
+        XCTAssertTrue(app.staticTexts["Audio Track"].waitForExistence(timeout: uiTimeout))
+    }
 }
