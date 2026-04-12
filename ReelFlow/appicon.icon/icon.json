@@ -77,8 +77,8 @@
           "fill" : {
             "solid" : "extended-gray:1.00000,1.00000"
           },
-          "image-name" : "未命名.svg",
-          "name" : "未命名",
+          "image-name" : "wordmark.svg",
+          "name" : "wordmark",
           "opacity" : 0.9,
           "position" : {
             "scale" : 0.34,
