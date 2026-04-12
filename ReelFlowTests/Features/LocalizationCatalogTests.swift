@@ -30,6 +30,8 @@ struct LocalizationCatalogTests {
         let strings = try loadCatalog()
 
         let missingEnglish = strings.keys.sorted().filter { key in
+            // Xcode string catalogs may include an empty reserved entry that is not a user-facing string.
+            if key.isEmpty { return false }
             guard let entry = strings[key] as? [String: Any] else { return true }
             if entry["extractionState"] as? String == "stale" {
                 return false

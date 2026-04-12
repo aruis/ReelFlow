@@ -783,7 +783,7 @@ extension ContentView {
 
     var exportProgressText: String {
         let progress = min(max(viewModel.progress, 0), 1)
-        return "\(Int((progress * 100).rounded()))%"
+        return LocalizedFormatting.percent(progress)
     }
 
     func previewActionSubtitle(for kind: WorkflowPrimaryActionKind) -> String? {

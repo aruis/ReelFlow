@@ -617,7 +617,7 @@ struct AdvancedSettingsPanel: View {
 
     private var frameStyleSummaryText: String {
         String(
-            localized: "背景 \(Int((viewModel.config.canvasBackgroundGray * 100).rounded()))% · 相纸 \(Int((viewModel.config.canvasPaperWhite * 100).rounded()))% · 边框 \(Int((viewModel.config.canvasStrokeGray * 100).rounded()))%"
+            localized: "背景 \(LocalizedFormatting.percent(viewModel.config.canvasBackgroundGray)) · 相纸 \(LocalizedFormatting.percent(viewModel.config.canvasPaperWhite)) · 边框 \(LocalizedFormatting.percent(viewModel.config.canvasStrokeGray))"
         )
     }
 

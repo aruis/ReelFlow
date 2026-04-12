@@ -179,7 +179,7 @@ struct AudioSettingsSection: View {
                         HStack {
                             Text("音量")
                             Spacer()
-                            Text("\(Int((viewModel.config.audioVolume * 100).rounded()))%")
+                            Text(LocalizedFormatting.percent(viewModel.config.audioVolume))
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
                         }
@@ -270,7 +270,11 @@ struct AudioSettingsSection: View {
 
                 if viewModel.config.shutterSoundEnabled {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(String(localized: "快门声音量: \(Int((viewModel.config.shutterSoundVolume * 100).rounded()))%"))
+                        Text(
+                            String(
+                                localized: "快门声音量: \(LocalizedFormatting.percent(viewModel.config.shutterSoundVolume))"
+                            )
+                        )
                         Slider(value: $viewModel.config.shutterSoundVolume, in: RenderEditorConfig.audioVolumeRange, step: 0.01)
                             .disabled(viewModel.isBusy)
                     }
