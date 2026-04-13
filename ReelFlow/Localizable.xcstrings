@@ -1357,10 +1357,24 @@
       }
     },
     "导出前还缺少保存位置。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An export destination is still missing."
+          }
+        }
+      }
     },
     "导出前需要先指定保存目录" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a save location before exporting"
+          }
+        }
+      }
     },
     "导出失败" : {
       "localizations" : {
@@ -1595,7 +1609,14 @@
       }
     },
     "尚未设置" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        }
+      }
     },
     "尚未选择音频" : {
       "localizations" : {
@@ -2228,7 +2249,14 @@
       }
     },
     "建议先确认画面效果，再执行导出。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview the visuals first before exporting."
+          }
+        }
+      }
     },
     "建议关注" : {
       "localizations" : {
@@ -4680,17 +4708,6 @@
         }
       }
     },
-    "请先选择导出路径" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose an export location first."
-          }
-        }
-      }
-    },
     "请先选择快门声音效文件。" : {
       "localizations" : {
         "en" : {
@@ -5040,7 +5057,14 @@
       }
     },
     "选择导出位置" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Export Location"
+          }
+        }
+      }
     },
     "释放磁盘空间" : {
       "localizations" : {
