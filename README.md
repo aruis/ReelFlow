@@ -1,208 +1,176 @@
 # ReelFlow
 
-ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+ReelFlow is a native macOS app for turning photo sets into polished slideshow videos with fast preview, reliable export, and lightweight creative controls.
+
+It is designed for photographers and creators who want a focused tool instead of a full nonlinear editor: import photos, preview the result, add music, adjust pacing, and export an MP4 that feels intentional instead of templated.
+
+![ReelFlow screenshot](assets/readme/ReelFlow.jpg)
+
+Main workspace for importing photos, adjusting slideshow settings, previewing output, and exporting MP4.
+
+## What It Helps You Do
+
+ReelFlow is for the common job that many editing tools handle badly: turning a set of still images into a clean, presentable video without building a full edit from scratch.
+
+Typical use cases:
+
+- create a photo slideshow for delivery, presentation, or social sharing
+- turn a shoot, trip, or portfolio set into a motion reel
+- add simple music and timing without learning a heavy editor
+- export quickly from a Mac-native workflow
+
+## Why People Use ReelFlow
+
+Most video editors are too heavy for simple photo-to-video work, and many slideshow tools are too limited or too fragile.
+
+ReelFlow focuses on a narrower problem:
+
+- import photos and get to a usable result quickly
+- keep preview and export behavior aligned
+- surface risky assets before a long export fails
+- make the main path obvious, even for first-time users
+- stay focused on slideshow creation rather than full video editing
+
+## Why It Feels Better Than a Generic Slideshow Tool
+
+- native macOS interface instead of a browser wrapper
+- faster path from import to export
+- more control than one-click slideshow templates
+- more approachable than a full timeline editor
+- clearer validation, recovery, and export diagnostics
+
+## Core Workflow
+
+1. Import a photo set.
+2. Adjust timing, transition, layout, and visual style.
+3. Preview the result.
+4. Add a background track if needed.
+5. Export an MP4.
+
+## Product Highlights
+
+### Fast Preview, Predictable Export
+
+- single-frame and timeline preview
+- preview uses the same core settings as export
+- export behavior is designed to stay predictable
+
+### Photo-First Controls
+
+- drag-and-drop photo import
+- mixed landscape and portrait support
+- orientation strategy controls
+- configurable frame margin, border, and background styling
+
+### Audio
+
+- import a single background track
+- preview audio along the timeline
+- export video with synchronized audio
+
+### Motion and Timing
+
+- slideshow duration controls
+- transition duration controls
+- fade in and fade out toggles
+- Ken Burns-style motion support in the render pipeline
+
+### Reliability Before Rendering
+
+- preflight checks before export
+- inline validation feedback
+- failure summaries and retry paths
+- export diagnostics bundle for support and debugging
+
+## Free and Pro
+
+- Free: up to a limited number of imported photos, with a lightweight ReelFlow mark on preview and export
+- Pro: unlimited photo imports and mark-free exports
+
+## Requirements
+
+- macOS `14.6` or later
+
+## Availability
+
+ReelFlow is an open-source product, and the official app may also be distributed commercially, including through the Mac App Store.
+
+This repository is the best place to understand the product, follow development, and build it from source.
+
+## For Developers
+
+### Built With
+
+- Swift
+- SwiftUI
+- AVFoundation
+- Core Image
+- native macOS app architecture
+
+### Run From Source
+
+```bash
+git clone git@github.com:aruis/ReelFlow.git
+cd ReelFlow
+open ReelFlow.xcodeproj
+```
+
+Then build and run the `ReelFlow` scheme in Xcode.
+
+### Command-Line Build
+
+```bash
+xcodebuild -project ReelFlow.xcodeproj -scheme ReelFlow build
+```
+
+## Testing
+
+Useful local commands:
+
+- `./scripts/test-non-ui.sh`
+- `./scripts/test-audio-regression.sh`
+- `./scripts/test-ui-smoke.sh`
+- `./scripts/test-ci-gate.sh`
+- `./scripts/release-gate.sh`
+
+## Project Structure
+
+- [`ReelFlow`](/Users/liurui/develop/workspace-xcode/ReelFlow/ReelFlow): app source
+- [`ReelFlowTests`](/Users/liurui/develop/workspace-xcode/ReelFlow/ReelFlowTests): unit and integration tests
+- [`ReelFlowUITests`](/Users/liurui/develop/workspace-xcode/ReelFlow/ReelFlowUITests): UI smoke coverage
+- [`scripts`](/Users/liurui/develop/workspace-xcode/ReelFlow/scripts): local test and release scripts
+- [`Docs`](/Users/liurui/develop/workspace-xcode/ReelFlow/Docs): deeper product, release, and engineering documents
+
+## Roadmap
+
+Product priorities:
+
+- keep preview and export highly predictable
+- improve first-time success on real photo sets
+- continue polishing export recovery and diagnostics
+- ship a production-ready distribution flow for broader release
+
+Longer-term directions:
+
+- stronger reusable presets and templates
+- broader slideshow style coverage
+- tighter release packaging and distribution workflow
+
+## Contributing
+
+Issues and pull requests are welcome, especially for:
+
+- export reliability
+- preview/export consistency
+- accessibility and usability improvements
+- test coverage around real-world failure paths
+
+Before opening a large change, it is better to start with an issue so scope and product direction stay aligned.
 
 ## License
 
-本项目采用 GNU GPLv3 许可证开源。你可以在遵守 GPLv3 条款的前提下使用、修改和分发本项目。
-完整条款见仓库根目录的 [LICENSE](/Users/liurui/develop/workspace-xcode/ReelFlow/LICENSE)。
+This project is licensed under the GNU GPLv3.
 
-## 远期目标（可迭代）
-以下目标作为当前版本的长期方向，后续可根据实际进展持续微调。
-
-1. 对标 Lightroom 的幻灯片导出能力（聚焦核心场景，不追求全产品覆盖）。
-2. 极致易用、容易上手：支持拖拽导入，参数清晰，预览即所得（WYSIWYG）。
-3. 导出体验稳定可预期：核心流程清晰，用户能在少步骤内完成导出。
-4. 提供高价值可定制性：
-   - 相框风格（相框颜色、背景颜色，含预置 + 自定义）
-   - 相框边距
-   - 横竖图策略（优先读取素材默认方向）
-   - 展示时长、过渡时长、是否淡入淡出
-   - 单轨音频导入与预览（复杂音频编辑能力后置讨论）
-5. 出错不崩溃，反馈友好：即使失败也应给出可理解原因与可执行下一步。
-
-## 目标对齐与投入边界
-为了保证"面向生产交付"而不是"局部打磨"，后续迭代统一按以下边界执行：
-
-1. 只优先投入主路径：`导入 -> 预检 -> 预览 -> 导出 -> 失败恢复`。
-2. 任何任务若不能直接提升以下至少一项，则默认不进当前迭代：
-   - 主路径成功率
-   - 失败定位速度
-   - 新用户首次可达成率
-3. 边缘路线（视觉细枝末节、低频配置、过度工程化脚本）采用"限时盒"：
-   - 单项投入超过半天仍无明确产出，立即降级或暂停。
-4. CI 维持"够用即可"：
-   - 仅保留会阻断交付质量的门禁（maintainability + non-ui + audio + ui smoke）。
-   - 暂不扩展长尾矩阵（多版本/多环境大规模并发）直到主路径指标稳定。
-
-## 设计哲学（优先级参考）
-- 80% 功能完备度
-- 99% 易用度
-- 90% 美观度与设计感
-- 80% 成功率（阶段参考值）
-
-> 注：以上比例用于优先级取舍，不作为严格数学指标。
-
-## 阶段基线（v2 已完成）
-对齐依据：`Docs/UI-Information-Architecture-v1.md`（流程与信息架构基线）。
-
-1. 导出前风险甄别闭环（Preflight）
-- [x] 导出前自动扫描所有素材（可读性、损坏、权限、尺寸/方向异常）。
-- [x] 风险按级别展示：`可继续` / `建议处理` / `必须修复`。
-- [x] 能定位到具体问题图片（至少文件名级别）。
-- [x] 用户可一键选择"跳过问题素材并继续导出"。
-- [x] Preflight 结果在导出界面可见，不依赖日志。
-
-2. 预览即所得闭环（WYSIWYG）
-- [x] 预览与导出使用同一套关键参数（时长、转场、Ken Burns、边距、风格）。
-- [x] 时间轴拖动时有明确状态反馈（生成中/失败/成功）。
-- [x] 关键时刻帧一致性测试稳定通过（默认风格 + 主要变体）。
-- [x] 预览失败不影响后续继续操作（不崩溃、可恢复）。
-
-3. 核心可定制性闭环
-- [x] 相框与背景支持"预置风格 + 自定义颜色"。
-- [x] 相框边距可视化可调。
-- [x] 横竖图策略可配置（默认读取素材方向，并支持覆盖）。
-- [x] 展示时长、过渡时长、淡入淡出开关在 UI 可直接调整。
-- [x] 模板导入/导出可覆盖以上配置且向后兼容。
-
-4. 音频 v1 闭环（单轨）
-- [x] 支持拖拽或选择单条音频。
-- [x] 可在预览中听到音频（基础预览即可）。
-- [x] 导出视频含音频并与时间轴同步。
-- [x] 音频异常（不可读/不支持）有友好提示且不崩溃。
-
-5. 最小可用流程与 UI 完成度
-- [x] 用户可在一个主界面完成"导入-预览-导出-恢复"。
-- [x] 主操作/辅助操作分区清晰，按钮状态与状态机一致。
-- [x] 失败卡片提供明确"下一步动作"，成功卡片提供"继续动作"。
-- [x] 参数校验信息就地显示（inline），无需猜测错误原因。
-- [x] 新用户在无文档条件下可完成首次导出。
-
-## 短期目标（当前两周）— 产品验收驱动
-核心依据：`Docs/Single-Operator-Acceptance.md`。
-
-### 第 1 周：首轮验收
-1. 完成首轮 Single-Operator Acceptance
-- [ ] 用 20-30 张真实照片（含横图/竖图 + 单轨音频）走通全部 10 个任务。
-- [ ] 记录评分与阻塞点。
-2. 修复首轮 Top 3 阻塞
-- [ ] 仅修最影响"首次可达成率"的问题，不扩散。
-3. 确认分发路径
-- [ ] 明确签名与分发方式（Developer ID + Notarization / GitHub Release / 其他）。
-- [ ] 若暂时无法完成 Notarization，记录绕过方案与已知限制。
-
-### 第 2 周：收敛与发布准备
-1. 第二轮验收
-- [ ] 修复后再跑一轮 Acceptance，确认阻塞已消除。
-- [ ] 达到通过门槛（总分 ≥ 24/30，无 0 分项，1 分项 ≤ 2 个）。
-2. 发布包就绪
-- [ ] 生成可分发包（签名 + 打包 + 校验）。
-- [ ] 在至少一台非开发机器上验证可启动并完成主路径。
-3. 验收出口
-- [ ] 主路径无 P0/P1 已知缺陷（以 Acceptance 记录为准）。
-- [ ] 发布清单（`Docs/Release-Checklist.md`）全项通过。
-
-## 中期目标（未来 4-8 周）— 发布后持续改善
-以 v3 发布后的真实反馈驱动，不阻塞首次发布。
-
-1. 体验持续收敛
-- [ ] 根据后续 Acceptance 轮次和用户反馈，持续修复 Top 3 摩擦点。
-- [ ] 在应用内增加"最近一次失败摘要"入口（阶段 + 建议动作 + 诊断包位置）。
-
-2. 测试覆盖补强（持续进行）
-- [ ] 为导出参数组合补最小覆盖矩阵（方向策略 × 转场开关 × 音频有/无）。
-- [ ] CI 稳定性：遇到 flaky 时修复，不专项投入。
-
-3. 分发与运营
-- [ ] 完善分发渠道（落地页 / 应用描述 / 截图）。
-- [ ] 沉淀发布全链路耗时基线，将可自动化项脚本化。
-
-## 已完成的阶段性目标（工程加固期）
-以下为进入产品验收阶段前完成的工程目标，保留存档。
-
-1. 代码结构
-- [x] `ContentView.swift` 已完成职责收敛，当前维护性预算为 950 行以内。
-- [x] `ExportViewModel` 按职责拆分为 6 个扩展（Export / Assets / Audio / Recovery / Diagnostics / UITestSupport）。
-- [x] UI 拆分为 9 个独立组件文件。
-- [x] 统一失败卡片文案来源，UI 测试脚手架隔离至 `#if DEBUG`。
-
-2. 发布工程
-- [x] 完成一次端到端发布演练，记录于 `Docs/Release-Rehearsal-Log.md`。
-- [x] 回滚预案写入 `Docs/Release-Checklist.md`（触发条件 / 步骤 / 验证 / 时限）。
-- [x] 维护性护栏阈值与当前工程结构对齐（ContentView 950 / Export 850）。
-
-3. 质量门
-- [x] CI 收敛为两道核心门（Core Tests + UI Smoke）。
-- [x] UI smoke 覆盖失败→重试→成功完整链路。
-- [x] `test-ci-gate.sh` 基线已记录（127s），远低于 30 分钟目标。
-- [x] 任务准入与止损规则写入 `Docs/Engineering-Guardrails.md`。
-
-## 近期已完成（2026-02）
-1. 完成"横竖图策略可配置"
-- [x] 增加 `按素材方向 / 强制横图 / 强制竖图` 三档。
-- [x] 预览与导出行为一致，并补对应测试。
-
-2. 完成模板兼容性收口
-- [x] 为新加入字段补模板兼容测试（老模板导入默认值）。
-- [x] 为"风格/布局/铭牌/转场开关"补导出-导入回环验证。
-
-3. 完成首用可达成度验证
-- [x] 新用户脚本化走通"导入-预览-导出"并记录阻塞点。
-- [x] 根据阻塞点微调文案与默认值（不做视觉重构）。
-  - 已调整：默认导出路径自动落在"影片/ReelFlow-Output.mp4"，并补充首屏引导文案。
-
-4. 音频 v1 设计与技术预研
-- [x] 确认最小方案：单轨导入、预览可听、导出混流。
-- [x] 形成实现草案与风险清单（暂不进入复杂编辑）。
-  - 详见：`Docs/Audio-v1-Implementation-Plan.md`
-
-5. 当前迭代对齐项
-- [x] 导出状态文案统一构建，降低文案散落与后续修改成本。
-- [x] 新增本地回归脚本：`./scripts/test-non-ui.sh`、`./scripts/test-audio-regression.sh`。
-- [x] 新增关键 UI smoke 脚本：`./scripts/test-ui-smoke.sh`，并提供总门禁脚本 `./scripts/test-ci-gate.sh`。
-- [x] 修复音频时长读取过时 API（`AVURLAsset.duration`）并清理缩略图 actor 警告。
-- [x] 补齐异步音频时长刷新回归测试（导入后可读、移除后清空）。
-- [x] 增加导出失败类型本地聚合统计（`~/Library/Application Support/ReelFlow/Diagnostics/export-failure-stats.json`）。
-- [x] 在应用"更多"菜单增加"导出排障包"入口（生成并打开诊断包目录）。
-- [x] 导出前增加输出路径规范与可写性校验（`.mp4` 扩展名、目录路径、写权限），异常时即时提示并阻断导出。
-
-## 已确认产品取舍（当前版本）
-- 兼容性：最低兼容版本统一为 `macOS 14.6`。
-- 优先级：按"短期验收驱动 -> 中期反馈驱动"顺序推进，优先保证产品可达成率与可交付性。
-- 暂不做：项目保存/复用（前提是稳定性已足够）。
-- 暂不做：面向用户的稳定性指标看板与长期跟踪（前提是导出前风险甄别充分）。
-- 错误处理：重点是"不崩溃 + 友好提示 + 尽可能定位到问题图片"。
-- 日志定位：日志保留给开发排查使用，但不作为用户主路径能力。
-
-## 本地测试（当前策略）
-- 默认先跑非 UI 测试，再按需补关键 UI smoke。
-- 一键命令：
-  - `./scripts/test-non-ui.sh`
-- 音频导出关键回归（单轨附加 + 非循环 + 循环）：
-  - `./scripts/test-audio-regression.sh`
-- 关键 UI smoke（首用状态 + 成功/失败/校验场景）：
-  - `./scripts/test-ui-smoke.sh`
-- 本地 CI 门禁串联（maintainability + non-ui + ui smoke）：
-  - `./scripts/test-ci-gate.sh`
-- 音频专项回归（本地按需跑，不再作为独立 CI 作业重复执行）：
-  - `./scripts/test-audio-regression.sh`
-- 可维护性护栏检查（技术债标记 + 核心文件体量预算）：
-  - `./scripts/check-maintainability.sh`
-- 发布前门禁（含兼容性/CI配置检查 + 本地质量门）：
-  - `./scripts/release-gate.sh`
-- 一键采集最小排障包（环境信息 + 导出失败聚合 + 最近 render 日志 + 配置快照）：
-  - `./scripts/collect-diagnostics.sh`
-- 发布清单文档：
-  - `Docs/Release-Checklist.md`
-- 单人专家验收清单（当前阶段产品验收主依据）：
-  - `Docs/Single-Operator-Acceptance.md`
-- 工程可维护性守则：
-  - `Docs/Engineering-Guardrails.md`
-- GitHub Actions CI：
-  - `.github/workflows/ci.yml` 在 `push/pull_request` 上执行：
-    - Core Tests
-    - UI Smoke
-  - 失败时自动上传 `xcresult` 产物，便于定位问题。
-- 等价 `xcodebuild` 命令（带 ad-hoc 签名，避免本机调试库签名导致的测试启动失败）：
-  - `xcodebuild test -project ReelFlow.xcodeproj -scheme ReelFlow -destination 'platform=macOS' -derivedDataPath .derivedData CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='-' -only-testing:ReelFlowTests`
+See [LICENSE](/Users/liurui/develop/workspace-xcode/ReelFlow/LICENSE) for the full text.
