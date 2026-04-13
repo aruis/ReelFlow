@@ -208,24 +208,32 @@ struct ShutterSoundTrackSettings: Sendable {
 }
 
 struct WatermarkSettings: Sendable, Equatable {
-    let text: String
-    let textOpacity: Double
+    let title: String
+    let subtitle: String?
+    let titleOpacity: Double
+    let subtitleOpacity: Double
     let backgroundOpacity: Double
-    let fontSize: Double
+    let titleFontSize: Double
+    let subtitleFontSize: Double
+    let lineSpacing: Double
     let cornerRadius: Double
     let horizontalPadding: Double
     let verticalPadding: Double
     let inset: Double
 
     nonisolated static let reelFlowFreeTier = WatermarkSettings(
-        text: "Made with ReelFlow",
-        textOpacity: 0.68,
-        backgroundOpacity: 0.18,
-        fontSize: 22,
-        cornerRadius: 12,
-        horizontalPadding: 12,
-        verticalPadding: 7,
-        inset: 28
+        title: "ReelFlow",
+        subtitle: "Available on the Mac App Store",
+        titleOpacity: 0.60,
+        subtitleOpacity: 0.40,
+        backgroundOpacity: 0.10,
+        titleFontSize: 17,
+        subtitleFontSize: 10,
+        lineSpacing: 3,
+        cornerRadius: 10,
+        horizontalPadding: 10,
+        verticalPadding: 5,
+        inset: 24
     )
 }
 

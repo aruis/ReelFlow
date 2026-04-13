@@ -343,7 +343,7 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         case .pro:
             return String(localized: "ReelFlow Pro 已解锁：无限图片导入，导出无水印。")
         case .free:
-            return String(localized: "免费版支持最多 \(PlanLimits.freePhotoLimit) 张照片，导出会带 Made with ReelFlow 水印。")
+            return String(localized: "免费版支持最多 \(PlanLimits.freePhotoLimit) 张照片，导出会带 ReelFlow 标记。")
         }
     }
 

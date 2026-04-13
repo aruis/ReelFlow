@@ -466,7 +466,7 @@ extension ContentView {
             VStack(alignment: .leading, spacing: 3) {
                 Text("免费版导出将带水印")
                     .font(.callout.weight(.semibold))
-                Text("当前预览与导出都会显示较轻的 Made with ReelFlow 标记。升级 Pro 后会自动移除。")
+                Text("当前预览与导出会在角落显示较轻的 ReelFlow 标记。升级 Pro 后会自动移除。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

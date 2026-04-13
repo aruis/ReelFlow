@@ -304,25 +304,51 @@ final class FrameComposer {
 
     nonisolated private func drawWatermark(_ watermark: WatermarkSettings, in context: CGContext) {
         let widthScale = max(settings.outputSize.width / 1920, 0.7)
-        let resolvedFontSize = CGFloat(watermark.fontSize) * widthScale
-        let font = PlatformDrawing.systemFont(ofSize: resolvedFontSize)
-        let attributes: [NSAttributedString.Key: Any] = [
-            NSAttributedString.Key(kCTFontAttributeName as String): font,
+        let resolvedTitleFontSize = CGFloat(watermark.titleFontSize) * widthScale
+        let resolvedSubtitleFontSize = CGFloat(watermark.subtitleFontSize) * widthScale
+        let titleFont = PlatformDrawing.systemFont(ofSize: resolvedTitleFontSize)
+        let subtitleFont = PlatformDrawing.systemFont(ofSize: resolvedSubtitleFontSize)
+        let titleAttributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key(kCTFontAttributeName as String): titleFont,
             NSAttributedString.Key(kCTForegroundColorAttributeName as String): CGColor(
                 red: 1,
                 green: 1,
                 blue: 1,
-                alpha: CGFloat(watermark.textOpacity)
+                alpha: CGFloat(watermark.titleOpacity)
             )
         ]
-        let attributedText = NSAttributedString(string: watermark.text, attributes: attributes)
-        let line = CTLineCreateWithAttributedString(attributedText)
+        let subtitleAttributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key(kCTFontAttributeName as String): subtitleFont,
+            NSAttributedString.Key(kCTForegroundColorAttributeName as String): CGColor(
+                red: 1,
+                green: 1,
+                blue: 1,
+                alpha: CGFloat(watermark.subtitleOpacity)
+            )
+        ]
+        let titleLine = CTLineCreateWithAttributedString(NSAttributedString(string: watermark.title, attributes: titleAttributes))
 
-        var ascent: CGFloat = 0
-        var descent: CGFloat = 0
-        var leading: CGFloat = 0
-        let textWidth = CGFloat(CTLineGetTypographicBounds(line, &ascent, &descent, &leading)).rounded(.up)
-        let textHeight = (ascent + descent + leading).rounded(.up)
+        var titleAscent: CGFloat = 0
+        var titleDescent: CGFloat = 0
+        var titleLeading: CGFloat = 0
+        let titleWidth = CGFloat(CTLineGetTypographicBounds(titleLine, &titleAscent, &titleDescent, &titleLeading)).rounded(.up)
+        let titleHeight = (titleAscent + titleDescent + titleLeading).rounded(.up)
+
+        let subtitleLine = watermark.subtitle.map {
+            CTLineCreateWithAttributedString(NSAttributedString(string: $0, attributes: subtitleAttributes))
+        }
+        var subtitleAscent: CGFloat = 0
+        var subtitleDescent: CGFloat = 0
+        var subtitleLeading: CGFloat = 0
+        let subtitleWidth = subtitleLine.map {
+            CGFloat(CTLineGetTypographicBounds($0, &subtitleAscent, &subtitleDescent, &subtitleLeading)).rounded(.up)
+        } ?? 0
+        let subtitleHeight = subtitleLine.map { _ in
+            (subtitleAscent + subtitleDescent + subtitleLeading).rounded(.up)
+        } ?? 0
+        let lineSpacing = subtitleLine == nil ? 0 : CGFloat(watermark.lineSpacing) * widthScale
+        let textWidth = max(titleWidth, subtitleWidth)
+        let textHeight = titleHeight + subtitleHeight + lineSpacing
         let horizontalPadding = CGFloat(watermark.horizontalPadding) * widthScale
         let verticalPadding = CGFloat(watermark.verticalPadding) * widthScale
         let inset = CGFloat(watermark.inset) * widthScale
@@ -343,11 +369,14 @@ final class FrameComposer {
         context.setFillColor(CGColor(gray: 0, alpha: CGFloat(watermark.backgroundOpacity)))
         context.addPath(path)
         context.fillPath()
-        context.textPosition = CGPoint(
-            x: capsuleRect.minX + horizontalPadding,
-            y: capsuleRect.minY + verticalPadding + descent
-        )
-        CTLineDraw(line, context)
+        let subtitleBaseY = capsuleRect.minY + verticalPadding + subtitleDescent
+        let titleBaseY = subtitleBaseY + subtitleHeight + lineSpacing + titleDescent
+        context.textPosition = CGPoint(x: capsuleRect.maxX - horizontalPadding - titleWidth, y: titleBaseY)
+        CTLineDraw(titleLine, context)
+        if let subtitleLine {
+            context.textPosition = CGPoint(x: capsuleRect.maxX - horizontalPadding - subtitleWidth, y: subtitleBaseY)
+            CTLineDraw(subtitleLine, context)
+        }
         context.restoreGState()
     }
 
