@@ -584,9 +584,6 @@
         }
       }
     },
-    "会按照当前预览与设置生成 MP4 文件。" : {
-
-    },
     "位置" : {
       "localizations" : {
         "en" : {
@@ -1009,16 +1006,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Device only"
-          }
-        }
-      }
-    },
-    "可以沿用当前设置再次导出。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can export again with the current settings."
           }
         }
       }
@@ -2454,9 +2441,6 @@
           }
         }
       }
-    },
-    "当前设置已完成，可以直接导出。" : {
-
     },
     "当前设置已更新，可先生成预览。" : {
       "localizations" : {
@@ -3937,9 +3921,6 @@
           }
         }
       }
-    },
-    "沿用当前输出目录与导出参数再次生成。" : {
-
     },
     "流程状态" : {
       "localizations" : {

@@ -409,8 +409,8 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
                 id: .exportAgain,
                 title: String(localized: "再次导出"),
                 buttonSubtitle: nil,
-                summaryTitle: String(localized: "可以沿用当前设置再次导出。"),
-                summarySubtitle: String(localized: "沿用当前输出目录与导出参数再次生成。"),
+                summaryTitle: nil,
+                summarySubtitle: nil,
                 isDisabled: !canRunExport
             )
         }
@@ -441,8 +441,8 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             id: .exportMP4,
             title: String(localized: "导出 MP4"),
             buttonSubtitle: nil,
-            summaryTitle: String(localized: "当前设置已完成，可以直接导出。"),
-            summarySubtitle: String(localized: "会按照当前预览与设置生成 MP4 文件。"),
+            summaryTitle: nil,
+            summarySubtitle: nil,
             isDisabled: !canRunExport
         )
     }

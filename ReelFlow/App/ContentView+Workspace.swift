@@ -664,14 +664,14 @@ extension ContentView {
                     HStack(alignment: .center, spacing: 12) {
                         if let title = viewModel.isExporting
                             ? String(localized: "正在导出")
-                            : primaryAction.summaryTitle {
+                            : nil {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(title)
                                     .font(.callout.weight(.semibold))
                                     .foregroundStyle(.primary)
                                 if let subtitle = viewModel.isExporting
                                     ? String(localized: "导出期间预览与输出设置暂时锁定。")
-                                    : primaryAction.summarySubtitle {
+                                    : nil {
                                     Text(subtitle)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
