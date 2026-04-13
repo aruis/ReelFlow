@@ -2,6 +2,11 @@
 
 ReelFlow 是一个面向摄影爱好者的 macOS 幻灯片导出工具。
 
+## License
+
+本项目采用 GNU GPLv3 许可证开源。你可以在遵守 GPLv3 条款的前提下使用、修改和分发本项目。
+完整条款见仓库根目录的 [LICENSE](/Users/liurui/develop/workspace-xcode/ReelFlow/LICENSE)。
+
 ## 远期目标（可迭代）
 以下目标作为当前版本的长期方向，后续可根据实际进展持续微调。
 
