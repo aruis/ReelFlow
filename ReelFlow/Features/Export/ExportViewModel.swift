@@ -84,6 +84,23 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         let done: Bool
     }
 
+    enum PrimaryActionID {
+        case importImages
+        case generatePreview
+        case chooseOutput
+        case exportMP4
+        case exportAgain
+    }
+
+    struct PrimaryAction {
+        let id: PrimaryActionID
+        let title: String
+        let buttonSubtitle: String?
+        let summaryTitle: String?
+        let summarySubtitle: String?
+        let isDisabled: Bool
+    }
+
     @Published var imageURLs: [URL] = []
     @Published var outputURL: URL?
     @Published var previewImage: CGImage?
@@ -369,6 +386,65 @@ final class ExportViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             return String(localized: "正在导出，请等待完成。")
         }
         return String(localized: "已就绪：点击顶部“导出 MP4”即可完成首次导出。")
+    }
+
+    var primaryAction: PrimaryAction? {
+        if !hasSelectedImages {
+            return PrimaryAction(
+                id: .importImages,
+                title: String(localized: "导入图片"),
+                buttonSubtitle: String(localized: "从本地选择素材，开始生成视频"),
+                summaryTitle: nil,
+                summarySubtitle: String(localized: "从本地选择素材，开始生成视频"),
+                isDisabled: isBusy
+            )
+        }
+
+        if validationMessage != nil {
+            return nil
+        }
+
+        if hasSuccessCard {
+            return PrimaryAction(
+                id: .exportAgain,
+                title: String(localized: "再次导出"),
+                buttonSubtitle: nil,
+                summaryTitle: String(localized: "可以沿用当前设置再次导出。"),
+                summarySubtitle: String(localized: "沿用当前输出目录与导出参数再次生成。"),
+                isDisabled: !canRunExport
+            )
+        }
+
+        if !hasPreviewFrame {
+            return PrimaryAction(
+                id: .generatePreview,
+                title: String(localized: "生成预览"),
+                buttonSubtitle: String(localized: "先确认画面效果，再决定是否导出"),
+                summaryTitle: String(localized: "当前设置已更新，可先生成预览。"),
+                summarySubtitle: String(localized: "建议先确认画面效果，再执行导出。"),
+                isDisabled: !canRunPreview
+            )
+        }
+
+        if outputURL == nil {
+            return PrimaryAction(
+                id: .chooseOutput,
+                title: String(localized: "选择导出位置"),
+                buttonSubtitle: String(localized: "导出前需要先指定保存目录"),
+                summaryTitle: String(localized: "导出前还缺少保存位置。"),
+                summarySubtitle: String(localized: "导出前需要先指定保存目录"),
+                isDisabled: !actionAvailability.canSelectOutput
+            )
+        }
+
+        return PrimaryAction(
+            id: .exportMP4,
+            title: String(localized: "导出 MP4"),
+            buttonSubtitle: nil,
+            summaryTitle: String(localized: "当前设置已完成，可以直接导出。"),
+            summarySubtitle: String(localized: "会按照当前预览与设置生成 MP4 文件。"),
+            isDisabled: !canRunExport
+        )
     }
 
     var orderedImageURLsForDisplay: [URL] {

@@ -7,6 +7,7 @@
 
 import XCTest
 import AppKit
+import Darwin
 
 final class ReelFlowUITests: XCTestCase {
     private let uiTimeout: TimeInterval = 3
@@ -38,8 +39,29 @@ final class ReelFlowUITests: XCTestCase {
 
     private func makeApp(language: AppLanguage = .simplifiedChinese) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-AppleLanguages", "(\(language.rawValue))", "-AppleLocale", language.rawValue]
+        app.launchArguments += [
+            "-AppleLanguages", "(\(language.rawValue))",
+            "-AppleLocale", language.rawValue,
+            "-ApplePersistenceIgnoreState", "YES"
+        ]
+        app.launchEnvironment["NSQuitAlwaysKeepsWindows"] = "NO"
         return app
+    }
+
+    private func terminateReelFlowProcesses() {
+        NSRunningApplication
+            .runningApplications(withBundleIdentifier: "net.ximatai.ReelFlow")
+            .forEach { app in
+                if app.terminate() {
+                    return
+                }
+
+                if app.forceTerminate() {
+                    return
+                }
+
+                _ = kill(app.processIdentifier, SIGKILL)
+            }
     }
 
     override func setUpWithError() throws {
@@ -48,19 +70,14 @@ final class ReelFlowUITests: XCTestCase {
         // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
 
-        NSRunningApplication
-            .runningApplications(withBundleIdentifier: "net.ximatai.ReelFlow")
-            .forEach { app in
-                if !app.terminate() {
-                    _ = app.forceTerminate()
-                }
-            }
+        terminateReelFlowProcesses()
 
         // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        terminateReelFlowProcesses()
     }
 
     @MainActor
@@ -68,14 +85,11 @@ final class ReelFlowUITests: XCTestCase {
         let app = makeApp()
         app.launch()
 
-        let primaryAction = elementByIdentifier(app, id: "toolbar_primary_action")
-        let export = elementByIdentifier(app, id: "primary_export")
-        let cancel = elementByIdentifier(app, id: "primary_cancel")
         let moreMenu = elementByIdentifier(app, id: "toolbar_more_menu")
+        let primaryAction = elementByIdentifier(app, id: "preview_output_primary_action")
+        let cancel = elementByIdentifier(app, id: "preview_output_cancel_action")
 
-        XCTAssertTrue(primaryAction.waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue(waitEnabled(primaryAction))
-        XCTAssertFalse(export.exists)
+        XCTAssertFalse(primaryAction.exists)
         XCTAssertFalse(cancel.exists)
         XCTAssertTrue(moreMenu.waitForExistence(timeout: uiTimeout))
     }
@@ -124,14 +138,11 @@ final class ReelFlowUITests: XCTestCase {
         app.launchArguments += ["-ui-test-scenario", "invalid"]
         app.launch()
 
-        let statusMessage = elementByIdentifier(app, id: "workflow_status_message")
         let validationMessage = elementByIdentifier(app, id: "settings_validation_message")
 
-        XCTAssertTrue(statusMessage.waitForExistence(timeout: uiTimeout))
-        XCTAssertTrue((statusMessage.value as? String)?.contains("测试场景：参数无效") == true)
         XCTAssertTrue(validationMessage.waitForExistence(timeout: uiTimeout))
         XCTAssertTrue((validationMessage.value as? String)?.contains("已启用音频") == true)
-        XCTAssertFalse(elementByIdentifier(app, id: "toolbar_primary_action").exists)
+        XCTAssertFalse(elementByIdentifier(app, id: "preview_output_primary_action").exists)
     }
 
     @MainActor
@@ -140,10 +151,14 @@ final class ReelFlowUITests: XCTestCase {
         app.launchArguments += ["-ui-test-scenario", "first_run_ready"]
         app.launch()
 
-        let export = button(app, id: "primary_export", title: "导出 MP4")
+        let export = button(app, id: "preview_output_primary_action", title: "导出 MP4")
+        let previewRefreshDebugSignal = elementByIdentifier(app, id: "preview_refresh_debug_signal")
 
         XCTAssertTrue(export.exists)
         XCTAssertTrue(waitEnabled(export))
+        XCTAssertTrue(previewRefreshDebugSignal.waitForExistence(timeout: uiTimeout))
+        let refreshSignal = previewRefreshDebugSignal.value as? String
+        XCTAssertTrue(refreshSignal?.contains("|singleFrame|debounced") == true)
         XCTAssertFalse(app.staticTexts["workflow_status_message"].exists)
     }
 

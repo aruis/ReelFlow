@@ -3,6 +3,21 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 extension ContentView {
+    enum PreviewRefreshMode {
+        case debounced
+        case immediate
+    }
+
+    enum PreviewRefreshReason: String {
+        case onAppear
+        case configChanged
+        case entitlementChanged
+        case imageURLsChanged
+        case selectedAssetChanged
+        case centerPreviewTabChanged
+        case manualPrimaryAction
+    }
+
     var sidebarAssetColumn: some View {
         AssetSidebarPanel(
             viewModel: viewModel,
@@ -568,112 +583,46 @@ extension ContentView {
             } else if viewModel.validationMessage != nil {
                 WorkflowOverviewPanel(
                     statusMessage: viewModel.statusMessage,
-                    nextActionHint: viewModel.nextActionHint,
-                    firstRunPrimaryActionKind: firstRunPrimaryAction?.kind,
-                    firstRunPrimaryActionTitle: firstRunPrimaryAction?.title,
-                    firstRunPrimaryActionSubtitle: firstRunPrimaryActionSubtitle,
-                    isBusy: viewModel.isBusy,
-                    onFirstRunPrimaryAction: { firstRunPrimaryAction?.handler() }
+                    nextActionHint: viewModel.nextActionHint
                 )
-            } else {
-                HStack(spacing: 10) {
-                    Spacer(minLength: 0)
-
-                    if let primary = firstRunPrimaryAction, !showsIntegratedPreviewPrimaryAction {
-                        WorkflowPrimaryActionButton(
-                            kind: primary.kind,
-                            title: primary.title,
-                            subtitle: firstRunPrimaryActionSubtitle,
-                            isBusy: viewModel.isBusy,
-                            accessibilityIdentifier: "workflow_primary_action",
-                            action: primary.handler
-                        )
-                        .disabled(viewModel.isBusy)
-                    }
-                }
             }
         }
     }
 
-    var firstRunPrimaryAction: (kind: WorkflowPrimaryActionKind, title: String, handler: () -> Void)? {
-        if !viewModel.hasSelectedImages {
-            return (.importImages, String(localized: "导入图片"), { viewModel.chooseImages() })
-        }
-        if viewModel.validationMessage != nil {
-            return nil
-        }
-        if viewModel.hasSuccessCard {
-            return (.exportAgain, String(localized: "再次导出"), { viewModel.export() })
-        }
-        if !viewModel.hasPreviewFrame {
-            return (.generatePreview, String(localized: "生成预览"), {
-                if centerPreviewTab == .singleFrame, let selected = selectedAssetForPreview {
-                    viewModel.generatePreviewForSelectedAsset(selected)
-                } else {
-                    viewModel.generatePreview()
-                }
-            })
-        }
-        return (.exportMP4, String(localized: "导出 MP4"), { viewModel.export() })
-    }
-
-    var firstRunPrimaryActionSubtitle: String? {
-        guard let primary = firstRunPrimaryAction else { return nil }
-        switch primary.kind {
-        case .exportMP4, .exportAgain:
-            return viewModel.outputURL == nil ? String(localized: "请先选择导出路径") : nil
+    func workflowPrimaryActionKind(for id: ExportViewModel.PrimaryActionID) -> WorkflowPrimaryActionKind {
+        switch id {
         case .importImages:
-            return String(localized: "从本地选择素材，开始生成视频")
+            return .importImages
         case .generatePreview:
-            return String(localized: "先确认画面效果，再决定是否导出")
-        default:
-            return nil
-        }
-    }
-
-    func isToolbarPrimaryActionDisabled(for kind: WorkflowPrimaryActionKind) -> Bool {
-        switch kind {
-        case .exportMP4, .exportAgain:
-            return !viewModel.canRunExport
-        case .generatePreview:
-            return !viewModel.canRunPreview
-        case .importImages:
-            return viewModel.isBusy
-        default:
-            return viewModel.isBusy
-        }
-    }
-
-    var showsIntegratedPreviewPrimaryAction: Bool {
-        guard viewModel.outputURL != nil else { return false }
-        guard viewModel.validationMessage == nil else { return false }
-        return !viewModel.hasFailureCard
-    }
-
-    func isIntegratedPreviewPrimaryActionDisabled(for kind: WorkflowPrimaryActionKind) -> Bool {
-        isToolbarPrimaryActionDisabled(for: kind)
-    }
-
-    func previewActionSummaryTitle(for kind: WorkflowPrimaryActionKind) -> String? {
-        if viewModel.isExporting {
-            return String(localized: "正在导出")
-        }
-        switch kind {
-        case .generatePreview:
-            return String(localized: "当前设置已更新，可先生成预览。")
+            return .generatePreview
+        case .chooseOutput:
+            return .chooseOutput
+        case .exportMP4:
+            return .exportMP4
         case .exportAgain:
-            return String(localized: "可以沿用当前设置再次导出。")
-        default:
-            return nil
+            return .exportAgain
+        }
+    }
+
+    func performPrimaryAction(_ action: ExportViewModel.PrimaryAction) {
+        switch action.id {
+        case .importImages:
+            viewModel.chooseImages()
+        case .generatePreview:
+            requestPreviewRefresh(reason: .manualPrimaryAction, mode: .immediate)
+        case .chooseOutput:
+            viewModel.chooseOutput()
+        case .exportMP4, .exportAgain:
+            viewModel.export()
         }
     }
 
     @ViewBuilder
     var previewOutputBar: some View {
-        if viewModel.hasSelectedImages, previewOutputDirectoryURL != nil {
+        if viewModel.hasSelectedImages {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .center, spacing: 12) {
-                    Image(systemName: "folder.fill")
+                    Image(systemName: previewOutputDirectoryURL == nil ? "folder.badge.questionmark" : "folder.fill")
                         .font(.subheadline)
                         .foregroundStyle(Color.accentColor)
 
@@ -684,21 +633,23 @@ extension ContentView {
                         HStack(alignment: .center, spacing: 6) {
                             Text(previewOutputDirectoryText)
                                 .font(.callout.weight(.semibold))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(previewOutputDirectoryURL == nil ? .secondary : .primary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                                 .textSelection(.enabled)
 
-                            Button {
-                                viewModel.openLatestOutputDirectory()
-                            } label: {
-                                Image(systemName: "arrow.up.forward.app")
-                                    .font(.caption.weight(.semibold))
+                            if previewOutputDirectoryURL != nil {
+                                Button {
+                                    viewModel.openLatestOutputDirectory()
+                                } label: {
+                                    Image(systemName: "arrow.up.forward.app")
+                                        .font(.caption.weight(.semibold))
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(.secondary)
+                                .help("打开导出文件夹")
+                                .accessibilityLabel("打开导出文件夹")
                             }
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.secondary)
-                            .help("打开导出文件夹")
-                            .accessibilityLabel("打开导出文件夹")
                         }
                     }
 
@@ -709,14 +660,18 @@ extension ContentView {
                         .disabled(!viewModel.actionAvailability.canSelectOutput)
                 }
 
-                if let primary = firstRunPrimaryAction, showsIntegratedPreviewPrimaryAction {
+                if let primaryAction = viewModel.primaryAction {
                     HStack(alignment: .center, spacing: 12) {
-                        if let title = previewActionSummaryTitle(for: primary.kind) {
+                        if let title = viewModel.isExporting
+                            ? String(localized: "正在导出")
+                            : primaryAction.summaryTitle {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(title)
                                     .font(.callout.weight(.semibold))
                                     .foregroundStyle(.primary)
-                                if let subtitle = previewActionSubtitle(for: primary.kind) {
+                                if let subtitle = viewModel.isExporting
+                                    ? String(localized: "导出期间预览与输出设置暂时锁定。")
+                                    : primaryAction.summarySubtitle {
                                     Text(subtitle)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
@@ -734,14 +689,14 @@ extension ContentView {
                                 .disabled(!viewModel.actionAvailability.canCancelExport)
                         } else {
                             WorkflowPrimaryActionButton(
-                                kind: primary.kind,
-                                title: primary.title,
-                                subtitle: nil,
+                                kind: workflowPrimaryActionKind(for: primaryAction.id),
+                                title: primaryAction.title,
+                                subtitle: primaryAction.buttonSubtitle,
                                 isBusy: viewModel.isBusy,
                                 accessibilityIdentifier: "preview_output_primary_action",
-                                action: primary.handler
+                                action: { performPrimaryAction(primaryAction) }
                             )
-                            .disabled(isIntegratedPreviewPrimaryActionDisabled(for: primary.kind))
+                            .disabled(primaryAction.isDisabled)
                         }
                     }
                 }
@@ -769,6 +724,19 @@ extension ContentView {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            #if DEBUG
+            .overlay(alignment: .bottomTrailing) {
+                Text(previewRefreshDebugSignal)
+                    .font(.caption2)
+                    .foregroundStyle(.clear)
+                    .accessibilityIdentifier("preview_refresh_debug_signal")
+                    .accessibilityLabel("preview refresh debug signal")
+                    .accessibilityValue(previewRefreshDebugSignal)
+                    .allowsHitTesting(false)
+                    .frame(width: 1, height: 1)
+                    .clipped()
+            }
+            #endif
         }
     }
 
@@ -777,7 +745,9 @@ extension ContentView {
     }
 
     var previewOutputDirectoryText: String {
-        guard let directoryURL = previewOutputDirectoryURL else { return "" }
+        guard let directoryURL = previewOutputDirectoryURL else {
+            return String(localized: "尚未设置")
+        }
         return (directoryURL.path as NSString).abbreviatingWithTildeInPath
     }
 
@@ -786,11 +756,12 @@ extension ContentView {
         return LocalizedFormatting.percent(progress)
     }
 
-    func previewActionSubtitle(for kind: WorkflowPrimaryActionKind) -> String? {
-        if viewModel.isExporting {
-            return String(localized: "导出期间预览与输出设置暂时锁定。")
-        }
-        return nil
+    var previewRefreshDebugSignal: String {
+        [
+            lastPreviewRefreshReason ?? "none",
+            lastPreviewRefreshTab ?? "none",
+            lastPreviewRefreshMode ?? "none"
+        ].joined(separator: "|")
     }
 
     func presentSuccessSheetIfNeeded() {
@@ -871,23 +842,85 @@ extension ContentView {
             && (viewModel.preflightReport?.issues.isEmpty ?? true)
     }
 
-    func scheduleSingleFramePreview() {
+    func cancelPendingPreviewRefresh() {
+        singlePreviewDebounceTask?.cancel()
+        singlePreviewDebounceTask = nil
+    }
+
+    func requestPreviewRefresh(
+        reason: PreviewRefreshReason,
+        mode: PreviewRefreshMode = .debounced,
+        tab: CenterPreviewTab? = nil
+    ) {
+        let effectiveTab = tab ?? centerPreviewTab
+        cancelPendingPreviewRefresh()
+        lastPreviewRefreshReason = reason.rawValue
+        lastPreviewRefreshTab = effectiveTab.rawValue
+        lastPreviewRefreshMode = mode == .debounced ? "debounced" : "immediate"
+
+        #if DEBUG
+        debugPrint("Preview refresh requested:", reason.rawValue, "tab:", String(describing: effectiveTab), "mode:", String(describing: mode))
+        #endif
+
+        guard viewModel.hasSelectedImages else { return }
         guard !viewModel.isBusy else { return }
         guard viewModel.validationMessage == nil else { return }
-        guard let selected = selectedAssetForPreview else { return }
 
-        singlePreviewDebounceTask?.cancel()
-        singlePreviewDebounceTask = Task {
-            do {
-                try await Task.sleep(nanoseconds: 120_000_000)
-            } catch {
+        switch effectiveTab {
+        case .singleFrame:
+            guard let selected = selectedAssetForPreview else { return }
+            guard mode == .debounced else {
+                viewModel.generatePreviewForSelectedAsset(selected)
                 return
             }
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                viewModel.generatePreviewForSelectedAsset(selected)
+
+            singlePreviewDebounceTask = Task {
+                do {
+                    try await Task.sleep(nanoseconds: 120_000_000)
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    viewModel.generatePreviewForSelectedAsset(selected)
+                }
             }
+        case .videoTimeline:
+            viewModel.generatePreview()
         }
+    }
+
+    func requestPreviewRefreshAfterConfigChange() {
+        viewModel.handleConfigChanged()
+        requestPreviewRefresh(reason: .configChanged)
+    }
+
+    func syncSelectionAfterImageURLsChanged(_ urls: [URL]) {
+        guard !urls.isEmpty else {
+            cancelPendingPreviewRefresh()
+            selectedAssetURL = nil
+            selectedAssetURLs = []
+            return
+        }
+
+        selectedAssetURLs = selectedAssetURLs.intersection(Set(urls))
+        if let selectedAssetURL, urls.contains(selectedAssetURL) {
+            requestPreviewRefresh(reason: .imageURLsChanged)
+            return
+        }
+
+        selectedAssetURL = urls.first
+        if let first = urls.first {
+            selectedAssetURLs = [first]
+        }
+    }
+
+    func syncPrimarySelection(from urls: Set<URL>) {
+        guard !urls.isEmpty else { return }
+        if let selectedAssetURL, urls.contains(selectedAssetURL) {
+            return
+        }
+        selectedAssetURL = viewModel.imageURLs.first(where: { urls.contains($0) })
     }
 
     func applyPreviewModePolicy(for tab: CenterPreviewTab) {

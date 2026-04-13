@@ -65,6 +65,9 @@ struct ContentView: View {
     @State var splitColumnVisibility: NavigationSplitViewVisibility = .all
     @State var successSheetContext: SuccessSheetContext?
     @State var feedbackDismissTask: Task<Void, Never>?
+    @State var lastPreviewRefreshReason: String?
+    @State var lastPreviewRefreshTab: String?
+    @State var lastPreviewRefreshMode: String?
     @Namespace var settingsModeAnimation
     @State var hoveredSettingsTab: SettingsTab?
 
@@ -114,9 +117,7 @@ struct ContentView: View {
                 applyUITestOverridesIfNeeded()
                 applyPreviewModePolicy(for: centerPreviewTab)
                 presentSuccessSheetIfNeeded()
-                if centerPreviewTab == .singleFrame {
-                    scheduleSingleFramePreview()
-                }
+                requestPreviewRefresh(reason: .onAppear)
             }
             .alert(item: $viewModel.entitlementAlert) { alert in
                 switch purchaseStore.entitlementState {
@@ -144,66 +145,32 @@ struct ContentView: View {
                 }
             }
             .onChange(of: viewModel.configSignature) { _, _ in
-                viewModel.handleConfigChanged()
-                if centerPreviewTab == .singleFrame {
-                    scheduleSingleFramePreview()
-                }
+                requestPreviewRefreshAfterConfigChange()
             }
             .onChange(of: purchaseStore.entitlementState) { _, _ in
-                if centerPreviewTab == .singleFrame {
-                    scheduleSingleFramePreview()
-                } else if viewModel.hasSelectedImages {
-                    viewModel.generatePreview()
-                }
+                requestPreviewRefresh(reason: .entitlementChanged)
             }
             .onChange(of: purchaseStore.feedback) { _, feedback in
                 schedulePurchaseFeedbackDismiss(for: feedback)
             }
             .onChange(of: viewModel.imageURLs) { _, urls in
-                guard !urls.isEmpty else {
-                    selectedAssetURL = nil
-                    selectedAssetURLs = []
-                    if centerPreviewTab == .singleFrame {
-                        scheduleSingleFramePreview()
-                    }
-                    return
-                }
-                selectedAssetURLs = selectedAssetURLs.intersection(Set(urls))
-                if let selectedAssetURL, urls.contains(selectedAssetURL) {
-                    if centerPreviewTab == .singleFrame {
-                        scheduleSingleFramePreview()
-                    }
-                    return
-                }
-                selectedAssetURL = urls.first
-                if let first = urls.first {
-                    selectedAssetURLs = [first]
-                }
+                syncSelectionAfterImageURLsChanged(urls)
             }
             .onChange(of: selectedAssetURL) { _, _ in
-                if centerPreviewTab == .singleFrame {
-                    scheduleSingleFramePreview()
-                }
+                requestPreviewRefresh(reason: .selectedAssetChanged)
             }
             .onChange(of: selectedAssetURLs) { _, urls in
-                guard !urls.isEmpty else { return }
-                if let selectedAssetURL, urls.contains(selectedAssetURL) {
-                    return
-                }
-                selectedAssetURL = viewModel.imageURLs.first(where: { urls.contains($0) })
+                syncPrimarySelection(from: urls)
             }
             .onChange(of: centerPreviewTab) { _, tab in
                 applyPreviewModePolicy(for: tab)
-                if tab == .singleFrame {
-                    scheduleSingleFramePreview()
-                } else {
-                    viewModel.generatePreview()
-                }
+                requestPreviewRefresh(reason: .centerPreviewTabChanged, tab: tab)
             }
             .onChange(of: viewModel.statusMessage) { _, _ in
                 presentSuccessSheetIfNeeded()
             }
             .onDisappear {
+                cancelPendingPreviewRefresh()
                 feedbackDismissTask?.cancel()
                 viewModel.stopAudioPreview()
                 viewModel.stopShutterSoundPreview()
@@ -224,21 +191,6 @@ struct ContentView: View {
             .navigationSplitViewStyle(.balanced)
             .navigationTitle(Text(verbatim: "ReelFlow"))
             .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    if let primary = firstRunPrimaryAction {
-                        Button(primary.title) { primary.handler() }
-                            .accessibilityIdentifier("toolbar_primary_action")
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.regular)
-                            .disabled(isToolbarPrimaryActionDisabled(for: primary.kind))
-                    }
-                    if viewModel.isExporting {
-                        Button("取消导出") { viewModel.cancelExport() }
-                            .accessibilityIdentifier("primary_cancel")
-                            .disabled(!viewModel.actionAvailability.canCancelExport)
-                    }
-                }
-
                 ToolbarItem(placement: .automatic) {
                     Menu("更多") {
                         Button("导入模板") { viewModel.importTemplate() }

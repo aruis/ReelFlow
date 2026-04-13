@@ -3,6 +3,7 @@ import SwiftUI
 enum WorkflowPrimaryActionKind {
     case importImages
     case generatePreview
+    case chooseOutput
     case exportMP4
     case exportAgain
     case custom(systemImage: String)
@@ -13,6 +14,8 @@ enum WorkflowPrimaryActionKind {
             return "photo.badge.plus"
         case .generatePreview:
             return "play.rectangle.fill"
+        case .chooseOutput:
+            return "folder.badge.plus"
         case .exportMP4:
             return "square.and.arrow.up.fill"
         case .exportAgain:
@@ -134,11 +137,6 @@ struct ExportSuccessSheet: View {
 struct WorkflowOverviewPanel: View {
     let statusMessage: String
     let nextActionHint: String
-    let firstRunPrimaryActionKind: WorkflowPrimaryActionKind?
-    let firstRunPrimaryActionTitle: String?
-    let firstRunPrimaryActionSubtitle: String?
-    let isBusy: Bool
-    let onFirstRunPrimaryAction: () -> Void
 
     var body: some View {
         GroupBox("流程状态") {
@@ -171,22 +169,6 @@ struct WorkflowOverviewPanel: View {
                 )
                 .padding(14)
                 .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-                if let firstRunPrimaryActionKind, let firstRunPrimaryActionTitle {
-                    HStack {
-                        Spacer(minLength: 0)
-                        WorkflowPrimaryActionButton(
-                            kind: firstRunPrimaryActionKind,
-                            title: firstRunPrimaryActionTitle,
-                            subtitle: firstRunPrimaryActionSubtitle,
-                            isBusy: isBusy,
-                            accessibilityIdentifier: "workflow_overview_primary_action",
-                            action: onFirstRunPrimaryAction
-                        )
-                        .disabled(isBusy)
-                    }
-                    .padding(.top, 2)
-                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
