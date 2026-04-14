@@ -8,12 +8,17 @@ struct SingleFramePreviewPanel: View {
             VStack(alignment: .leading, spacing: 12) {
                 previewSurface(
                     image: viewModel.previewImage,
+                    targetAspectRatio: previewAspectRatio,
                     placeholderSystemImage: "photo",
                     placeholderText: String(localized: "尚未生成单帧预览"),
                     accessibilityIdentifier: "single_frame_preview_surface"
                 )
             }
         }
+    }
+
+    private var previewAspectRatio: CGFloat {
+        previewSurfaceAspectRatio(for: viewModel.previewImage, fallback: viewModel.currentRenderSettings.outputSize)
     }
 }
 
@@ -38,6 +43,7 @@ struct VideoTimelinePreviewPanel: View {
             VStack(alignment: .leading, spacing: 12) {
                 previewSurface(
                     image: viewModel.previewImage,
+                    targetAspectRatio: previewAspectRatio,
                     placeholderSystemImage: "film",
                     placeholderText: String(localized: "尚未生成时间轴预览"),
                     accessibilityIdentifier: "timeline_preview_surface"
@@ -74,6 +80,10 @@ struct VideoTimelinePreviewPanel: View {
                 }
             }
         }
+    }
+
+    private var previewAspectRatio: CGFloat {
+        previewSurfaceAspectRatio(for: viewModel.previewImage, fallback: viewModel.currentRenderSettings.outputSize)
     }
 }
 
@@ -364,6 +374,7 @@ private struct AudioWaveformOverlay: View {
 private extension View {
     func previewSurface(
         image: CGImage?,
+        targetAspectRatio: CGFloat,
         placeholderSystemImage: String,
         placeholderText: String,
         accessibilityIdentifier: String
@@ -372,13 +383,14 @@ private extension View {
             if let image {
                 Image(decorative: image, scale: 1)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, minHeight: 280, maxHeight: 420)
+                    .aspectRatio(targetAspectRatio, contentMode: .fit)
+                    .frame(maxWidth: .infinity, minHeight: 280)
                     .padding(.vertical, 4)
             } else {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color.secondary.opacity(0.08))
-                    .frame(maxWidth: .infinity, minHeight: 280, maxHeight: 420)
+                    .aspectRatio(targetAspectRatio, contentMode: .fit)
+                    .frame(maxWidth: .infinity, minHeight: 280)
                     .overlay {
                         VStack(spacing: 6) {
                             Image(systemName: placeholderSystemImage)
@@ -391,4 +403,15 @@ private extension View {
         }
         .accessibilityIdentifier(accessibilityIdentifier)
     }
+}
+
+private func previewSurfaceAspectRatio(for image: CGImage?, fallback size: CGSize) -> CGFloat {
+    if let image, image.height > 0 {
+        return CGFloat(image.width) / CGFloat(image.height)
+    }
+
+    guard size.width > 0, size.height > 0 else {
+        return 16 / 9
+    }
+    return size.width / size.height
 }
