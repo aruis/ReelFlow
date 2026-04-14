@@ -43,7 +43,8 @@ struct ExportViewModelPreflightFlowTests {
     func freeTierAddsWatermarkToCurrentRenderSettings() async throws {
         let viewModel = ExportViewModel(hasProAccess: { false })
 
-        #expect(viewModel.currentRenderSettings.watermark?.text == "Made with ReelFlow")
+        #expect(viewModel.currentRenderSettings.watermark?.title == "ReelFlow")
+        #expect(viewModel.currentRenderSettings.watermark?.subtitle == "Available on the Mac App Store")
     }
 
     @Test
