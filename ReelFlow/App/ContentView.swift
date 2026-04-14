@@ -190,21 +190,21 @@ struct ContentView: View {
             .navigationTitle(Text(verbatim: "ReelFlow"))
             .toolbar {
                 ToolbarItem(placement: .automatic) {
-                    Menu("更多") {
-                        Button("导入模板") { viewModel.importTemplate() }
+                    Menu {
+                        Button(String(localized: "导入模板")) { viewModel.importTemplate() }
                             .accessibilityIdentifier("secondary_import_template")
                             .disabled(!viewModel.actionAvailability.canImportTemplate)
-                        Button("保存模板") { viewModel.exportTemplate() }
+                        Button(String(localized: "保存模板")) { viewModel.exportTemplate() }
                             .accessibilityIdentifier("secondary_export_template")
                             .disabled(!viewModel.actionAvailability.canSaveTemplate)
-                        Button("恢复设置") { viewModel.resetSettingsToDefaults() }
+                        Button(String(localized: "恢复设置")) { viewModel.resetSettingsToDefaults() }
                             .accessibilityIdentifier("secondary_reset_settings")
                             .disabled(viewModel.isBusy)
                         Divider()
-                        Button("重试上次导出") { viewModel.retryLastExport() }
+                        Button(String(localized: "重试上次导出")) { viewModel.retryLastExport() }
                             .accessibilityIdentifier("secondary_retry_export")
                             .disabled(!viewModel.hasSelectedImages || !viewModel.actionAvailability.canRetryExport)
-                        Button("导出排障包") { viewModel.exportDiagnosticsBundle() }
+                        Button(String(localized: "导出排障包")) { viewModel.exportDiagnosticsBundle() }
                             .accessibilityIdentifier("secondary_export_diagnostics")
                             .disabled(!viewModel.hasSelectedImages || viewModel.isBusy)
                         #if DEBUG
@@ -212,7 +212,13 @@ struct ContentView: View {
                         Button(String(localized: "模拟导出失败")) { viewModel.simulateExportFailure() }
                             .disabled(viewModel.isBusy)
                         #endif
+                    } label: {
+                        Image(systemName: "ellipsis")
                     }
+                    .menuIndicator(.hidden)
+                    .help(String(localized: "更多"))
+                    .accessibilityLabel(String(localized: "更多"))
+                    .accessibilityHint(String(localized: "打开更多操作"))
                     .accessibilityIdentifier("toolbar_more_menu")
                 }
             }
