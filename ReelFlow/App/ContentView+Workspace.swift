@@ -75,14 +75,7 @@ extension ContentView {
                         HStack(alignment: .top, spacing: 16) {
                             contentSummaryHeader
                             Spacer(minLength: 0)
-                            Picker("", selection: $centerPreviewTab) {
-                                ForEach(CenterPreviewTab.allCases) { tab in
-                                    Text(tab.title).tag(tab)
-                                }
-                            }
-                            .labelsHidden()
-                            .pickerStyle(.segmented)
-                            .frame(maxWidth: 220)
+                            previewModeControl
                         }
 
                         if centerPreviewTab == .singleFrame {
@@ -149,61 +142,105 @@ extension ContentView {
     }
 
     var settingsModeControl: some View {
-        HStack(spacing: 0) {
-            ForEach(SettingsTab.allCases) { tab in
-                let isSelected = settingsTab == tab
-                let isHovered = hoveredSettingsTab == tab
-                Button {
-                    guard !viewModel.isBusy else { return }
-                    withAnimation(.spring(response: 0.22, dampingFraction: 0.86)) {
-                        settingsTab = tab
-                    }
-                } label: {
-                    Text(tab.title)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(isSelected ? .primary : .secondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 24)
-                        .background(
-                            ZStack {
-                                if isSelected {
-                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .fill(Color.white.opacity(0.14))
-                                        .matchedGeometryEffect(id: "settings-mode-pill", in: settingsModeAnimation)
-                                } else if isHovered {
-                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .fill(Color.white.opacity(0.06))
-                                }
-                            }
-                        )
-                }
-                .buttonStyle(SettingsModeSegmentButtonStyle())
-                .focusable(false)
-                .disabled(viewModel.isBusy)
-                .onHover { isInside in
-                    hoveredSettingsTab = isInside ? tab : nil
-                }
-                .accessibilityElement()
-                .accessibilityIdentifier("settings_tab_\(tab.rawValue)")
-                .accessibilityLabel(tab.title)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-                .animation(.easeOut(duration: 0.12), value: isHovered)
-            }
-        }
-        .padding(3)
-        .frame(width: 142)
+        segmentedModeControl(
+            selection: $settingsTab,
+            items: SettingsTab.allCases,
+            width: 142,
+            accessibilityPrefix: "settings_tab"
+        ) { $0.title }
+        .disabled(viewModel.isBusy)
         .opacity(viewModel.isBusy ? 0.6 : 1)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.06))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+    }
+
+    var previewModeControl: some View {
+        segmentedModeControl(
+            selection: $centerPreviewTab,
+            items: CenterPreviewTab.allCases,
+            width: 220,
+            accessibilityPrefix: "preview_tab"
+        ) { $0.title }
+    }
+
+    func segmentedModeControl<Option: Identifiable & Hashable>(
+        selection: Binding<Option>,
+        items: [Option],
+        width: CGFloat,
+        accessibilityPrefix: String,
+        title: @escaping (Option) -> String
+    ) -> some View {
+        SegmentedModeControl(
+            selection: selection,
+            items: items,
+            width: width,
+            accessibilityPrefix: accessibilityPrefix,
+            title: title
         )
     }
 
-    private struct SettingsModeSegmentButtonStyle: ButtonStyle {
+    private struct SegmentedModeControl<Option: Identifiable & Hashable>: View {
+        @Binding var selection: Option
+        let items: [Option]
+        let width: CGFloat
+        let accessibilityPrefix: String
+        let title: (Option) -> String
+        @Namespace private var animation
+        @State private var hoveredOption: Option?
+
+        var body: some View {
+            HStack(spacing: 0) {
+                ForEach(items) { option in
+                    let isSelected = selection == option
+                    let isHovered = hoveredOption == option
+
+                    Button {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.86)) {
+                            selection = option
+                        }
+                    } label: {
+                        Text(title(option))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(isSelected ? .primary : .secondary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 24)
+                            .background(
+                                ZStack {
+                                    if isSelected {
+                                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                            .fill(Color.white.opacity(0.14))
+                                            .matchedGeometryEffect(id: "segmented-mode-pill", in: animation)
+                                    } else if isHovered {
+                                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                            .fill(Color.white.opacity(0.06))
+                                    }
+                                }
+                            )
+                    }
+                    .buttonStyle(SegmentedModeButtonStyle())
+                    .focusable(false)
+                    .onHover { isInside in
+                        hoveredOption = isInside ? option : nil
+                    }
+                    .accessibilityElement()
+                    .accessibilityIdentifier("\(accessibilityPrefix)_\(String(describing: option.id))")
+                    .accessibilityLabel(title(option))
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                    .animation(.easeOut(duration: 0.12), value: isHovered)
+                }
+            }
+            .padding(3)
+            .frame(width: width)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
+        }
+    }
+
+    private struct SegmentedModeButtonStyle: ButtonStyle {
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
                 .scaleEffect(configuration.isPressed ? 0.985 : 1)

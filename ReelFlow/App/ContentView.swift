@@ -68,8 +68,6 @@ struct ContentView: View {
     @State var lastPreviewRefreshReason: String?
     @State var lastPreviewRefreshTab: String?
     @State var lastPreviewRefreshMode: String?
-    @Namespace var settingsModeAnimation
-    @State var hoveredSettingsTab: SettingsTab?
 
     @MainActor
     init() {
