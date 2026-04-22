@@ -6,6 +6,7 @@
     {
       "blend-mode" : "normal",
       "blur-material" : null,
+      "hidden" : true,
       "layers" : [
         {
           "fill" : {
@@ -67,6 +68,7 @@
           "fill" : {
             "solid" : "srgb:1.00000,0.52833,0.06829,1.00000"
           },
+          "hidden" : false,
           "image-name" : "iso 2.svg",
           "name" : "iso 2",
           "position" : {
@@ -111,6 +113,7 @@
       }
     },
     {
+      "hidden" : true,
       "layers" : [
         {
           "blend-mode" : "normal",
@@ -152,6 +155,7 @@
     },
     {
       "blur-material" : null,
+      "hidden" : true,
       "layers" : [
         {
           "blend-mode" : "normal",
@@ -178,6 +182,29 @@
         "opacity" : 0.13
       },
       "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "icon.jpg",
+          "name" : "icon",
+          "position" : {
+            "scale" : 0.99,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
       "translucency" : {
         "enabled" : true,
         "value" : 0.5
