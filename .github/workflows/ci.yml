@@ -16,7 +16,8 @@ env:
   PROJECT_FILE: ReelFlow.xcodeproj
   SCHEME_NAME: ReelFlow
   DERIVED_DATA_PATH: .derivedData
-  XCODE_VERSION: latest-stable
+  # appicon.icon is authored with Xcode 26.2; keep CI on the same toolchain.
+  XCODE_VERSION: "26.2"
 
 jobs:
   core-tests:

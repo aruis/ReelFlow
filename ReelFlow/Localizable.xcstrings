@@ -315,6 +315,14 @@
       }
     },
     "PRO" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PRO"
+          }
+        }
+      },
       "shouldTranslate" : false
     },
     "Pro 已解锁：可继续导入更多照片。" : {
@@ -328,6 +336,14 @@
       }
     },
     "ReelFlow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ReelFlow"
+          }
+        }
+      },
       "shouldTranslate" : false
     },
     "ReelFlow Pro" : {
