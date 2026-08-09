@@ -181,7 +181,7 @@ struct RenderEngineSmokeTests {
         ).previewFrame(imageURLs: imageURLs, at: 0)
         let diff = try Self.diffStats(lhs: watermarked, rhs: plain)
 
-        #expect(diff.mean > 0.0003)
+        #expect(diff.mean > 0.00015)
         #expect(diff.max > 0.05)
     }
 

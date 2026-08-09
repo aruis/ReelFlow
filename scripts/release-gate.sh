@@ -26,8 +26,8 @@ if ! rg -q 'maxim-lobanov/setup-xcode@v1' "$WORKFLOW"; then
   echo "[release-gate] ERROR: CI is missing setup-xcode action"
   exit 1
 fi
-if ! rg -q 'XCODE_VERSION: latest-stable' "$WORKFLOW"; then
-  echo "[release-gate] ERROR: CI is missing XCODE_VERSION: latest-stable env"
+if ! rg -q 'XCODE_VERSION: "26\.2"' "$WORKFLOW"; then
+  echo "[release-gate] ERROR: CI is missing XCODE_VERSION: 26.2 env"
   exit 1
 fi
 if ! grep -Fq 'xcode-version: ${{ env.XCODE_VERSION }}' "$WORKFLOW"; then
