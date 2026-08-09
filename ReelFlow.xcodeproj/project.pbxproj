@@ -420,7 +420,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.26.1;
+				MARKETING_VERSION = 1.26.2;
 				PRODUCT_BUNDLE_IDENTIFIER = net.ximatai.ReelFlow;
 				PRODUCT_MODULE_NAME = ReelFlow;
 				PRODUCT_NAME = ReelFlow;
@@ -458,7 +458,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 1.26.1;
+				MARKETING_VERSION = 1.26.2;
 				PRODUCT_BUNDLE_IDENTIFIER = net.ximatai.ReelFlow;
 				PRODUCT_MODULE_NAME = ReelFlow;
 				PRODUCT_NAME = ReelFlow;
