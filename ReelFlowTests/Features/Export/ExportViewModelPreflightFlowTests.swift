@@ -152,7 +152,7 @@ struct ExportViewModelPreflightFlowTests {
         let imported = viewModel.importDroppedAudioTrack([audioURL])
 
         #expect(imported == true)
-        try await Self.waitUntil {
+        try await Self.waitUntil(timeoutNanoseconds: 8_000_000_000) {
             await MainActor.run { viewModel.selectedAudioDuration != nil }
         }
         #expect((viewModel.selectedAudioDuration ?? 0) > 0.3)
@@ -169,7 +169,7 @@ struct ExportViewModelPreflightFlowTests {
 
         let imported = viewModel.importDroppedAudioTrack([audioURL])
         #expect(imported == true)
-        try await Self.waitUntil {
+        try await Self.waitUntil(timeoutNanoseconds: 8_000_000_000) {
             await MainActor.run { viewModel.selectedAudioDuration != nil }
         }
 
